@@ -206,7 +206,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   type="button"
                   id="landingHeroDemoBtn"
                   onClick={onTryDemo}
-                  className="px-5 py-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-300 dark:border-slate-700 shadow-xs flex items-center gap-2 transition cursor-pointer"
+                  className="px-5 py-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-300 dark:border-slate-700 shadow-xs flex items-center gap-2 transition cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-amber-500" />
                   <span>Try Live Demo</span>
@@ -509,7 +509,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                    className="w-full p-4 text-left font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-750 transition cursor-pointer"
+                    className="w-full p-4 text-left font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
                   >
                     <span>{faq.q}</span>
                     <ChevronRight className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${activeFaq === idx ? 'rotate-90 text-emerald-600' : ''}`} />

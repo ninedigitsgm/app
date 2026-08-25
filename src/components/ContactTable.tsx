@@ -13,10 +13,11 @@ import {
   RotateCcw,
   CopyCheck,
   Search,
-  PhoneOff
+  PhoneOff,
+  Eye
 } from 'lucide-react';
-import { ContactRecord, OperatorName } from '../types';
-import { getRelatedContactsForMerge, isMissingPhone } from '../lib/puraEngine';
+import { ContactRecord, OperatorName, ContactStatus, FilterOption } from '../types';
+import { getRelatedContactsForMerge, isMissingPhone, processSingleNumber } from '../lib/puraEngine';
 import { OperatorLogo } from './OperatorLogo';
 
 interface ContactTableProps {
@@ -40,6 +41,9 @@ interface ContactTableProps {
   onCleanRepeatedNumbers?: (record: ContactRecord) => void;
   onCleanAllRepeatedNumbers?: () => void;
   onDeleteAllMissingPhoneContacts?: () => void;
+  onCleanAllSharedNumbers?: () => void;
+  filterOption?: FilterOption;
+  onFilterChange?: (filter: FilterOption) => void;
 }
 
 const ALPHABET = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
@@ -65,6 +69,9 @@ export const ContactTable: React.FC<ContactTableProps> = ({
   onCleanRepeatedNumbers,
   onCleanAllRepeatedNumbers,
   onDeleteAllMissingPhoneContacts,
+  onCleanAllSharedNumbers,
+  filterOption = 'all',
+  onFilterChange,
 }) => {
   const [activeLetterPopup, setActiveLetterPopup] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -179,13 +186,13 @@ export const ContactTable: React.FC<ContactTableProps> = ({
 
       if (op === 'QCell') {
         bg = 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800';
-        baseLabel = st === 'ok' ? 'QCell (+83)' : 'QCell (Standard)';
+        baseLabel = (st === 'ok' || st === 'already') ? 'QCell (+83)' : 'QCell (Standard)';
       } else if (op === 'Comium') {
         bg = 'bg-red-100 dark:bg-red-950/80 text-[#EB222A] dark:text-red-300 border-red-300 dark:border-red-800';
-        baseLabel = st === 'ok' ? 'Comium (+86)' : 'Comium (Standard)';
+        baseLabel = (st === 'ok' || st === 'already') ? 'Comium (+86)' : 'Comium (Standard)';
       } else if (op === 'Africell') {
         bg = 'bg-[#9D207E]/15 dark:bg-[#9D207E]/30 text-[#9D207E] dark:text-[#F3B3EB] border-[#9D207E]/30 dark:border-[#9D207E]/50';
-        baseLabel = st === 'ok' ? 'Africell (+87)' : 'Africell (Standard)';
+        baseLabel = (st === 'ok' || st === 'already') ? 'Africell (+87)' : 'Africell (Standard)';
       } else if (op === 'Gamcel') {
         bg = 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800';
         baseLabel = 'Gamcel (Phase 2 Deferred)';
@@ -194,7 +201,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
         baseLabel = 'Gamtel (Phase 2 Deferred)';
       } else if (op === 'International') {
         bg = 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800';
-        baseLabel = 'Foreign International';
+        baseLabel = 'Foreign / International';
       } else if (st === 'review') {
         bg = 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800';
         baseLabel = 'Review Needed';
@@ -245,9 +252,44 @@ export const ContactTable: React.FC<ContactTableProps> = ({
   );
   const totalRepeatedCount = repeatedDuplicateIds ? repeatedDuplicateIds.size : (allRecords || records).filter((r) => r.hasRepeatedNumbers).length;
   const totalMissingPhoneCount = missingPhoneIds ? missingPhoneIds.size : (allRecords || records).filter((r) => isMissingPhone(r)).length;
+  const totalSharedCount = sharedDuplicateIds ? sharedDuplicateIds.size : 0;
 
   return (
     <div className="space-y-2">
+      {/* Shared Numbers Notification Banner */}
+      {totalSharedCount > 0 && onCleanAllSharedNumbers && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-xs shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2 text-indigo-950 dark:text-indigo-200 font-medium">
+            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span>
+              Found <b>{totalSharedCount}</b> contact{totalSharedCount > 1 ? 's' : ''} with the same telephone number.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={() => onFilterChange?.(filterOption === 'duplicate-shared' ? 'all' : 'duplicate-shared')}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0 ${
+                filterOption === 'duplicate-shared'
+                  ? 'bg-indigo-100 border-indigo-300 text-indigo-900 dark:bg-indigo-900/40 dark:border-indigo-700 dark:text-indigo-100'
+                  : 'bg-white hover:bg-slate-50 border-indigo-200 text-indigo-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700/60'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{filterOption === 'duplicate-shared' ? 'Showing Filtered' : 'View Contacts'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onCleanAllSharedNumbers}
+              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Clean All Shared Numbers ({totalSharedCount})</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Missing Phone Numbers Notification Banner */}
       {totalMissingPhoneCount > 0 && onDeleteAllMissingPhoneContacts && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 text-xs shadow-xs animate-in fade-in">
@@ -257,14 +299,28 @@ export const ContactTable: React.FC<ContactTableProps> = ({
               Found <b>{totalMissingPhoneCount}</b> contact{totalMissingPhoneCount > 1 ? 's' : ''} with no telephone number.
             </span>
           </div>
-          <button
-            type="button"
-            onClick={onDeleteAllMissingPhoneContacts}
-            className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete All Empty Contacts ({totalMissingPhoneCount})</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={() => onFilterChange?.(filterOption === 'missing-phone' ? 'all' : 'missing-phone')}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0 ${
+                filterOption === 'missing-phone'
+                  ? 'bg-rose-100 border-rose-300 text-rose-900 dark:bg-rose-900/40 dark:border-rose-700 dark:text-rose-100'
+                  : 'bg-white hover:bg-slate-50 border-rose-200 text-rose-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700/60'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{filterOption === 'missing-phone' ? 'Showing Filtered' : 'View Contacts'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onDeleteAllMissingPhoneContacts}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete All Empty Contacts ({totalMissingPhoneCount})</span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -277,14 +333,28 @@ export const ContactTable: React.FC<ContactTableProps> = ({
               Found <b>{totalRepeatedCount}</b> contact{totalRepeatedCount > 1 ? 's' : ''} containing redundant repeated telephone numbers.
             </span>
           </div>
-          <button
-            type="button"
-            onClick={onCleanAllRepeatedNumbers}
-            className="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Clean All Repeated Numbers ({totalRepeatedCount})</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={() => onFilterChange?.(filterOption === 'repeated-number' ? 'all' : 'repeated-number')}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0 ${
+                filterOption === 'repeated-number'
+                  ? 'bg-pink-100 border-pink-300 text-pink-900 dark:bg-pink-900/40 dark:border-pink-700 dark:text-pink-100'
+                  : 'bg-white hover:bg-slate-50 border-pink-200 text-pink-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700/60'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{filterOption === 'repeated-number' ? 'Showing Filtered' : 'View Contacts'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onCleanAllRepeatedNumbers}
+              className="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clean All Repeated Numbers ({totalRepeatedCount})</span>
+            </button>
+          </div>
         </div>
       )}
 

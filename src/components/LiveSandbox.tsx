@@ -65,16 +65,16 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
         baseLabel = 'Gamtel (Phase 2 Deferred)';
       } else if (op === 'QCell') {
         bg = 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800';
-        baseLabel = st === 'ok' ? 'QCell (+83)' : 'QCell (Standard)';
+        baseLabel = (st === 'ok' || st === 'already') ? 'QCell (+83)' : 'QCell (Standard)';
       } else if (op === 'Comium') {
         bg = 'bg-red-100 text-[#EB222A] dark:bg-red-950/80 dark:text-red-300 border-red-300 dark:border-red-800';
-        baseLabel = st === 'ok' ? 'Comium (+86)' : 'Comium (Standard)';
+        baseLabel = (st === 'ok' || st === 'already') ? 'Comium (+86)' : 'Comium (Standard)';
       } else if (op === 'Africell') {
         bg = 'bg-[#9D207E]/15 text-[#9D207E] dark:bg-[#9D207E]/30 dark:text-[#F3B3EB] border-[#9D207E]/30 dark:border-[#9D207E]/50';
-        baseLabel = st === 'ok' ? 'Africell (+87)' : 'Africell (Standard)';
+        baseLabel = (st === 'ok' || st === 'already') ? 'Africell (+87)' : 'Africell (Standard)';
       } else if (op === 'International') {
         bg = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800';
-        baseLabel = 'Foreign International';
+        baseLabel = 'Foreign / International';
       } else if (st === 'review') {
         bg = 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-300 dark:border-rose-800';
         baseLabel = 'Review Needed';

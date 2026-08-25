@@ -14,7 +14,11 @@ import {
   RotateCcw,
   FilterX,
   CopyCheck,
-  PhoneOff
+  PhoneOff,
+  ArrowDownAZ,
+  ArrowUpZA,
+  ListOrdered,
+  Signal
 } from 'lucide-react';
 import { FilterOption, SortOption } from '../types';
 import { OperatorLogo } from './OperatorLogo';
@@ -32,6 +36,14 @@ interface ReviewToolbarProps {
   upgradedCount: number;
   reviewCount: number;
   onOpenAddModal: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  undoSnapshots: { description: string }[];
+  redoSnapshots: { description: string }[];
+  onUndoToSnapshot: (index: number) => void;
+  onRedoToSnapshot: (index: number) => void;
 }
 
 interface FilterItem {
@@ -126,9 +138,43 @@ const SORT_LABELS: Record<SortOption, string> = {
   'name-asc': 'Name (A → Z)',
   'name-desc': 'Name (Z → A)',
   'original': 'Original Import Order',
-  'operator-asc': 'Network Operator (A → Z)',
+  'operator-asc': 'Network Operator',
   'status-asc': 'Upgrade Status',
 };
+
+interface SortItem {
+  value: SortOption;
+  label: string;
+  icon: React.ReactNode;
+}
+
+const SORT_ITEMS: SortItem[] = [
+  {
+    value: 'name-asc',
+    label: 'Name (A → Z)',
+    icon: <ArrowDownAZ className="w-4 h-4 text-blue-500 shrink-0" />,
+  },
+  {
+    value: 'name-desc',
+    label: 'Name (Z → A)',
+    icon: <ArrowUpZA className="w-4 h-4 text-blue-500 shrink-0" />,
+  },
+  {
+    value: 'original',
+    label: 'Original Import Order',
+    icon: <ListOrdered className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />,
+  },
+  {
+    value: 'operator-asc',
+    label: 'By Operator',
+    icon: <Signal className="w-4 h-4 text-indigo-500 shrink-0" />,
+  },
+  {
+    value: 'status-asc',
+    label: 'By Status',
+    icon: <Zap className="w-4 h-4 text-emerald-500 shrink-0" />,
+  },
+];
 
 const getFilterChipStyle = (filter: FilterOption): string => {
   switch (filter) {
@@ -169,11 +215,47 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
   upgradedCount,
   reviewCount,
   onOpenAddModal,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+  undoSnapshots,
+  redoSnapshots,
+  onUndoToSnapshot,
+  onRedoToSnapshot,
 }) => {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [isUndoDropdownOpen, setIsUndoDropdownOpen] = useState(false);
+  const [isRedoDropdownOpen, setIsRedoDropdownOpen] = useState(false);
+
+  const undoRef = useRef<HTMLDivElement>(null);
+  const redoRef = useRef<HTMLDivElement>(null);
+
+  // Close undo/redo dropdowns on click outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (undoRef.current && !undoRef.current.contains(target)) {
+        setIsUndoDropdownOpen(false);
+      }
+      if (redoRef.current && !redoRef.current.contains(target)) {
+        setIsRedoDropdownOpen(false);
+      }
+    };
+    if (isUndoDropdownOpen || isRedoDropdownOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [isUndoDropdownOpen, isRedoDropdownOpen]);
+
+  // Close dropdown on click outside for filters
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -199,7 +281,34 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
     };
   }, [isFilterDropdownOpen]);
 
+  // Close dropdown on click outside for sort
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sortDropdownRef.current &&
+        !sortDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsSortDropdownOpen(false);
+      }
+    };
+
+    if (isSortDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSortDropdownOpen]);
+
   const currentFilterItem = FILTER_ITEMS.find((item) => item.value === filterOption) || FILTER_ITEMS[0];
+  const currentSortItem = SORT_ITEMS.find((item) => item.value === sortOption) || SORT_ITEMS[0];
   const isSortModified = sortOption !== 'name-asc';
   const isFilterActive = filterOption !== 'all' || searchQuery.trim() !== '' || isSortModified;
 
@@ -246,9 +355,9 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-3 w-full">
         {/* Search */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="searchInput"
@@ -271,23 +380,64 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
         </div>
 
         {/* Sort */}
-        <div className="w-full md:w-48">
-          <select
+        <div className="relative w-full md:w-48 lg:w-56 shrink-0" ref={sortDropdownRef}>
+          <button
             id="sortSelect"
-            value={sortOption}
-            onChange={(e) => onSortChange(e.target.value as SortOption)}
-            className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
+            type="button"
+            onClick={() => setIsSortDropdownOpen((prev) => !prev)}
+            aria-expanded={isSortDropdownOpen}
+            className={`w-full px-3 py-2.5 rounded-xl border text-left font-medium transition duration-150 ${
+              sortOption !== 'name-asc'
+                ? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100 font-semibold'
+                : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200'
+            } text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition`}
           >
-            <option value="name-asc">🔤 Name (A → Z)</option>
-            <option value="name-desc">🔤 Name (Z → A)</option>
-            <option value="original">🔢 Original Import Order</option>
-            <option value="operator-asc">📶 By Operator</option>
-            <option value="status-asc">⚡ By Status</option>
-          </select>
+            <div className="flex items-center gap-2.5 truncate">
+              {currentSortItem.icon}
+              <span className="truncate">{currentSortItem.label}</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isSortDropdownOpen && (
+            <div
+              role="listbox"
+              aria-label="Sort contacts list"
+              className="absolute z-50 right-0 left-0 mt-1.5 max-h-80 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl py-1.5 text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100 divide-y divide-slate-100 dark:divide-slate-700/60"
+            >
+              <div className="py-1">
+                {SORT_ITEMS.map((item) => {
+                  const isSelected = item.value === sortOption;
+                  return (
+                    <button
+                      key={item.value}
+                      role="option"
+                      aria-selected={isSelected}
+                      onClick={() => {
+                        onSortChange(item.value);
+                        setIsSortDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left flex items-center justify-between gap-2 transition cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold'
+                          : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        {item.icon}
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      {isSelected && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Custom Filter Dropdown with Operator Logos */}
-        <div className="relative w-full md:w-72" ref={filterDropdownRef}>
+        <div className="relative w-full md:w-60 lg:w-72 shrink-0" ref={filterDropdownRef}>
           <button
             id="filterSelect"
             type="button"
@@ -298,7 +448,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
               filterOption !== 'all'
                 ? 'border-blue-400 dark:border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100 font-semibold'
                 : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200'
-            } text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-750 transition`}
+            } text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition`}
           >
             <div className="flex items-center gap-2 truncate">
               {currentFilterItem.icon}
@@ -436,10 +586,143 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
           )}
         </div>
 
+        {/* Undo / Redo Actions Group */}
+        <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs shrink-0 h-[38px] relative gap-0">
+          
+          {/* UNDO SECTION */}
+          <div ref={undoRef} className="relative h-full flex items-center">
+            {/* Main Undo Action Button */}
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo}
+              className={`px-3 h-full flex items-center gap-1.5 text-xs font-bold transition rounded-l-xl ${
+                canUndo 
+                  ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer' 
+                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40'
+              }`}
+              title="Undo last action"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Undo</span>
+            </button>
+
+            {/* Dropdown toggle down arrow */}
+            <button
+              type="button"
+              disabled={!canUndo || undoSnapshots.length === 0}
+              onClick={() => setIsUndoDropdownOpen(!isUndoDropdownOpen)}
+              className={`px-1.5 h-full flex items-center justify-center border-r border-slate-200 dark:border-slate-700 transition ${
+                canUndo && undoSnapshots.length > 0
+                  ? 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer'
+                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40'
+              }`}
+              title="Undo snapshots dropdown"
+            >
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isUndoDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* UNDO DROPDOWN LIST */}
+            {isUndoDropdownOpen && undoSnapshots.length > 0 && (
+              <div className="absolute top-[42px] left-0 z-50 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                  Undo to past actions (max 10)
+                </div>
+                <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                  {undoSnapshots.map((snap, sIdx) => {
+                    const reverseIdx = undoSnapshots.length - 1 - sIdx;
+                    return (
+                      <button
+                        key={`undo-snap-${sIdx}`}
+                        type="button"
+                        onClick={() => {
+                          onUndoToSnapshot(reverseIdx);
+                          setIsUndoDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between font-medium cursor-pointer"
+                      >
+                        <span className="truncate pr-1">{undoSnapshots[reverseIdx].description}</span>
+                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-600 shrink-0 uppercase">
+                          -{sIdx + 1} Step{sIdx > 0 ? 's' : ''}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* REDO SECTION */}
+          <div ref={redoRef} className="relative h-full flex items-center">
+            {/* Main Redo Action Button */}
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={!canRedo}
+              className={`px-3 h-full flex items-center gap-1.5 text-xs font-bold transition ${
+                canRedo 
+                  ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer' 
+                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40'
+              }`}
+              title="Redo next action"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Redo</span>
+            </button>
+
+            {/* Dropdown toggle down arrow */}
+            <button
+              type="button"
+              disabled={!canRedo || redoSnapshots.length === 0}
+              onClick={() => setIsRedoDropdownOpen(!isRedoDropdownOpen)}
+              className={`px-1.5 h-full flex items-center justify-center transition rounded-r-xl ${
+                canRedo && redoSnapshots.length > 0
+                  ? 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer'
+                  : 'text-slate-300 dark:text-slate-600 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40'
+              }`}
+              title="Redo snapshots dropdown"
+            >
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isRedoDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* REDO DROPDOWN LIST */}
+            {isRedoDropdownOpen && redoSnapshots.length > 0 && (
+              <div className="absolute top-[42px] right-0 z-50 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                  Redo next actions (max 10)
+                </div>
+                <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                  {redoSnapshots.map((snap, sIdx) => {
+                    const reverseIdx = redoSnapshots.length - 1 - sIdx;
+                    return (
+                      <button
+                        key={`redo-snap-${sIdx}`}
+                        type="button"
+                        onClick={() => {
+                          onRedoToSnapshot(reverseIdx);
+                          setIsRedoDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between font-medium cursor-pointer"
+                      >
+                        <span className="truncate pr-1">{redoSnapshots[reverseIdx].description}</span>
+                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-600 shrink-0 uppercase">
+                          +{sIdx + 1} Step{sIdx > 0 ? 's' : ''}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+
         {/* Add Contact Button */}
         <button
           onClick={onOpenAddModal}
-          className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0"
+          className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0 h-[38px]"
         >
           <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span>New Contact</span>

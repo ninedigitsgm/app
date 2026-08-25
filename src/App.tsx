@@ -12,6 +12,7 @@ import { DuplicateModal } from './components/DuplicateModal';
 import { EditContactModal } from './components/EditContactModal';
 import { AddContactModal } from './components/AddContactModal';
 import { MergeContactsModal } from './components/MergeContactsModal';
+import { ExportPreviewModal } from './components/ExportPreviewModal';
 import { InstructionProgressBar } from './components/InstructionProgressBar';
 import { Toast, ToastMessage } from './components/Toast';
 import { ContactRecord, FilterOption, SortOption, InstructionProgressState } from './types';
@@ -54,7 +55,134 @@ export default function App() {
     return false;
   });
   const [includeCountryCode, setIncludeCountryCode] = useState<boolean>(true);
-  const [records, setRecords] = useState<ContactRecord[]>([]);
+  interface HistoryState {
+    records: ContactRecord[];
+    description: string;
+  }
+
+  const [records, setRecordsState] = useState<ContactRecord[]>([]);
+  const [history, setHistory] = useState<HistoryState[]>([]);
+  const [redoStack, setRedoStack] = useState<HistoryState[]>([]);
+
+  // Custom setRecords helper that records history with labels
+  const setRecords = (
+    next: ContactRecord[] | ((prev: ContactRecord[]) => ContactRecord[]),
+    actionName?: string
+  ) => {
+    setRecordsState((prev) => {
+      const resolved = typeof next === 'function' ? next(prev) : next;
+      
+      // Auto-detect action description if none provided
+      let desc = actionName;
+      if (!desc) {
+        if (prev.length === 0 && resolved.length > 0) {
+          desc = `Imported ${resolved.length} Contacts`;
+        } else if (resolved.length > prev.length) {
+          desc = `Added ${resolved.length - prev.length} Contact(s)`;
+        } else if (resolved.length < prev.length) {
+          desc = `Deleted ${prev.length - resolved.length} Contact(s)`;
+        } else {
+          desc = "Updated Contacts State";
+        }
+      }
+
+      setHistory((prevHistory) => {
+        // Prevent duplicate snapshots in history
+        if (prevHistory.length > 0 && JSON.stringify(prevHistory[prevHistory.length - 1].records) === JSON.stringify(prev)) {
+          return prevHistory;
+        }
+        const nextHistory = [...prevHistory, { records: prev, description: desc || "Action State" }];
+        if (nextHistory.length > 10) {
+          return nextHistory.slice(nextHistory.length - 10);
+        }
+        return nextHistory;
+      });
+      setRedoStack([]); // clear redo stack on new action
+      return resolved;
+    });
+  };
+
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    const lastHistory = history[history.length - 1];
+    setHistory((prev) => prev.slice(0, -1));
+    setRedoStack((prev) => {
+      const updated = [...prev, { records, description: lastHistory.description }];
+      if (updated.length > 10) return updated.slice(updated.length - 10);
+      return updated;
+    });
+    setRecordsState(lastHistory.records);
+    setSelectedIds(new Set());
+    addToast(`Undo: ${lastHistory.description}`, 'info');
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+    const lastRedo = redoStack[redoStack.length - 1];
+    setRedoStack((prev) => prev.slice(0, -1));
+    setHistory((prev) => {
+      const updated = [...prev, { records, description: lastRedo.description }];
+      if (updated.length > 10) return updated.slice(updated.length - 10);
+      return updated;
+    });
+    setRecordsState(lastRedo.records);
+    setSelectedIds(new Set());
+    addToast(`Redo: ${lastRedo.description}`, 'info');
+  };
+
+  const handleUndoToSnapshot = (historyIndex: number) => {
+    if (historyIndex < 0 || historyIndex >= history.length) return;
+    const targetSnapshot = history[historyIndex];
+    
+    // History split
+    const newHistory = history.slice(0, historyIndex);
+    
+    // Undone items go to redo stack in proper sequence
+    const undoneItems = history.slice(historyIndex + 1).map(h => ({
+      records: h.records,
+      description: h.description
+    }));
+    const newRedoItem = { records, description: history[historyIndex].description };
+    const itemsForRedo = [...undoneItems, newRedoItem];
+
+    setRedoStack(prev => {
+      const combined = [...prev, ...itemsForRedo];
+      if (combined.length > 10) return combined.slice(combined.length - 10);
+      return combined;
+    });
+
+    setHistory(newHistory);
+    setRecordsState(targetSnapshot.records);
+    setSelectedIds(new Set());
+    addToast(`Reverted back to: ${targetSnapshot.description}`, 'info');
+  };
+
+  const handleRedoToSnapshot = (redoIndex: number) => {
+    if (redoIndex < 0 || redoIndex >= redoStack.length) return;
+    const targetSnapshot = redoStack[redoIndex];
+
+    // Redo split
+    const newRedoStack = redoStack.slice(0, redoIndex);
+
+    // Redone items go to history stack in proper sequence
+    const redoneItems = redoStack.slice(redoIndex + 1).map(r => ({
+      records: r.records,
+      description: r.description
+    }));
+    const newHistoryItem = { records, description: targetSnapshot.description };
+    const itemsForHistory = [newHistoryItem, ...redoneItems];
+
+    setHistory(prev => {
+      const combined = [...prev, ...itemsForHistory];
+      if (combined.length > 10) return combined.slice(combined.length - 10);
+      return combined;
+    });
+
+    setRedoStack(newRedoStack);
+    setRecordsState(targetSnapshot.records);
+    setSelectedIds(new Set());
+    addToast(`Restored state to: ${targetSnapshot.description}`, 'info');
+  };
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortOption, setSortOption] = useState<SortOption>('name-asc');
@@ -66,6 +194,10 @@ export default function App() {
   const [editingRecord, setEditingRecord] = useState<ContactRecord | null>(null);
   const [mergingContacts, setMergingContacts] = useState<ContactRecord[] | null>(null);
   const [sequentialGroupIndex, setSequentialGroupIndex] = useState<number | null>(null);
+
+  // Export Preview state
+  const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'CSV' | 'VCF'>('CSV');
 
   // Import Progress state
   const [importProgress, setImportProgress] = useState<ImportProgressState | null>(null);
@@ -90,6 +222,7 @@ export default function App() {
       status: 'running',
     });
 
+    // Realistic delay 1 (900ms)
     setTimeout(() => {
       if (totalSteps >= 2) {
         setInstructionProgress({
@@ -102,6 +235,7 @@ export default function App() {
         });
       }
 
+      // Realistic delay 2 (1100ms)
       setTimeout(() => {
         // Execute the actual mutation / action
         action();
@@ -117,12 +251,12 @@ export default function App() {
 
         if (onComplete) onComplete();
 
-        // Auto dismiss after 3.2 seconds
+        // Auto dismiss after 1.5 seconds
         setTimeout(() => {
           setInstructionProgress((prev) => (prev?.title === title ? null : prev));
-        }, 3200);
-      }, 220);
-    }, 180);
+        }, 1500);
+      }, 1100);
+    }, 900);
   };
 
   // Toasts
@@ -134,6 +268,53 @@ export default function App() {
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3200);
+  };
+
+  const fallbackCopyText = (text: string, onSuccess: () => void, onFail: () => void) => {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        onSuccess();
+      } else {
+        onFail();
+      }
+    } catch (err) {
+      console.error("Fallback copy failed:", err);
+      onFail();
+    }
+  };
+
+  const handleCopyText = (text: string) => {
+    const showSuccessToast = () => {
+      addToast(`Copied "${text}" to clipboard`);
+    };
+
+    const showFailToast = () => {
+      addToast(`Failed to copy "${text}" to clipboard`, 'warn');
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(showSuccessToast)
+        .catch((err) => {
+          console.warn("Navigator clipboard write failed, trying fallback:", err);
+          fallbackCopyText(text, showSuccessToast, showFailToast);
+        });
+    } else {
+      fallbackCopyText(text, showSuccessToast, showFailToast);
+    }
   };
 
   // Sync hash routing
@@ -178,7 +359,7 @@ export default function App() {
   // Handle loading sample contacts
   const handleLoadSampleContacts = () => {
     const parsed = parseCSV(SAMPLE_RAW_DATA, includeCountryCode);
-    setRecords(parsed);
+    setRecords(parsed, "Load Sample Contacts");
     setSelectedIds(new Set());
     addToast(`Loaded ${parsed.length} sample contacts`);
     scrollToReviewSection();
@@ -188,8 +369,10 @@ export default function App() {
   const handleToggleCountryCode = () => {
     const nextVal = !includeCountryCode;
     setIncludeCountryCode(nextVal);
-    setRecords((prev) =>
-      prev.map((r, i) => processFullContact(r.name, r.raw, nextVal, i, r.id))
+    setRecords(
+      (prev) =>
+        prev.map((r, i) => processFullContact(r.name, r.raw, nextVal, i, r.id)),
+      `Toggle +220 Prefix (${nextVal ? 'ON' : 'OFF'})`
     );
     addToast(
       nextVal ? 'Country code (+220) enabled for exports' : 'Country code prefix removed',
@@ -220,7 +403,7 @@ export default function App() {
       });
 
       setTimeout(() => {
-        setRecords(parsed);
+        setRecords(parsed, `Import from ${filename}`);
         setSelectedIds(new Set());
         setImportProgress(null);
         addToast(`Successfully loaded ${parsed.length} contacts from ${filename}`);
@@ -231,14 +414,14 @@ export default function App() {
 
   const handleProcessRaw = (rawText: string) => {
     const parsed = parseCSV(rawText, includeCountryCode);
-    setRecords(parsed);
+    setRecords(parsed, "Pasted Raw Contacts");
     setSelectedIds(new Set());
     addToast(`Successfully processed ${parsed.length} pasted contacts`);
     scrollToReviewSection();
   };
 
   const handleClearAll = () => {
-    setRecords([]);
+    setRecords([], "Clear All Contacts");
     setSelectedIds(new Set());
     setSequentialGroupIndex(null);
     setMergingContacts(null);
@@ -253,26 +436,30 @@ export default function App() {
       includeCountryCode,
       records.length
     );
-    setRecords((prev) => [newRecord, ...prev]);
+    setRecords((prev) => [newRecord, ...prev], `Add Contact: ${name}`);
     addToast(`Added "${name}" to contact list`);
     scrollToReviewSection();
   };
 
   // Edit Contact
   const handleSaveEdit = (id: string, newName: string, newPhone: string) => {
-    setRecords((prev) =>
-      prev.map((r, idx) =>
-        r.id === id
-          ? processFullContact(newName, newPhone, includeCountryCode, idx, id)
-          : r
-      )
+    setRecords(
+      (prev) =>
+        prev.map((r, idx) =>
+          r.id === id
+            ? processFullContact(newName, newPhone, includeCountryCode, idx, id)
+            : r
+        ),
+      `Edit Contact: ${newName}`
     );
     addToast('Contact updated successfully');
   };
 
   // Delete single contact
   const handleDeleteContact = (id: string) => {
-    setRecords((prev) => prev.filter((r) => r.id !== id));
+    const contact = records.find((r) => r.id === id);
+    const label = contact ? `Delete Contact: ${contact.name}` : 'Delete Contact';
+    setRecords((prev) => prev.filter((r) => r.id !== id), label);
     setSelectedIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
@@ -284,7 +471,10 @@ export default function App() {
   // Delete selected contacts
   const handleDeleteSelected = () => {
     const count = selectedIds.size;
-    setRecords((prev) => prev.filter((r) => !selectedIds.has(r.id)));
+    setRecords(
+      (prev) => prev.filter((r) => !selectedIds.has(r.id)),
+      `Bulk Delete ${count} Contacts`
+    );
     setSelectedIds(new Set());
     addToast(`Deleted ${count} selected contacts`, 'warn');
   };
@@ -343,7 +533,7 @@ export default function App() {
       ],
       () => {
         const res = bulkMergeSharedGroups(records, includeCountryCode, strategy);
-        setRecords(res.updatedRecords);
+        setRecords(res.updatedRecords, `Bulk Merge Duplicates (${strategy})`);
         setSelectedIds(new Set());
         setIsDuplicateModalOpen(false);
         addToast(`Bulk merged ${res.mergedGroupsCount} shared groups (${res.reducedCount} contacts consolidated)`);
@@ -362,7 +552,7 @@ export default function App() {
       ],
       () => {
         const res = removeInternalRepeatedNumbers(records, includeCountryCode);
-        setRecords(res.updatedRecords);
+        setRecords(res.updatedRecords, "Clean Internal Repeated Numbers");
         setIsDuplicateModalOpen(false);
         addToast(`Cleaned redundant numbers in ${res.cleanedContactsCount} contacts (${res.removedNumbersCount} numbers removed)`);
       }
@@ -381,7 +571,10 @@ export default function App() {
       () => {
         const res = removeInternalRepeatedNumbers([record], includeCountryCode);
         if (res.updatedRecords.length > 0) {
-          setRecords((prev) => prev.map((r) => (r.id === record.id ? res.updatedRecords[0] : r)));
+          setRecords(
+            (prev) => prev.map((r) => (r.id === record.id ? res.updatedRecords[0] : r)),
+            `Clean Numbers: ${record.name}`
+          );
           addToast(`Removed redundant numbers from "${record.name}"`);
         }
       }
@@ -434,7 +627,7 @@ export default function App() {
           return;
         }
         const updated = toKeep.map((r, i) => ({ ...r, originalIndex: i }));
-        setRecords(updated);
+        setRecords(updated, `Purge Empty Phone Contacts (${count})`);
         setSelectedIds(new Set());
         setIsDuplicateModalOpen(false);
         addToast(`Deleted ${count} contact${count > 1 ? 's' : ''} with no phone number`);
@@ -461,12 +654,12 @@ export default function App() {
 
     records.forEach((r) => {
       if (idsSet.has(r.id)) {
-        if (!replaced) {
-          updatedRecords.push({ ...newRecord, originalIndex: updatedRecords.length, id: r.id });
-          replaced = true;
-        }
+         if (!replaced) {
+           updatedRecords.push({ ...newRecord, originalIndex: updatedRecords.length, id: r.id });
+           replaced = true;
+         }
       } else {
-        updatedRecords.push({ ...r, originalIndex: updatedRecords.length });
+         updatedRecords.push({ ...r, originalIndex: updatedRecords.length });
       }
     });
 
@@ -474,7 +667,7 @@ export default function App() {
       updatedRecords.push(newRecord);
     }
 
-    setRecords(updatedRecords);
+    setRecords(updatedRecords, `Merge into: ${mergedData.name}`);
 
     // Clean up selected IDs
     setSelectedIds((prev) => {
@@ -552,7 +745,7 @@ export default function App() {
       ],
       () => {
         const res = bulkMergeExactDuplicates(records);
-        setRecords(res.updatedRecords);
+        setRecords(res.updatedRecords, `Auto-Deduplicate Exact Matches (${res.removedCount})`);
         setSelectedIds(new Set());
         setIsDuplicateModalOpen(false);
         addToast(`Removed ${res.removedCount} duplicate contacts (kept 1 copy of each)`);
@@ -635,19 +828,8 @@ export default function App() {
       addToast('No contacts available to export', 'warn');
       return;
     }
-    executeInstructionWithProgress(
-      'Generate & Download VCF Contact Book',
-      [
-        'Compiling vCard 3.0 standard specifications...',
-        'Formatting PURA 9-digit numbers and prefixes...',
-        'VCF contact book downloaded successfully!'
-      ],
-      () => {
-        const vcf = generateVCF(records);
-        triggerDownload(vcf, 'GM_PURA_Upgraded_Contacts.vcf', 'text/vcard');
-        addToast(`Exported ${records.length} contacts to VCF file!`);
-      }
-    );
+    setExportFormat('VCF');
+    setIsExportPreviewOpen(true);
   };
 
   const handleExportCSV = () => {
@@ -655,19 +837,41 @@ export default function App() {
       addToast('No contacts available to export', 'warn');
       return;
     }
-    executeInstructionWithProgress(
-      'Generate & Download CSV Spreadsheet',
-      [
-        'Formatting spreadsheet columns and UTF-8 characters...',
-        'Structuring Gambian operator categorization...',
-        'CSV spreadsheet downloaded successfully!'
-      ],
-      () => {
-        const csv = generateCSV(records);
-        triggerDownload(csv, 'GM_PURA_Upgraded_Contacts.csv', 'text/csv');
-        addToast(`Exported ${records.length} contacts to CSV spreadsheet!`);
-      }
-    );
+    setExportFormat('CSV');
+    setIsExportPreviewOpen(true);
+  };
+
+  const handleConfirmExport = () => {
+    setIsExportPreviewOpen(false);
+    if (exportFormat === 'VCF') {
+      executeInstructionWithProgress(
+        'Generate & Download VCF Contact Book',
+        [
+          'Compiling vCard 3.0 standard specifications...',
+          'Formatting PURA 9-digit numbers and prefixes...',
+          'VCF contact book downloaded successfully!'
+        ],
+        () => {
+          const vcf = generateVCF(records);
+          triggerDownload(vcf, 'GM_PURA_Upgraded_Contacts.vcf', 'text/vcard');
+          addToast(`Exported ${records.length} contacts to VCF file!`);
+        }
+      );
+    } else {
+      executeInstructionWithProgress(
+        'Generate & Download CSV Spreadsheet',
+        [
+          'Formatting spreadsheet columns and UTF-8 characters...',
+          'Structuring Gambian operator categorization...',
+          'CSV spreadsheet downloaded successfully!'
+        ],
+        () => {
+          const csv = generateCSV(records);
+          triggerDownload(csv, 'GM_PURA_Upgraded_Contacts.csv', 'text/csv');
+          addToast(`Exported ${records.length} contacts to CSV spreadsheet!`);
+        }
+      );
+    }
   };
 
   // Stats calculation
@@ -808,16 +1012,6 @@ export default function App() {
             </span>
           </div>
 
-          {/* Real-time instruction execution progress bar */}
-          {instructionProgress && (
-            <div className="mb-4">
-              <InstructionProgressBar 
-                progress={instructionProgress} 
-                onDismiss={() => setInstructionProgress(null)} 
-              />
-            </div>
-          )}
-
           <ReviewToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -831,6 +1025,14 @@ export default function App() {
             upgradedCount={upgradedCount}
             reviewCount={reviewCount}
             onOpenAddModal={() => setIsAddModalOpen(true)}
+            canUndo={history.length > 0}
+            canRedo={redoStack.length > 0}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            undoSnapshots={history}
+            redoSnapshots={redoStack}
+            onUndoToSnapshot={handleUndoToSnapshot}
+            onRedoToSnapshot={handleRedoToSnapshot}
           />
 
           <ContactTable
@@ -841,7 +1043,7 @@ export default function App() {
             onToggleSelectAll={handleToggleSelectAll}
             onEdit={(record) => setEditingRecord(record)}
             onDelete={handleDeleteContact}
-            onCopyText={(text) => addToast(`Copied "${text}" to clipboard`)}
+            onCopyText={handleCopyText}
             exactDuplicateIds={duplicateAnalysis.exactIndices}
             sharedDuplicateIds={duplicateAnalysis.sharedIndices}
             repeatedDuplicateIds={duplicateAnalysis.repeatedIndices}
@@ -858,6 +1060,9 @@ export default function App() {
             onCleanRepeatedNumbers={handleCleanSingleContactRepeated}
             onCleanAllRepeatedNumbers={handleCleanAllRepeatedNumbers}
             onDeleteAllMissingPhoneContacts={handleDeleteAllMissingPhoneContacts}
+            onCleanAllSharedNumbers={() => handleBulkMergeShared('slash')}
+            filterOption={filterOption}
+            onFilterChange={setFilterOption}
           />
 
           <ExportActionBar
@@ -921,6 +1126,15 @@ export default function App() {
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddContact}
         includeCountryCode={includeCountryCode}
+      />
+
+      {/* Export Preview Modal */}
+      <ExportPreviewModal
+        isOpen={isExportPreviewOpen}
+        onClose={() => setIsExportPreviewOpen(false)}
+        format={exportFormat}
+        records={records}
+        onConfirmExport={handleConfirmExport}
       />
     </div>
   );

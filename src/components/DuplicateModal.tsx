@@ -14,7 +14,6 @@ import {
   PhoneOff
 } from 'lucide-react';
 import { DuplicateAnalysisResult, InstructionProgressState } from '../types';
-import { InstructionProgressBar } from './InstructionProgressBar';
 
 interface DuplicateModalProps {
   isOpen: boolean;
@@ -57,6 +56,12 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
 
   const totalDuplicates = analysis.exactCount + analysis.sharedCount + (analysis.repeatedCount || 0) + (analysis.missingPhoneCount || 0);
 
+  // Helper flags for individual action button loading states
+  const isExactLoading = !!(instructionProgress && instructionProgress.title === 'Auto-Deduplicate Exact Matches' && instructionProgress.status === 'running');
+  const isBulkMergeLoading = !!(instructionProgress && instructionProgress.title.startsWith('Bulk Merge Shared Groups') && instructionProgress.status === 'running');
+  const isCleanRepeatedLoading = !!(instructionProgress && instructionProgress.title === 'Clean All Repeated Internal Numbers' && instructionProgress.status === 'running');
+  const isPurgeLoading = !!(instructionProgress && instructionProgress.title === 'Purge Contacts Without Phone Numbers' && instructionProgress.status === 'running');
+  const isAnyLoading = isExactLoading || isBulkMergeLoading || isCleanRepeatedLoading || isPurgeLoading;
 
   return (
     <div
@@ -89,11 +94,6 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
             </p>
           </div>
         </div>
-
-        {/* Real-time Instruction Progress Bar inside Modal */}
-        {instructionProgress && (
-          <InstructionProgressBar progress={instructionProgress} />
-        )}
 
         {totalLoadedContacts === 0 ? (
           <div className="p-6 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-center space-y-2 my-4">
@@ -173,12 +173,23 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
 
                   <button
                     onClick={() => {
-                      onRemoveExactDuplicates();
+                      if (!isAnyLoading) onRemoveExactDuplicates();
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
+                    disabled={isAnyLoading}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition border ${
+                      isExactLoading
+                        ? 'bg-amber-100 dark:bg-amber-950/40 border-amber-400 text-amber-900 dark:text-amber-300 cursor-wait'
+                        : isAnyLoading
+                        ? 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+                        : 'bg-white dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 cursor-pointer'
+                    }`}
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Auto-Deduplicate (Keep 1 copy)</span>
+                    {isExactLoading ? (
+                      <span className="loader text-amber-600 dark:text-amber-400 shrink-0" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5 text-amber-600" />
+                    )}
+                    <span>{isExactLoading ? 'Auto-Deduplicating...' : 'Auto-Deduplicate (Keep 1 copy)'}</span>
                   </button>
                 </div>
               )}
@@ -255,8 +266,11 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                       <div className="flex items-center gap-2">
                         <select
                           value={mergeStrategy}
+                          disabled={isAnyLoading}
                           onChange={(e) => setMergeStrategy(e.target.value as any)}
-                          className="text-[11px] font-semibold bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-800 rounded-lg px-2 py-1.5 text-purple-900 dark:text-purple-200 cursor-pointer shadow-xs"
+                          className={`text-[11px] font-semibold bg-white dark:bg-slate-800 border rounded-lg px-2 py-1.5 text-purple-900 dark:text-purple-200 shadow-xs ${
+                            isAnyLoading ? 'opacity-60 cursor-not-allowed border-slate-300 dark:border-slate-700' : 'cursor-pointer border-purple-300 dark:border-purple-800'
+                          }`}
                         >
                           <option value="slash">Combine Names with " / "</option>
                           <option value="and">Combine Names with " & "</option>
@@ -264,13 +278,28 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                         </select>
                         <button
                           onClick={() => {
-                            onBulkMergeShared(mergeStrategy);
+                            if (!isAnyLoading) onBulkMergeShared(mergeStrategy);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition shrink-0"
+                          disabled={isAnyLoading}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs transition shrink-0 ${
+                            isBulkMergeLoading
+                              ? 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300 cursor-wait'
+                              : isAnyLoading
+                              ? 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer'
+                          }`}
                           title="Merges contacts sharing the same number per group without mixing unrelated contacts"
                         >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Bulk Merge Related Groups ({analysis.sharedGroups.length})</span>
+                          {isBulkMergeLoading ? (
+                            <span className="loader text-indigo-600 dark:text-indigo-400 shrink-0" />
+                          ) : (
+                            <Sparkles className="w-3.5 h-3.5" />
+                          )}
+                          <span>
+                            {isBulkMergeLoading 
+                              ? 'Merging Related Groups...' 
+                              : `Bulk Merge Related Groups (${analysis.sharedGroups.length})`}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -314,12 +343,23 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                   {onCleanRepeatedNumbers && (
                     <button
                       onClick={() => {
-                        onCleanRepeatedNumbers();
+                        if (!isAnyLoading) onCleanRepeatedNumbers();
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-pink-950 border border-pink-300 dark:border-pink-800 text-pink-900 dark:text-pink-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
+                      disabled={isAnyLoading}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition border ${
+                        isCleanRepeatedLoading
+                          ? 'bg-pink-100 dark:bg-pink-950/40 border-pink-400 text-pink-900 dark:text-pink-300 cursor-wait'
+                          : isAnyLoading
+                          ? 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+                          : 'bg-white dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-pink-950 border border-pink-300 dark:border-pink-800 text-pink-900 dark:text-pink-200 cursor-pointer'
+                      }`}
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-pink-600" />
-                      <span>Clean All Repeated Numbers</span>
+                      {isCleanRepeatedLoading ? (
+                        <span className="loader text-pink-600 dark:text-pink-400 shrink-0" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5 text-pink-600" />
+                      )}
+                      <span>{isCleanRepeatedLoading ? 'Cleaning Repeated Numbers...' : 'Clean All Repeated Numbers'}</span>
                     </button>
                   )}
                 </div>
@@ -361,12 +401,23 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                   {onClearMissingContacts && (
                     <button
                       onClick={() => {
-                        onClearMissingContacts();
+                        if (!isAnyLoading) onClearMissingContacts();
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
+                      disabled={isAnyLoading}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition border ${
+                        isPurgeLoading
+                          ? 'bg-rose-100 dark:bg-rose-950/40 border-rose-400 text-rose-900 dark:text-rose-300 cursor-wait'
+                          : isAnyLoading
+                          ? 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+                          : 'bg-white dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 cursor-pointer'
+                      }`}
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                      <span>Delete All Empty Contacts</span>
+                      {isPurgeLoading ? (
+                        <span className="loader text-rose-600 dark:text-rose-400 shrink-0" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                      )}
+                      <span>{isPurgeLoading ? 'Deleting Empty Contacts...' : 'Delete All Empty Contacts'}</span>
                     </button>
                   )}
                 </div>
