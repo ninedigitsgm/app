@@ -410,10 +410,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="relative w-full max-w-3xl aspect-[16/9]"
               >
-                <img src="/mac-desktop.svg" alt="Desktop Mockup" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] z-10" />
-                <img src="/tab.svg" alt="Tab Mockup" className="absolute bottom-0 left-0 w-[35%] z-20" />
-                <img src="/mac-laptop.svg" alt="Laptop Mockup" className="absolute bottom-0 right-0 w-[45%] z-20" />
-                <img src="/phone.svg" alt="Phone Mockup" className="absolute bottom-0 left-[42%] w-[12%] z-30" />
+                <img src="/device-mockups.svg" alt="Device Mockups" className="w-full h-full object-contain" />
               </motion.div>
             </div>
           </div>
