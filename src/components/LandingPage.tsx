@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as motion from 'motion/react-client';
 import { 
   CheckCircle2, 
   Upload, 
@@ -402,96 +403,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             {/* Right Column: Multi-Device Responsive Mockup */}
             <div className="lg:col-span-7 relative flex items-center justify-center">
-              {/* Laptop Frame */}
-              <div className="relative w-full max-w-xl bg-slate-900 rounded-2xl p-2.5 sm:p-3 shadow-2xl ring-1 ring-slate-800 border border-slate-700/50">
-                <div className="flex items-center justify-between px-3 py-1.5 bg-slate-800/80 rounded-t-xl mb-2 text-[10px] text-slate-400">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-                  </div>
-                  <span className="font-mono text-slate-300">Dashboard - PURA Contact Upgrader</span>
-                  <div className="w-8" />
-                </div>
-
-                {/* Dashboard Screen */}
-                <div className="bg-slate-50 dark:bg-slate-950 rounded-lg p-3 text-slate-800 dark:text-slate-100 text-xs shadow-inner overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center">9</div>
-                      <span className="font-bold text-xs">Dashboard</span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-semibold border border-blue-200 dark:border-blue-800 text-[10px]">
-                      Interactive Table
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-1.5 mb-2">
-                    <div className="bg-white dark:bg-slate-900 p-1.5 rounded border border-slate-200 dark:border-slate-800 text-center">
-                      <div className="text-[9px] text-slate-400">Total Loaded</div>
-                      <div className="text-xs font-bold">2,487</div>
-                    </div>
-                    <div className="bg-emerald-50 dark:bg-emerald-950/40 p-1.5 rounded border border-emerald-200 dark:border-emerald-900 text-center">
-                      <div className="text-[9px] text-emerald-600 dark:text-emerald-400">Upgraded (+83/86)</div>
-                      <div className="text-xs font-bold text-emerald-700 dark:text-emerald-300">2,163</div>
-                    </div>
-                    <div className="bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded border border-amber-200 dark:border-amber-900 text-center">
-                      <div className="text-[9px] text-amber-600 dark:text-amber-400">Deferred / Review</div>
-                      <div className="text-xs font-bold text-amber-700 dark:text-amber-300">137</div>
-                    </div>
-                    <div className="bg-blue-50 dark:bg-blue-950/40 p-1.5 rounded border border-blue-200 dark:border-blue-900 text-center">
-                      <div className="text-[9px] text-blue-600 dark:text-blue-400">Selected</div>
-                      <div className="text-xs font-bold text-blue-700 dark:text-blue-300">0</div>
-                    </div>
-                  </div>
-
-                  {/* Filter Toolbar Simulation with Clear Filter */}
-                  <div className="flex items-center gap-1.5 mb-2 bg-white dark:bg-slate-900 p-1.5 rounded border border-slate-200 dark:border-slate-800">
-                    <div className="flex-1 text-[10px] text-slate-400 truncate">Search contact name, original...</div>
-                    <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[9px] font-semibold">QCell (+83)</span>
-                    <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 text-[9px] font-semibold border border-rose-200 flex items-center gap-0.5">
-                      <RotateCcw className="w-2.5 h-2.5" /> Clear
-                    </span>
-                  </div>
-
-                  {/* Contact Rows */}
-                  <div className="space-y-1 bg-white dark:bg-slate-900 rounded p-1.5 border border-slate-200 dark:border-slate-800 font-mono text-[9px]">
-                    <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                      <span className="font-sans font-semibold text-slate-700 dark:text-slate-200">Baboucarr Sallah</span>
-                      <span className="text-slate-400">3123456</span>
-                      <span className="text-emerald-600 font-bold">+220 833123456</span>
-                      <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[8px] font-sans">QCell (+83)</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                      <span className="font-sans font-semibold text-slate-700 dark:text-slate-200">Awa Cham</span>
-                      <span className="text-slate-400">7987654</span>
-                      <span className="text-emerald-600 font-bold">+220 867987654</span>
-                      <span className="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[8px] font-sans">Africell (+86)</span>
-                    </div>
-                    <div className="flex items-center justify-between py-1">
-                      <span className="font-sans font-semibold text-slate-700 dark:text-slate-200">Gamcel HQ</span>
-                      <span className="text-slate-400">9912345</span>
-                      <span className="text-emerald-600 font-bold">+220 879912345</span>
-                      <span className="px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[8px] font-sans">Gamcel (+87)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Phone Mockup */}
-              <div className="absolute -bottom-6 -left-4 sm:-left-6 w-36 sm:w-44 bg-slate-950 rounded-2xl p-1.5 shadow-2xl ring-2 ring-slate-800 border border-slate-700 hidden sm:block">
-                <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-1.5" />
-                <div className="bg-slate-900 rounded-xl p-2 text-[8px] space-y-1.5">
-                  <div className="font-bold text-white text-[9px] flex items-center justify-between">
-                    <span>Contacts</span>
-                    <span className="text-emerald-400">2,163 ready</span>
-                  </div>
-                  <div className="p-1 rounded bg-slate-800 text-slate-300">
-                    <div className="font-semibold text-white">Fatou Jobe</div>
-                    <div className="text-emerald-400 font-mono">+220 867123456</div>
-                  </div>
-                </div>
-              </div>
+              {/* New Responsive Device Mockups */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative w-full max-w-3xl aspect-[16/9]"
+              >
+                <img src="/mac-desktop.svg" alt="Desktop Mockup" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] z-10" />
+                <img src="/tab.svg" alt="Tab Mockup" className="absolute bottom-0 left-0 w-[35%] z-20" />
+                <img src="/mac-laptop.svg" alt="Laptop Mockup" className="absolute bottom-0 right-0 w-[45%] z-20" />
+                <img src="/phone.svg" alt="Phone Mockup" className="absolute bottom-0 left-[42%] w-[12%] z-30" />
+              </motion.div>
             </div>
           </div>
 
