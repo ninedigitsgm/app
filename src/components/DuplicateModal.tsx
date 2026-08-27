@@ -30,6 +30,9 @@ interface DuplicateModalProps {
   onClearMissingContacts?: () => void;
   onMergeGroup?: (indices: number[]) => void;
   onStartSequentialMerge?: () => void;
+  onStartExactWizard?: () => void;
+  onStartRepeatedWizard?: () => void;
+  onStartMissingPhoneWizard?: () => void;
   onBulkMergeShared?: (strategy: 'slash' | 'and' | 'first') => void;
 }
 
@@ -48,6 +51,9 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
   onClearMissingContacts,
   onMergeGroup,
   onStartSequentialMerge,
+  onStartExactWizard,
+  onStartRepeatedWizard,
+  onStartMissingPhoneWizard,
   onBulkMergeShared,
 }) => {
   const [mergeStrategy, setMergeStrategy] = useState<'slash' | 'and' | 'first'>('slash');
@@ -115,31 +121,6 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
           </div>
         ) : (
           <div id="duplicateModalBody" className="space-y-4 my-4">
-            {/* Quick Action Banner if shared duplicates exist */}
-            {analysis.sharedGroups.length > 0 && onStartSequentialMerge && (
-              <div className="p-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-purple-200">
-                    <Wand2 className="w-3.5 h-3.5" />
-                    <span>Sequential Merge Wizard</span>
-                  </div>
-                  <p className="text-xs text-purple-100">
-                    Review and resolve all {analysis.sharedGroups.length} shared duplicate conflicts one by one.
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    onClose();
-                    onStartSequentialMerge();
-                  }}
-                  className="px-3.5 py-1.5 rounded-lg bg-white text-purple-700 hover:bg-purple-50 text-xs font-bold flex items-center gap-1.5 shrink-0 transition shadow-xs cursor-pointer"
-                >
-                  <span>Start Merge Flow</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-
             {/* Section 1: Exact Matches */}
             <div className="p-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/60 dark:bg-amber-950/20">
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -157,13 +138,30 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                 Identical contact cards that have both the exact same contact name and telephone numbers.
               </p>
 
+              {/* Exact Duplicate Wizard Launcher */}
+              {analysis.exactGroups.length > 0 && onStartExactWizard && (
+                <div className="p-3 rounded-lg bg-amber-100/60 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Wand2 className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                    <span className="text-xs font-bold text-amber-950 dark:text-amber-200">Exact Duplicates Wizard</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onStartExactWizard();
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                  >
+                    Start Wizard ({analysis.exactGroups.length})
+                  </button>
+                </div>
+              )}
+
               {analysis.exactCount > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     id="viewExactBtn"
                     onClick={() => {
                       onFilterExact();
-                      onClose();
                     }}
                     className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
                   >
@@ -211,6 +209,24 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
               <p className="text-xs text-purple-800/90 dark:text-purple-300/80 mb-3 leading-relaxed">
                 Cases where multiple contact names share the exact same phone number.
               </p>
+              
+              {/* Sequential Merge Wizard */}
+              {analysis.sharedGroups.length > 0 && onStartSequentialMerge && (
+                <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Wand2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200">Shared Number Merge Assistant</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onStartSequentialMerge();
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                  >
+                    Start Wizard
+                  </button>
+                </div>
+              )}
 
               {/* Shared Groups breakdown */}
               {analysis.sharedGroups.length > 0 && (
@@ -231,7 +247,6 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                       {onMergeGroup && (
                         <button
                           onClick={() => {
-                            onClose();
                             onMergeGroup(group.indices);
                           }}
                           className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold shrink-0 flex items-center gap-1 shadow-xs transition cursor-pointer"
@@ -252,7 +267,6 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                       id="viewSharedBtn"
                       onClick={() => {
                         onFilterShared();
-                        onClose();
                       }}
                       className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
                     >
@@ -268,8 +282,8 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                           value={mergeStrategy}
                           disabled={isAnyLoading}
                           onChange={(e) => setMergeStrategy(e.target.value as any)}
-                          className={`text-[11px] font-semibold bg-white dark:bg-slate-800 border rounded-lg px-2 py-1.5 text-purple-900 dark:text-purple-200 shadow-xs ${
-                            isAnyLoading ? 'opacity-60 cursor-not-allowed border-slate-300 dark:border-slate-700' : 'cursor-pointer border-purple-300 dark:border-purple-800'
+                          className={`text-xs font-medium bg-white dark:bg-slate-900 border rounded-xl px-3 py-2 text-slate-900 dark:text-slate-100 shadow-sm transition ${
+                            isAnyLoading ? 'opacity-60 cursor-not-allowed border-slate-300 dark:border-slate-700' : 'cursor-pointer border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500'
                           }`}
                         >
                           <option value="slash">Combine Names with " / "</option>
@@ -325,13 +339,30 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                 Contact cards containing redundant, duplicate telephone numbers inside the same entry.
               </p>
 
+              {/* Repeated Numbers Wizard Launcher */}
+              {(analysis.repeatedGroups?.length || 0) > 0 && onStartRepeatedWizard && (
+                <div className="p-3 rounded-lg bg-pink-100/60 dark:bg-pink-950/40 border border-pink-300 dark:border-pink-800 mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Wand2 className="w-4 h-4 text-pink-700 dark:text-pink-400" />
+                    <span className="text-xs font-bold text-pink-950 dark:text-pink-200">Repeated Numbers Wizard</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onStartRepeatedWizard();
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                  >
+                    Start Wizard ({analysis.repeatedGroups?.length || 0})
+                  </button>
+                </div>
+              )}
+
               {(analysis.repeatedCount || 0) > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
                   {onFilterRepeated && (
                     <button
                       onClick={() => {
                         onFilterRepeated();
-                        onClose();
                       }}
                       className="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
                     >
@@ -383,13 +414,30 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
                 Contact entries with blank or invalid phone number fields that cannot be upgraded.
               </p>
 
+              {/* Missing Phone Numbers Wizard Launcher */}
+              {(analysis.missingPhoneCount || 0) > 0 && onStartMissingPhoneWizard && (
+                <div className="p-3 rounded-lg bg-rose-100/60 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Wand2 className="w-4 h-4 text-rose-700 dark:text-rose-400" />
+                    <span className="text-xs font-bold text-rose-950 dark:text-rose-200">Missing Phone Wizard</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onStartMissingPhoneWizard();
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                  >
+                    Start Wizard ({analysis.missingPhoneCount || 0})
+                  </button>
+                </div>
+              )}
+
               {(analysis.missingPhoneCount || 0) > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
                   {onFilterMissing && (
                     <button
                       onClick={() => {
                         onFilterMissing();
-                        onClose();
                       }}
                       className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
                     >
@@ -425,7 +473,7 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
             </div>
           </div>
         )}
-
+        
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
           <button
             onClick={onClose}

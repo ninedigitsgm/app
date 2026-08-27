@@ -20,7 +20,7 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
 
   if (!isOpen) return null;
 
-  const phoneParts = phone.split(/[,;\/]/).map((s) => s.trim()).filter(Boolean);
+  const phoneParts = phone.split(/[,]/).map((s) => s.trim()).filter(Boolean);
   const previews = phoneParts.map((p) => processSingleNumber(p, includeCountryCode));
 
   const handleSubmit = (e: React.FormEvent) => {

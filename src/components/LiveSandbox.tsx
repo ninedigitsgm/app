@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
-import { FlaskConical, Plus, Copy, Check, ArrowRight } from 'lucide-react';
+import { FlaskConical, Copy, Check, ArrowRight } from 'lucide-react';
 import { processSingleNumber } from '../lib/puraEngine';
 import { OperatorLogo } from './OperatorLogo';
 import { ContactStatus, OperatorName } from '../types';
 
 interface LiveSandboxProps {
   includeCountryCode: boolean;
-  onAddContact: (name: string, phone: string) => void;
+  onAddContact?: (name: string, phone: string) => void;
 }
 
 export const LiveSandbox: React.FC<LiveSandboxProps> = ({
   includeCountryCode,
-  onAddContact,
 }) => {
   const [inputVal, setInputVal] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Support single or multiple comma/slash separated numbers in sandbox
-  const rawParts = inputVal.split(/[,;\/]/).map((s) => s.trim()).filter(Boolean);
+  // Support single or multiple comma separated numbers in sandbox
+  const rawParts = inputVal.split(/[,]/).map((s) => s.trim()).filter(Boolean);
   const results = rawParts.length > 0
     ? rawParts.map((p) => processSingleNumber(p, includeCountryCode))
     : [processSingleNumber(inputVal, includeCountryCode)];
@@ -31,12 +30,6 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
     navigator.clipboard.writeText(combinedResult);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleAdd = () => {
-    if (!inputVal.trim()) return;
-    const opLabel = results.map(r => r.operator).filter(o => o !== 'Unknown')[0] || 'Unknown';
-    onAddContact(`Sandbox Contact (${opLabel})`, inputVal.trim());
   };
 
   interface GroupedBadge {
@@ -59,10 +52,10 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
 
       if (op === 'Gamcel') {
         bg = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800';
-        baseLabel = 'Gamcel (Phase 2 Deferred)';
+        baseLabel = 'Gamcel (Phase 1 Deferred (7-Digit))';
       } else if (op === 'Gamtel') {
         bg = 'bg-sky-100 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800';
-        baseLabel = 'Gamtel (Phase 2 Deferred)';
+        baseLabel = 'Gamtel (Phase 1 Deferred (7-Digit))';
       } else if (op === 'QCell') {
         bg = 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800';
         baseLabel = (st === 'ok' || st === 'already') ? 'QCell (+83)' : 'QCell (Standard)';
@@ -234,19 +227,6 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
               </div>
             )}
           </div>
-        </div>
-
-        {/* Add to list button */}
-        <div className="flex items-end">
-          <button
-            id="sandboxAddBtn"
-            onClick={handleAdd}
-            disabled={!inputVal.trim()}
-            className="w-full md:w-auto h-[46px] px-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add to List</span>
-          </button>
         </div>
       </div>
     </div>

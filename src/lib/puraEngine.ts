@@ -194,45 +194,58 @@ export function processSingleNumber(raw: string, includeCountryCode = true): Num
 
   const prefix = includeCountryCode ? '+220 ' : '';
 
-  // Upgraded 9-digit Gambian numbers (must begin with assigned 83, 86, or 87 operator code)
+  // Upgraded 9-digit Gambian numbers (must begin with assigned 83, 86, or 87 operator code and have a valid inner 7-digit subscriber number)
   if (cleaned.length === 9) {
+    const inner7 = cleaned.substring(2);
+    const inner1 = inner7.substring(0, 1);
+    const inner2 = inner7.substring(0, 2);
+
     if (cleaned.startsWith('83')) {
-      return {
-        cleaned,
-        result: `${prefix}${cleaned}`,
-        status: 'already',
-        label: 'QCell (Already 9-Digit)',
-        operator: 'QCell',
-        originalRaw,
-      };
+      const isValid = MIGRATION_RULES[0].prefixes1.includes(inner1) || MIGRATION_RULES[0].prefixes2.includes(inner2);
+      if (isValid) {
+        return {
+          cleaned,
+          result: `${prefix}${cleaned}`,
+          status: 'already',
+          label: 'QCell (Already 9-Digit)',
+          operator: 'QCell',
+          originalRaw,
+        };
+      }
     }
     if (cleaned.startsWith('86')) {
-      return {
-        cleaned,
-        result: `${prefix}${cleaned}`,
-        status: 'already',
-        label: 'Comium (Already 9-Digit)',
-        operator: 'Comium',
-        originalRaw,
-      };
+      const isValid = MIGRATION_RULES[1].prefixes1.includes(inner1) || MIGRATION_RULES[1].prefixes2.includes(inner2);
+      if (isValid) {
+        return {
+          cleaned,
+          result: `${prefix}${cleaned}`,
+          status: 'already',
+          label: 'Comium (Already 9-Digit)',
+          operator: 'Comium',
+          originalRaw,
+        };
+      }
     }
     if (cleaned.startsWith('87')) {
-      return {
-        cleaned,
-        result: `${prefix}${cleaned}`,
-        status: 'already',
-        label: 'Africell (Already 9-Digit)',
-        operator: 'Africell',
-        originalRaw,
-      };
+      const isValid = MIGRATION_RULES[2].prefixes1.includes(inner1) || MIGRATION_RULES[2].prefixes2.includes(inner2);
+      if (isValid) {
+        return {
+          cleaned,
+          result: `${prefix}${cleaned}`,
+          status: 'already',
+          label: 'Africell (Already 9-Digit)',
+          operator: 'Africell',
+          originalRaw,
+        };
+      }
     }
 
-    // 9-digit number without valid 83/86/87 prefix is malformed (e.g. 385762666 with 9 digits starting with 3)
+    // 9-digit number with 83/86/87 but invalid inner 7 digits (reserved, emergency, customer care, or non-GSM series)
     return {
       cleaned,
       result: originalRaw,
       status: 'review',
-      label: 'Review Needed (Invalid 9-digit Gambian number — missing 83/86/87 prefix)',
+      label: 'Review Needed (Invalid 9-digit number — inner prefix not part of valid GSM series / reserved service)',
       operator: 'Unknown',
       originalRaw,
     };
@@ -249,7 +262,7 @@ export function processSingleNumber(raw: string, includeCountryCode = true): Num
         cleaned,
         result: `${prefix}${cleaned}`,
         status: 'already',
-        label: 'Gamcel (Phase 2 Deferred)',
+        label: 'Gamcel (Phase 1 Deferred (7-Digit))',
         operator: 'Gamcel',
         originalRaw,
       };
@@ -261,7 +274,7 @@ export function processSingleNumber(raw: string, includeCountryCode = true): Num
         cleaned,
         result: `${prefix}${cleaned}`,
         status: 'already',
-        label: 'Gamtel Fixed (Phase 2 Deferred)',
+        label: 'Gamtel Fixed (Phase 1 Deferred (7-Digit))',
         operator: 'Gamtel',
         originalRaw,
       };
@@ -319,9 +332,9 @@ export function processFullContact(
 ): ContactRecord {
   const decodedName = decodeQuotedPrintable(name || '').trim() || 'Unnamed Contact';
   
-  // Split multiple phone numbers if present
+  // Split multiple phone numbers if present (comma, slash, semicolon, pipe, newlines, and/ampersand)
   const rawParts = (phoneString || '')
-    .split(/[,;\/]/)
+    .split(/[,;/|\n]|\s+and\s+|\s+&\s+/i)
     .map(s => s.trim())
     .filter(Boolean);
 
@@ -340,14 +353,13 @@ export function processFullContact(
     };
   }
 
-  const phoneResults = rawParts.map(p => processSingleNumber(p, includeCountryCode));
-  const combinedResult = phoneResults.map(r => r.result).filter(Boolean).join(', ');
-
-  // Detect repeated numbers within this contact
+  const phoneResults: NumberProcessResult[] = [];
   const seenCanonical = new Set<string>();
   let hasRepeatedNumbers = false;
-  for (const p of phoneResults) {
-    const key = getCanonicalPhoneKey(p.originalRaw || p.result);
+
+  for (const part of rawParts) {
+    const res = processSingleNumber(part, includeCountryCode);
+    const key = getCanonicalPhoneKey(res.originalRaw || res.result);
     if (key) {
       if (seenCanonical.has(key)) {
         hasRepeatedNumbers = true;
@@ -355,7 +367,16 @@ export function processFullContact(
         seenCanonical.add(key);
       }
     }
+    phoneResults.push(res);
   }
+
+  if (phoneResults.length === 0) {
+    const single = processSingleNumber('', includeCountryCode);
+    phoneResults.push(single);
+  }
+
+  const combinedResult = phoneResults.map(r => r.result).filter(Boolean).join(', ');
+  const combinedRaw = phoneResults.map(r => r.originalRaw || r.result).filter(Boolean).join(', ');
 
   // Primary status: if any number is 'ok' (upgraded), primary status is 'ok'.
   // Else if any is 'review', primary is 'review', else 'already'.
@@ -372,7 +393,7 @@ export function processFullContact(
   return {
     id: customId || `contact-${index}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     name: decodedName,
-    raw: phoneString,
+    raw: combinedRaw || phoneString,
     result: combinedResult,
     status: primaryStatus,
     operator: prioritizedOperator,
@@ -386,30 +407,51 @@ export function processFullContact(
  * Computes a canonical representation of a phone number for exact/shared duplicate grouping:
  * - Gambian numbers (7 or 9 digits, with or without +220/00220/spaces) map to their upgraded Gambian key: "GM:877123456"
  * - Foreign international numbers map to their normalized full international key: "INTL:+221771234567"
- * - Empty / invalid fallback to raw.
+ * - Invalid / empty / non-phone numbers return "" so they are NEVER mistakenly grouped as duplicates.
  */
 export function getCanonicalPhoneKey(phone: string): string {
   if (!phone) return '';
   const trimmed = String(phone).trim();
+  if (!trimmed) return '';
+
+  // Extract only digits
+  const allDigits = trimmed.replace(/\D/g, '');
+  if (allDigits.length < 5) return '';
+
   const processed = processSingleNumber(trimmed, false);
 
   if (processed.operator === 'International') {
     let intl = trimmed.replace(/[\s\-\(\)\.]/g, '');
     if (intl.startsWith('00')) intl = '+' + intl.substring(2);
     else if (!intl.startsWith('+')) intl = '+' + intl;
+    const digitsOnly = intl.replace(/\D/g, '');
+    if (digitsOnly.length < 6) return '';
     return `INTL:${intl}`;
   }
 
   // Gambian numbers - use the 9-digit / standard normalized number
   if (processed.result) {
     const digits = processed.result.replace(/\D/g, '');
-    if (digits.startsWith('220') && digits.length > 7) {
-      return `GM:${digits.substring(3)}`;
+    let cleanGm = digits;
+    if (cleanGm.startsWith('220')) {
+      cleanGm = cleanGm.substring(3);
     }
-    return `GM:${digits}`;
+    // Must be a valid Gambian subscriber length (7 digits or 9 digits)
+    if (cleanGm.length === 7 || cleanGm.length === 9) {
+      return `GM:${cleanGm}`;
+    }
   }
 
-  return `RAW:${trimmed.replace(/\s+/g, '')}`;
+  // If status is review or unparseable, do not group unless digits match and length >= 7
+  let gmDigits = allDigits;
+  if (gmDigits.startsWith('220')) {
+    gmDigits = gmDigits.substring(3);
+  }
+  if (gmDigits.length === 7 || gmDigits.length === 9) {
+    return `GM:${gmDigits}`;
+  }
+
+  return '';
 }
 
 /**
@@ -558,13 +600,13 @@ export function analyzeDuplicates(records: ContactRecord[]): DuplicateAnalysisRe
       }
     });
 
-    if (repeatsInThisContact.length > 0 || r.hasRepeatedNumbers) {
+    if (repeatsInThisContact.length > 0) {
       repeatedIndices.add(idx);
       repeatedGroups.push({
         contactIndex: idx,
         contactId: r.id,
         name: r.name,
-        repeatedPhones: repeatsInThisContact.length > 0 ? repeatsInThisContact : phoneList,
+        repeatedPhones: repeatsInThisContact,
       });
     }
   });
@@ -626,7 +668,7 @@ export function removeInternalRepeatedNumbers(
 
   const updatedRecords = records.map((record, idx) => {
     const rawParts = (record.raw || '')
-      .split(/[,;\/]/)
+      .split(/[,]/)
       .map(s => s.trim())
       .filter(Boolean);
 
@@ -860,7 +902,7 @@ export function parseVCF(text: string, includeCountryCode = true): ContactRecord
         const colonIdx = line.indexOf(':');
         if (colonIdx !== -1) {
           const rawVal = line.substring(colonIdx + 1).trim();
-          rawVal.split(/[,;\/]/).forEach(p => {
+          rawVal.split(/[,]/).forEach(p => {
             const cleaned = p.trim();
             if (cleaned) {
               phones.push(cleaned);
@@ -954,7 +996,6 @@ export function generateVCF(records: ContactRecord[]): string {
       lines.push(`TEL;TYPE=CELL:${num}`);
     });
 
-    lines.push('NOTE:Upgraded to PURA 9-Digit Numbering Plan');
     lines.push('END:VCARD');
     return lines.join('\r\n');
   }).join('\r\n\r\n');

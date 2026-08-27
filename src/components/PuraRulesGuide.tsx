@@ -99,11 +99,11 @@ export const PuraRulesGuide: React.FC = () => {
                 <span>Gamcel (+220 9...)</span>
               </span>
               <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-200 text-emerald-900 dark:bg-emerald-900/80 dark:text-emerald-200">
-                Phase 2 Deferred (7-Digit)
+                Phase 1 Deferred (7-Digit)
               </span>
             </div>
             <p className="text-xs text-emerald-800/90 dark:text-emerald-300/80 leading-snug">
-              Mobile numbers starting with <b className="text-emerald-950 dark:text-emerald-200">9</b> are Phase 2 deferred and remain 7 digits in Phase 1. Labeled to accurately identify Gamcel contacts.
+              Mobile numbers starting with <b className="text-emerald-950 dark:text-emerald-200">9</b> are Phase 1 differed and remain 7 digits. Labeled to accurately identify Gamcel contacts.
             </p>
           </div>
           <div className="mt-2 text-[11px] font-mono text-emerald-900 dark:text-emerald-300/90 bg-emerald-100/70 dark:bg-emerald-900/40 px-2 py-1 rounded">
@@ -120,7 +120,7 @@ export const PuraRulesGuide: React.FC = () => {
                 <span>Gamtel Fixed Landlines (+220 4... / 5...)</span>
               </span>
               <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-200 text-sky-900 dark:bg-sky-900/80 dark:text-sky-200">
-                Phase 2 Deferred (7-Digit)
+                Phase 1 Deferred (7-Digit)
               </span>
             </div>
             <p className="text-xs text-sky-800/90 dark:text-sky-300/80 leading-snug">

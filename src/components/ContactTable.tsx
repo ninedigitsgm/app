@@ -42,8 +42,13 @@ interface ContactTableProps {
   onCleanAllRepeatedNumbers?: () => void;
   onDeleteAllMissingPhoneContacts?: () => void;
   onCleanAllSharedNumbers?: () => void;
+  onStartExactWizard?: () => void;
+  onStartRepeatedWizard?: () => void;
+  onStartMissingPhoneWizard?: () => void;
   filterOption?: FilterOption;
   onFilterChange?: (filter: FilterOption) => void;
+  isLoading?: boolean;
+  searchQuery?: string;
 }
 
 const ALPHABET = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
@@ -70,13 +75,40 @@ export const ContactTable: React.FC<ContactTableProps> = ({
   onCleanAllRepeatedNumbers,
   onDeleteAllMissingPhoneContacts,
   onCleanAllSharedNumbers,
+  onStartExactWizard,
+  onStartRepeatedWizard,
+  onStartMissingPhoneWizard,
   filterOption = 'all',
   onFilterChange,
+  isLoading = false,
+  searchQuery = '',
 }) => {
   const [activeLetterPopup, setActiveLetterPopup] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper to highlight matching search query segments
+  const highlightText = (text: string, query: string) => {
+    if (!query || !query.trim()) return text;
+    const parts = text.split(new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <mark
+              key={i}
+              className="bg-yellow-200 dark:bg-amber-500/40 text-slate-900 dark:text-amber-200 px-0.5 rounded-sm font-bold shadow-2xs"
+            >
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
 
   const totalLoaded = allRecords ? allRecords.length : records.length;
   const isFilteredEmpty = totalLoaded > 0 && records.length === 0;
@@ -154,7 +186,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
     let phoneItems = record.phoneNumbers;
     if (!phoneItems || phoneItems.length === 0) {
       const rawParts = (record.raw || record.result || '')
-        .split(/[,;\/]/)
+        .split(/[,]/)
         .map((s) => s.trim())
         .filter(Boolean);
       if (rawParts.length === 0) {
@@ -195,10 +227,10 @@ export const ContactTable: React.FC<ContactTableProps> = ({
         baseLabel = (st === 'ok' || st === 'already') ? 'Africell (+87)' : 'Africell (Standard)';
       } else if (op === 'Gamcel') {
         bg = 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800';
-        baseLabel = 'Gamcel (Phase 2 Deferred)';
+        baseLabel = 'Gamcel (Phase 1 Deferred (7-Digit))';
       } else if (op === 'Gamtel') {
         bg = 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800';
-        baseLabel = 'Gamtel (Phase 2 Deferred)';
+        baseLabel = 'Gamtel (Phase 1 Deferred (7-Digit))';
       } else if (op === 'International') {
         bg = 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800';
         baseLabel = 'Foreign / International';
@@ -253,19 +285,54 @@ export const ContactTable: React.FC<ContactTableProps> = ({
   const totalRepeatedCount = repeatedDuplicateIds ? repeatedDuplicateIds.size : (allRecords || records).filter((r) => r.hasRepeatedNumbers).length;
   const totalMissingPhoneCount = missingPhoneIds ? missingPhoneIds.size : (allRecords || records).filter((r) => isMissingPhone(r)).length;
   const totalSharedCount = sharedDuplicateIds ? sharedDuplicateIds.size : 0;
+  const totalExactCount = exactDuplicateIds ? exactDuplicateIds.size : 0;
 
   return (
     <div className="space-y-2">
+      {/* Exact Duplicates Notification Banner */}
+      {totalExactCount > 0 && onStartExactWizard && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 text-xs shadow-xs animate-in fade-in text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 text-amber-950 dark:text-amber-200 font-medium">
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>
+              Found <b>{totalExactCount}</b> exact duplicate contact{totalExactCount > 1 ? 's' : ''} (same name & phone).
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 justify-end flex-nowrap overflow-x-auto max-w-full">
+            <button
+              type="button"
+              onClick={() => onFilterChange?.(filterOption === 'duplicate-exact' ? 'all' : 'duplicate-exact')}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0 ${
+                filterOption === 'duplicate-exact'
+                  ? 'bg-amber-100 border-amber-300 text-amber-900 dark:bg-amber-900/40 dark:border-amber-700 dark:text-amber-100'
+                  : 'bg-white hover:bg-slate-50 border-amber-200 text-amber-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700/60'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{filterOption === 'duplicate-exact' ? 'Showing Filtered' : 'View Contacts'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onStartExactWizard}
+              className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Launch Exact Duplicates Wizard</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Shared Numbers Notification Banner */}
       {totalSharedCount > 0 && onCleanAllSharedNumbers && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-xs shadow-xs animate-in fade-in">
-          <div className="flex items-center gap-2 text-indigo-950 dark:text-indigo-200 font-medium">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 text-xs shadow-xs animate-in fade-in text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 text-indigo-950 dark:text-indigo-200 font-medium">
             <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
             <span>
               Found <b>{totalSharedCount}</b> contact{totalSharedCount > 1 ? 's' : ''} with the same telephone number.
             </span>
           </div>
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 shrink-0 justify-end flex-nowrap overflow-x-auto max-w-full">
             <button
               type="button"
               onClick={() => onFilterChange?.(filterOption === 'duplicate-shared' ? 'all' : 'duplicate-shared')}
@@ -284,7 +351,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
               className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Clean All Shared Numbers ({totalSharedCount})</span>
+              <span>Clean Shared ({totalSharedCount})</span>
             </button>
           </div>
         </div>
@@ -292,14 +359,14 @@ export const ContactTable: React.FC<ContactTableProps> = ({
 
       {/* Missing Phone Numbers Notification Banner */}
       {totalMissingPhoneCount > 0 && onDeleteAllMissingPhoneContacts && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 text-xs shadow-xs animate-in fade-in">
-          <div className="flex items-center gap-2 text-rose-950 dark:text-rose-200 font-medium">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 text-xs shadow-xs animate-in fade-in text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 text-rose-950 dark:text-rose-200 font-medium">
             <PhoneOff className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
             <span>
               Found <b>{totalMissingPhoneCount}</b> contact{totalMissingPhoneCount > 1 ? 's' : ''} with no telephone number.
             </span>
           </div>
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 shrink-0 justify-end flex-nowrap overflow-x-auto max-w-full">
             <button
               type="button"
               onClick={() => onFilterChange?.(filterOption === 'missing-phone' ? 'all' : 'missing-phone')}
@@ -312,13 +379,24 @@ export const ContactTable: React.FC<ContactTableProps> = ({
               <Eye className="w-3.5 h-3.5" />
               <span>{filterOption === 'missing-phone' ? 'Showing Filtered' : 'View Contacts'}</span>
             </button>
+
+            {onStartMissingPhoneWizard && (
+              <button
+                type="button"
+                onClick={onStartMissingPhoneWizard}
+                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Launch Missing Phone Wizard</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={onDeleteAllMissingPhoneContacts}
-              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+              className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete All Empty Contacts ({totalMissingPhoneCount})</span>
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <span>Purge All ({totalMissingPhoneCount})</span>
             </button>
           </div>
         </div>
@@ -333,7 +411,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
               Found <b>{totalRepeatedCount}</b> contact{totalRepeatedCount > 1 ? 's' : ''} containing redundant repeated telephone numbers.
             </span>
           </div>
-          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 shrink-0 justify-end flex-nowrap overflow-x-auto max-w-full">
             <button
               type="button"
               onClick={() => onFilterChange?.(filterOption === 'repeated-number' ? 'all' : 'repeated-number')}
@@ -346,13 +424,23 @@ export const ContactTable: React.FC<ContactTableProps> = ({
               <Eye className="w-3.5 h-3.5" />
               <span>{filterOption === 'repeated-number' ? 'Showing Filtered' : 'View Contacts'}</span>
             </button>
+            {onStartRepeatedWizard && (
+              <button
+                type="button"
+                onClick={onStartRepeatedWizard}
+                className="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Launch Repeated Numbers Wizard</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={onCleanAllRepeatedNumbers}
-              className="px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+              className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-pink-950 text-pink-700 dark:text-pink-300 border border-pink-300 dark:border-pink-800 text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Clean All Repeated Numbers ({totalRepeatedCount})</span>
+              <Trash2 className="w-3.5 h-3.5 text-pink-600" />
+              <span>Clean All ({totalRepeatedCount})</span>
             </button>
           </div>
         </div>
@@ -414,111 +502,138 @@ export const ContactTable: React.FC<ContactTableProps> = ({
       )}
 
       <div className="relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden flex flex-row">
-        {/* Table Scroll Area */}
-        <div ref={tableContainerRef} className="flex-1 overflow-x-auto max-h-[560px] overflow-y-auto">
-          <table id="contactsTable" className="w-full text-left border-collapse text-xs sm:text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 shadow-xs">
-              <tr>
-                <th className="p-3 w-10 text-center">
+        {records.length === 0 && !isLoading ? (
+          /* Dedicated Centered Empty State Container */
+          <div className="w-full py-16 px-4 flex flex-col items-center justify-center text-center">
+            {isFilteredEmpty ? (
+              /* Filter-Aware Empty State */
+              <div className="flex flex-col items-center justify-center gap-3 max-w-md mx-auto py-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-xs">
+                  <FilterX className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-bold text-base text-slate-800 dark:text-slate-100">
+                    No matching contacts found
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    No contacts in your {totalLoaded} loaded records match the active search or network filter.
+                  </p>
+                </div>
+                {onClearFilters && (
+                  <button
+                    type="button"
+                    onClick={onClearFilters}
+                    className="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Clear All Filters</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* No Contacts Loaded State */
+              <div className="flex flex-col items-center justify-center gap-3.5 max-w-lg mx-auto py-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-700/70 border border-blue-100 dark:border-slate-600/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xs">
+                  <UserCheck className="w-7 h-7" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-bold text-base text-slate-800 dark:text-slate-100">
+                    No contacts loaded yet
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Upload your exported <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-[11px]">.vcf</code> or <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-[11px]">.csv</code> file, paste raw contacts, or load our pre-built test dataset.
+                  </p>
+                </div>
+                {/* Upload vCard / CSV & Sample Contacts Actions */}
+                <div className="flex flex-col sm:flex-row items-center gap-2.5 mt-3 flex-wrap justify-center">
                   <input
-                    type="checkbox"
-                    id="selectAllCheckbox"
-                    checked={allSelected}
-                    ref={(input) => {
-                      if (input) input.indeterminate = someSelected;
-                    }}
-                    onChange={(e) => onToggleSelectAll(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".vcf,.vcard,.csv,.txt"
+                    onChange={handleEmptyStateFileChange}
+                    className="hidden"
+                    id="emptyStateFileInput"
                   />
-                </th>
-                <th className="p-3 w-12 text-slate-500 font-medium">#</th>
-                <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Contact Name</th>
-                <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Original Number</th>
-                <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Upgraded Result</th>
-                <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Status / Network</th>
-                <th className="p-3 text-center font-semibold text-slate-800 dark:text-slate-200 w-32">Actions</th>
-              </tr>
-            </thead>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 transition cursor-pointer"
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    <span>Upload vCard (.vcf) or CSV</span>
+                  </button>
 
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/80">
-              {records.length === 0 ? (
+                  {onLoadSample && (
+                    <button
+                      type="button"
+                      onClick={onLoadSample}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current text-blue-600 dark:text-blue-400" />
+                      <span>Load 20 Sample Contacts</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Table Scroll Area */
+          <div ref={tableContainerRef} className="flex-1 overflow-x-auto max-h-[560px] overflow-y-auto">
+            <table id="contactsTable" className="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700 shadow-xs">
                 <tr>
-                  <td colSpan={7} className="p-10 text-center text-slate-400">
-                    {isFilteredEmpty ? (
-                      /* Filter-Aware Empty State */
-                      <div className="flex flex-col items-center justify-center gap-3 max-w-md mx-auto py-4">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-xs">
-                          <FilterX className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-bold text-base text-slate-800 dark:text-slate-100">
-                            No matching contacts found
-                          </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                            No contacts in your {totalLoaded} loaded records match the active search or network filter.
-                          </p>
-                        </div>
-                        {onClearFilters && (
-                          <button
-                            type="button"
-                            onClick={onClearFilters}
-                            className="mt-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Clear All Filters</span>
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      /* No Contacts Loaded State */
-                      <div className="flex flex-col items-center justify-center gap-3.5 max-w-lg mx-auto py-4">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-700/70 border border-blue-100 dark:border-slate-600/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xs">
-                          <UserCheck className="w-7 h-7" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-bold text-base text-slate-800 dark:text-slate-100">
-                            No contacts loaded yet
-                          </p>
-                          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                            Upload your exported <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-[11px]">.vcf</code> or <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-[11px]">.csv</code> file, paste raw contacts, or load our pre-built test dataset.
-                          </p>
-                        </div>
-                        {/* Upload vCard / CSV & Sample Contacts Actions */}
-                        <div className="flex flex-col sm:flex-row items-center gap-2.5 mt-3 flex-wrap justify-center">
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".vcf,.vcard,.csv,.txt"
-                            onChange={handleEmptyStateFileChange}
-                            className="hidden"
-                            id="emptyStateFileInput"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 transition cursor-pointer"
-                          >
-                            <UploadCloud className="w-4 h-4" />
-                            <span>Upload vCard (.vcf) or CSV</span>
-                          </button>
-
-                          {onLoadSample && (
-                            <button
-                              type="button"
-                              onClick={onLoadSample}
-                              className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                            >
-                              <Play className="w-3.5 h-3.5 fill-current text-blue-600 dark:text-blue-400" />
-                              <span>Load 20 Sample Contacts</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </td>
+                  <th className="p-3 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      id="selectAllCheckbox"
+                      checked={allSelected}
+                      ref={(input) => {
+                        if (input) input.indeterminate = someSelected;
+                      }}
+                      onChange={(e) => onToggleSelectAll(e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </th>
+                  <th className="p-3 w-12 text-slate-500 font-medium">#</th>
+                  <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Contact Name</th>
+                  <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Original Number</th>
+                  <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Upgraded Result</th>
+                  <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Status / Network</th>
+                  <th className="p-3 text-center font-semibold text-slate-800 dark:text-slate-200 w-32">Actions</th>
                 </tr>
-              ) : (
-                records.map((r, index) => {
+              </thead>
+
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/80">
+                {isLoading ? (
+                  [1, 2, 3, 4, 5, 6].map((n) => (
+                    <tr key={`skeleton-${n}`} className="animate-pulse">
+                      <td className="p-3 text-center">
+                        <div className="w-4 h-4 bg-slate-200 dark:bg-slate-700 rounded mx-auto" />
+                      </td>
+                      <td className="p-3">
+                        <div className="w-6 h-3 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </td>
+                      <td className="p-3">
+                        <div className="w-32 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </td>
+                      <td className="p-3">
+                        <div className="w-24 h-3 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </td>
+                      <td className="p-3">
+                        <div className="w-28 h-4 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </td>
+                      <td className="p-3">
+                        <div className="w-20 h-5 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="w-20 h-6 bg-slate-200 dark:bg-slate-700 rounded mx-auto" />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <>
+                    {records.map((r, index) => {
                   const isSelected = selectedIds.has(r.id);
                   const isExactDuplicate = exactDuplicateIds.has(r.originalIndex);
                   const isSharedNumber = sharedDuplicateIds.has(r.originalIndex);
@@ -562,7 +677,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                       {/* Name */}
                       <td className="p-3 font-semibold text-slate-900 dark:text-slate-100">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span>{r.name}</span>
+                          <span>{highlightText(r.name, searchQuery)}</span>
                           {isMissing && (
                             <span
                               className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-800 flex items-center gap-1 shrink-0"
@@ -610,13 +725,13 @@ export const ContactTable: React.FC<ContactTableProps> = ({
 
                       {/* Original Raw */}
                       <td className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">
-                        {r.raw || <span className="text-slate-300 italic">None</span>}
+                        {r.raw ? highlightText(r.raw, searchQuery) : <span className="text-slate-300 italic">None</span>}
                       </td>
 
                       {/* Upgraded Result */}
                       <td className="p-3 font-mono text-xs font-bold text-slate-900 dark:text-emerald-400">
                         <div className="flex items-center gap-2">
-                          <span>{r.result}</span>
+                          <span>{highlightText(r.result, searchQuery)}</span>
                           {r.status === 'ok' && (
                             <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                           )}
@@ -682,13 +797,16 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                       </td>
                     </tr>
                   );
-                })
-              )}
+                })}
+                  </>
+                )}
             </tbody>
           </table>
         </div>
+      )}
 
-        {/* Interactive A-Z Jump Sidebar */}
+      {/* Interactive A-Z Jump Sidebar */}
+      {records.length > 0 && !isLoading && (
         <div
           id="azSidebar"
           className="w-7 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col items-center justify-between py-2 select-none text-[10px] font-bold text-slate-500 dark:text-slate-400"
@@ -726,6 +844,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
             ▼
           </button>
         </div>
+      )}
 
         {/* Active Letter Popup Banner Overlay */}
         {activeLetterPopup && (

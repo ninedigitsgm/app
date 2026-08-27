@@ -13,7 +13,7 @@ export interface ImportProgressState {
 
 interface ImportSectionProps {
   onImportFile: (content: string, filename: string) => void;
-  onProcessRaw: (rawText: string) => void;
+  onProcessRaw?: (rawText: string) => void;
   onClearAll: () => void;
   onFileError?: (errorMsg: string) => void;
   totalRecords: number;
@@ -22,13 +22,11 @@ interface ImportSectionProps {
 
 export const ImportSection: React.FC<ImportSectionProps> = ({
   onImportFile,
-  onProcessRaw,
   onClearAll,
   onFileError,
   totalRecords,
   importProgress,
 }) => {
-  const [rawText, setRawText] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,10 +91,9 @@ export const ImportSection: React.FC<ImportSectionProps> = ({
     }
   };
 
-  const handleLoadSampleData = () => {
+  const handleLoadSampleCSV = () => {
     setErrorMessage(null);
-    setRawText(SAMPLE_RAW_DATA);
-    onProcessRaw(SAMPLE_RAW_DATA);
+    onImportFile(SAMPLE_RAW_DATA, 'sample_contacts.csv');
   };
 
   const handleLoadSampleVCF = () => {
@@ -105,205 +102,126 @@ export const ImportSection: React.FC<ImportSectionProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      {/* 2. Import your contacts */}
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between gap-2 mb-2">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-sm mb-6">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <UploadCloud className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+              1. Import Contacts File
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Upload your exported Apple/Android <b>.vcf</b> (vCard) or spreadsheet <b>.csv</b> file
+            </p>
+          </div>
+        </div>
+        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shrink-0">
+          Max 5 MB
+        </span>
+      </div>
+
+      {/* Real-time Import Progress Bar if file is processing */}
+      {importProgress && importProgress.isProcessing && (
+        <div className="my-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 animate-fade-in space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-200">
             <div className="flex items-center gap-2">
-              <UploadCloud className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
-                2. Import your Contacts File
-              </h2>
+              <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+              <span>Processing {importProgress.filename}...</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-              Max 5 MB
+            <span>
+              {importProgress.total > 0
+                ? `${Math.round((importProgress.current / importProgress.total) * 100)}%`
+                : 'Parsing...'}
             </span>
           </div>
-
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            Upload your exported Apple/Android <b>.vcf</b> (vCard) or spreadsheet <b>.csv</b> file.
-          </p>
-
-          {/* Real-time Import Progress Bar if file is processing */}
-          {importProgress && importProgress.isProcessing && (
-            <div className="mb-3 p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 animate-fade-in space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-blue-900 dark:text-blue-200">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
-                  <span>Processing {importProgress.filename}...</span>
-                </div>
-                <span>
-                  {importProgress.total > 0
-                    ? `${Math.round((importProgress.current / importProgress.total) * 100)}%`
-                    : 'Parsing...'}
-                </span>
-              </div>
-              <div className="w-full bg-blue-200 dark:bg-blue-900 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-200 ease-out"
-                  style={{
-                    width: importProgress.total > 0
-                      ? `${Math.min(100, Math.round((importProgress.current / importProgress.total) * 100))}%`
-                      : '50%',
-                  }}
-                />
-              </div>
-              <div className="flex justify-between text-[11px] text-blue-700 dark:text-blue-300">
-                <span>{importProgress.current.toLocaleString()} contacts scanned</span>
-                <span>{importProgress.total.toLocaleString()} total</span>
-              </div>
-            </div>
-          )}
-
-          {/* Drag and Drop Zone */}
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 mb-3 ${
-              isDragging
-                ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30'
-                : 'border-slate-300 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900'
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              id="fileInput"
-              accept=".vcf,.csv,text/vcard,text/csv,text/plain"
-              onChange={handleFileChange}
-              className="hidden"
+          <div className="w-full bg-blue-200 dark:bg-blue-900 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-200 ease-out"
+              style={{
+                width: importProgress.total > 0
+                  ? `${Math.min(100, Math.round((importProgress.current / importProgress.total) * 100))}%`
+                  : '50%',
+              }}
             />
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
-              <UploadCloud className="w-6 h-6" />
-            </div>
-            <div className="text-xs font-bold text-slate-700 dark:text-slate-200">
-              Click to select or drag & drop contact file
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Supports .VCF (vCard 2.1/3.0/4.0) & .CSV (up to 5MB max)
-            </div>
           </div>
-
-          {/* Privacy & Security Guarantee in Plain English */}
-          <div className="p-2.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 mb-3 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <div className="leading-snug">
-              <span className="font-bold">100% Private & Stays on Your Device:</span>{' '}
-              <span className="text-emerald-800 dark:text-emerald-300">
-                Your contacts never leave your phone or computer. Everything is updated directly in your browser with zero server uploads or external data storage.
-              </span>
-            </div>
+          <div className="flex justify-between text-[11px] text-blue-700 dark:text-blue-300">
+            <span>{importProgress.current.toLocaleString()} contacts scanned</span>
+            <span>{importProgress.total.toLocaleString()} total</span>
           </div>
-
-          {/* Error notice if file was too large */}
-          {errorMessage && (
-            <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2 mb-3">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
         </div>
+      )}
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/60">
+      {/* Drag and Drop Zone */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`border-2 border-dashed rounded-xl p-6 sm:p-8 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2.5 my-4 ${
+          isDragging
+            ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30'
+            : 'border-slate-300 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-100/80 dark:hover:bg-slate-900'
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          id="fileInput"
+          accept=".vcf,.csv,text/vcard,text/csv,text/plain"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <div className="p-3.5 rounded-2xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-xs">
+          <UploadCloud className="w-7 h-7" />
+        </div>
+        <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+          Click to choose your contacts file or drag and drop here
+        </div>
+        <div className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
+          Supports <b>.VCF</b> (vCard 2.1 / 3.0 / 4.0 from iPhone & Android) and <b>.CSV</b> (Excel & Google Contacts)
+        </div>
+      </div>
+
+      {/* Privacy & Security Guarantee in Plain English */}
+      <div className="p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 mb-4 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
+        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+        <div className="leading-relaxed">
+          <span className="font-bold">100% Private & Stays on Your Device:</span>{' '}
+          <span className="text-emerald-800 dark:text-emerald-300">
+            Your contacts never leave your phone or computer. All processing runs entirely inside local browser memory with zero server uploads.
+          </span>
+        </div>
+      </div>
+
+      {/* Error notice if file was too large */}
+      {errorMessage && (
+        <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs flex items-center gap-2 mb-4">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+        {/* Action Buttons Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-700/60">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             id="demoBtn"
-            onClick={handleLoadSampleData}
-            className="px-3 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/80 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 transition cursor-pointer"
+            onClick={handleLoadSampleCSV}
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/80 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 transition cursor-pointer"
           >
             <Play className="w-3.5 h-3.5" />
-            Load Sample Contacts
+            Load Sample CSV
           </button>
 
           <button
             onClick={handleLoadSampleVCF}
-            className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition cursor-pointer"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 flex items-center gap-1.5 transition cursor-pointer"
           >
+            <FileText className="w-3.5 h-3.5 text-slate-500" />
             Load Sample VCF
           </button>
-
-          {totalRecords > 0 && (
-            <button
-              id="clearBtn"
-              onClick={onClearAll}
-              className="px-3 py-2 rounded-xl text-xs font-semibold bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/60 border border-red-200 dark:border-red-800 ml-auto flex items-center gap-1 transition cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear All ({totalRecords})
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 3. Or paste raw records */}
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
-                3. Or Paste Raw Records
-              </h2>
-            </div>
-            <span className="text-[11px] text-slate-400 font-mono">
-              {rawText ? `${rawText.split('\n').filter(Boolean).length} lines` : 'Empty'}
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            Paste contacts line by line in <code>Name, Phone Number</code> format.
-          </p>
-
-          <textarea
-            id="rawInput"
-            rows={5}
-            value={rawText}
-            onChange={(e) => setRawText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                const target = e.currentTarget;
-                const start = target.selectionStart;
-                const end = target.selectionEnd;
-                const nextText = rawText.substring(0, start) + '\t' + rawText.substring(end);
-                setRawText(nextText);
-                // Set cursor position after the inserted tab on the next tick
-                setTimeout(() => {
-                  target.selectionStart = target.selectionEnd = start + 1;
-                }, 0);
-              }
-            }}
-            placeholder="Fatou Jobe, 7123456&#10;Baboucarr Sallah, 3123456&#10;Modou Lamin Ceesay, 6889900&#10;Lamin Touray, 9912345&#10;Gamtel HQ, 4291224"
-            className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed mb-2"
-          />
-
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-            <HelpCircle className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-            <span>Format: <b>Contact Name, Phone Number</b> (separated by comma or tab)</span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/60">
-          <button
-            id="processBtn"
-            onClick={() => onProcessRaw(rawText)}
-            disabled={!rawText.trim()}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-          >
-            <Play className="w-3.5 h-3.5" />
-            Process Pasted Records
-          </button>
-
-          {rawText && (
-            <button
-              onClick={() => setRawText('')}
-              className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 px-2 py-1 cursor-pointer"
-            >
-              Clear Text
-            </button>
-          )}
         </div>
       </div>
     </div>

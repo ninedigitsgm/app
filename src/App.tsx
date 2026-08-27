@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LandingPage } from './components/LandingPage';
 import { Header } from './components/Header';
-import { KeyFeaturesGrid } from './components/KeyFeaturesGrid';
 import { PuraRulesGuide } from './components/PuraRulesGuide';
 import { LiveSandbox } from './components/LiveSandbox';
 import { ImportSection, ImportProgressState } from './components/ImportSection';
@@ -12,8 +11,14 @@ import { DuplicateModal } from './components/DuplicateModal';
 import { EditContactModal } from './components/EditContactModal';
 import { AddContactModal } from './components/AddContactModal';
 import { MergeContactsModal } from './components/MergeContactsModal';
+import { ExactDuplicateWizardModal } from './components/ExactDuplicateWizardModal';
+import { RepeatedNumbersWizardModal } from './components/RepeatedNumbersWizardModal';
+import { MissingPhoneWizardModal } from './components/MissingPhoneWizardModal';
 import { ExportPreviewModal } from './components/ExportPreviewModal';
 import { InstructionProgressBar } from './components/InstructionProgressBar';
+import { ScrollReveal } from './components/ScrollReveal';
+import { BackToTop } from './components/BackToTop';
+import { OperatorDistributionChart } from './components/OperatorDistributionChart';
 import { Toast, ToastMessage } from './components/Toast';
 import { ContactRecord, FilterOption, SortOption, InstructionProgressState } from './types';
 import { 
@@ -27,10 +32,11 @@ import {
   bulkMergeExactDuplicates,
   bulkMergeSharedGroups,
   removeInternalRepeatedNumbers,
-  isMissingPhone
+  isMissingPhone,
+  getCanonicalPhoneKey
 } from './lib/puraEngine';
 import { SAMPLE_RAW_DATA } from './lib/demoData';
-import { ArrowLeft, Home, Sparkles, Moon, Sun, Smartphone, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Home, Sparkles, Moon, Sun, Smartphone, ShieldCheck, CopyCheck, GitMerge, Trash2 } from 'lucide-react';
 
 export default function App() {
   // Page view routing: 'landing' or 'app'
@@ -54,7 +60,8 @@ export default function App() {
     }
     return false;
   });
-  const [includeCountryCode, setIncludeCountryCode] = useState<boolean>(true);
+  const [includeCountryCode, setIncludeCountryCode] = useState<boolean>(false);
+  const [showReference, setShowReference] = useState<boolean>(false);
   interface HistoryState {
     records: ContactRecord[];
     description: string;
@@ -190,10 +197,14 @@ export default function App() {
   
   // Modals & Flows state
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [isExactWizardOpen, setIsExactWizardOpen] = useState(false);
+  const [isRepeatedWizardOpen, setIsRepeatedWizardOpen] = useState(false);
+  const [isMissingPhoneWizardOpen, setIsMissingPhoneWizardOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ContactRecord | null>(null);
   const [mergingContacts, setMergingContacts] = useState<ContactRecord[] | null>(null);
   const [sequentialGroupIndex, setSequentialGroupIndex] = useState<number | null>(null);
+  const [skippedGroupKeys, setSkippedGroupKeys] = useState<Set<string>>(new Set());
 
   // Export Preview state
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false);
@@ -201,6 +212,7 @@ export default function App() {
 
   // Import Progress state
   const [importProgress, setImportProgress] = useState<ImportProgressState | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
   // Instruction Execution Progress state
   const [instructionProgress, setInstructionProgress] = useState<InstructionProgressState | null>(null);
@@ -358,11 +370,15 @@ export default function App() {
 
   // Handle loading sample contacts
   const handleLoadSampleContacts = () => {
-    const parsed = parseCSV(SAMPLE_RAW_DATA, includeCountryCode);
-    setRecords(parsed, "Load Sample Contacts");
-    setSelectedIds(new Set());
-    addToast(`Loaded ${parsed.length} sample contacts`);
-    scrollToReviewSection();
+    setIsAnalyzing(true);
+    setTimeout(() => {
+      const parsed = parseCSV(SAMPLE_RAW_DATA, includeCountryCode);
+      setRecords(parsed, "Load Sample Contacts");
+      setSelectedIds(new Set());
+      setIsAnalyzing(false);
+      addToast(`Loaded ${parsed.length} sample contacts`);
+      scrollToReviewSection();
+    }, 450);
   };
 
   // Re-process when prefix toggle changes
@@ -504,7 +520,9 @@ export default function App() {
 
   // Merge by group indices handler (e.g. from duplicates modal)
   const handleOpenMergeForIndices = (indices: number[]) => {
-    const groupRecords = records.filter((r) => indices.includes(r.originalIndex));
+    const groupRecords = indices
+      .map((i) => records[i])
+      .filter((r): r is ContactRecord => Boolean(r));
     if (groupRecords.length >= 2) {
       setMergingContacts(groupRecords);
     }
@@ -512,12 +530,14 @@ export default function App() {
 
   // Sequential Merge Flow Launcher
   const handleStartSequentialMerge = () => {
-    if (duplicateAnalysis.sharedGroups.length === 0) {
+    setSkippedGroupKeys(new Set());
+    const freshAnalysis = analyzeDuplicates(records);
+    if (freshAnalysis.sharedGroups.length === 0) {
       addToast('No shared duplicate groups to merge', 'info');
       return;
     }
-    setSequentialGroupIndex(0);
-    const firstGroup = duplicateAnalysis.sharedGroups[0];
+    setSequentialGroupIndex(1);
+    const firstGroup = freshAnalysis.sharedGroups[0];
     const groupRecords = firstGroup.indices.map((i) => records[i]).filter(Boolean);
     setMergingContacts(groupRecords);
   };
@@ -535,7 +555,6 @@ export default function App() {
         const res = bulkMergeSharedGroups(records, includeCountryCode, strategy);
         setRecords(res.updatedRecords, `Bulk Merge Duplicates (${strategy})`);
         setSelectedIds(new Set());
-        setIsDuplicateModalOpen(false);
         addToast(`Bulk merged ${res.mergedGroupsCount} shared groups (${res.reducedCount} contacts consolidated)`);
       }
     );
@@ -553,7 +572,6 @@ export default function App() {
       () => {
         const res = removeInternalRepeatedNumbers(records, includeCountryCode);
         setRecords(res.updatedRecords, "Clean Internal Repeated Numbers");
-        setIsDuplicateModalOpen(false);
         addToast(`Cleaned redundant numbers in ${res.cleanedContactsCount} contacts (${res.removedNumbersCount} numbers removed)`);
       }
     );
@@ -589,14 +607,24 @@ export default function App() {
 
   // Skip current conflict in sequential flow
   const handleSkipMergeModal = () => {
-    if (sequentialGroupIndex !== null) {
-      const nextIdx = sequentialGroupIndex + 1;
-      if (nextIdx < duplicateAnalysis.sharedGroups.length) {
-        setSequentialGroupIndex(nextIdx);
-        const nextGroup = duplicateAnalysis.sharedGroups[nextIdx];
+    if (sequentialGroupIndex !== null && mergingContacts && mergingContacts.length > 0) {
+      const currentPhone = mergingContacts[0]?.raw || mergingContacts[0]?.result || '';
+      const canonicalKey = getCanonicalPhoneKey(currentPhone);
+      const nextSkipped = new Set(skippedGroupKeys);
+      if (canonicalKey) nextSkipped.add(canonicalKey);
+      setSkippedGroupKeys(nextSkipped);
+
+      const freshAnalysis = analyzeDuplicates(records);
+      const remainingGroups = freshAnalysis.sharedGroups.filter(
+        (g) => !nextSkipped.has(getCanonicalPhoneKey(g.phone))
+      );
+
+      if (remainingGroups.length > 0) {
+        const nextGroup = remainingGroups[0];
         const nextRecords = nextGroup.indices.map((i) => records[i]).filter(Boolean);
+        setSequentialGroupIndex((prev) => (prev ? prev + 1 : 1));
         setMergingContacts(nextRecords);
-        addToast(`Skipped to conflict (${nextIdx + 1}/${duplicateAnalysis.sharedGroups.length})`, 'info');
+        addToast(`Skipped conflict`, 'info');
         return;
       } else {
         setSequentialGroupIndex(null);
@@ -629,7 +657,6 @@ export default function App() {
         const updated = toKeep.map((r, i) => ({ ...r, originalIndex: i }));
         setRecords(updated, `Purge Empty Phone Contacts (${count})`);
         setSelectedIds(new Set());
-        setIsDuplicateModalOpen(false);
         addToast(`Deleted ${count} contact${count > 1 ? 's' : ''} with no phone number`);
       }
     );
@@ -678,13 +705,17 @@ export default function App() {
 
     // Advance sequential flow if active
     if (sequentialGroupIndex !== null) {
-      const nextIdx = sequentialGroupIndex + 1;
-      if (nextIdx < duplicateAnalysis.sharedGroups.length) {
-        setSequentialGroupIndex(nextIdx);
-        const nextGroup = duplicateAnalysis.sharedGroups[nextIdx];
-        const nextRecords = nextGroup.indices.map((i) => updatedRecords[i] || records[i]).filter(Boolean);
+      const freshAnalysis = analyzeDuplicates(updatedRecords);
+      const remainingGroups = freshAnalysis.sharedGroups.filter(
+        (g) => !skippedGroupKeys.has(getCanonicalPhoneKey(g.phone))
+      );
+
+      if (remainingGroups.length > 0) {
+        const nextGroup = remainingGroups[0];
+        const nextRecords = nextGroup.indices.map((i) => updatedRecords[i]).filter(Boolean);
+        setSequentialGroupIndex((prev) => (prev ? prev + 1 : 1));
         setMergingContacts(nextRecords);
-        addToast(`Merged! Next conflict (${nextIdx + 1}/${duplicateAnalysis.sharedGroups.length})`);
+        addToast(`Merged! Next conflict remaining (${remainingGroups.length} left)`);
         return;
       } else {
         setSequentialGroupIndex(null);
@@ -722,6 +753,25 @@ export default function App() {
     return analyzeDuplicates(records);
   }, [records]);
 
+  const missingPhoneGroups = useMemo(() => {
+    return Array.from(duplicateAnalysis.missingPhoneIndices).map((idx) => {
+      const rec = records[idx];
+      return {
+        contactIndex: idx,
+        contactId: rec?.id || `idx-${idx}`,
+        name: rec?.name || 'Untitled Contact',
+      };
+    });
+  }, [duplicateAnalysis.missingPhoneIndices, records]);
+
+  const operatorData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    records.forEach(r => {
+      counts[r.operator] = (counts[r.operator] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [records]);
+
   // Section 4 Ref for smooth scrolling
   const reviewSectionRef = useRef<HTMLDivElement>(null);
 
@@ -747,10 +797,52 @@ export default function App() {
         const res = bulkMergeExactDuplicates(records);
         setRecords(res.updatedRecords, `Auto-Deduplicate Exact Matches (${res.removedCount})`);
         setSelectedIds(new Set());
-        setIsDuplicateModalOpen(false);
         addToast(`Removed ${res.removedCount} duplicate contacts (kept 1 copy of each)`);
       }
     );
+  };
+
+  // Exact Duplicate Wizard Single Resolution Handler
+  const handleKeepExactRecord = (_groupKey: string, _keepRecordId: string, removeRecordIds: string[]) => {
+    const removeSet = new Set(removeRecordIds);
+    setRecords(
+      (prev) => prev.filter((r) => !removeSet.has(r.id)),
+      `Resolve Exact Duplicate Copies (${removeRecordIds.length} removed)`
+    );
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      removeRecordIds.forEach((id) => next.delete(id));
+      return next;
+    });
+    addToast(`Removed ${removeRecordIds.length} redundant duplicate copies`, 'info');
+  };
+
+  // Repeated Numbers Wizard Single Resolution Handler
+  const handleSaveContactPhones = (contactId: string, updatedRawPhone: string) => {
+    setRecords(
+      (prev) =>
+        prev.map((r, idx) =>
+          r.id === contactId
+            ? processFullContact(r.name, updatedRawPhone, includeCountryCode, idx, r.id)
+            : r
+        ),
+      'Clean Internal Repeated Numbers'
+    );
+    addToast('Removed duplicate phone numbers from contact', 'info');
+  };
+
+  // Missing Phone Wizard Single Resolution Handler
+  const handleAddPhoneToContact = (contactId: string, phone: string) => {
+    setRecords(
+      (prev) =>
+        prev.map((r, idx) =>
+          r.id === contactId
+            ? processFullContact(r.name, phone, includeCountryCode, idx, r.id)
+            : r
+        ),
+      'Add Number to Blank Contact'
+    );
+    addToast('Phone number added and formatted for Gambian dialling', 'info');
   };
 
   // Filtered and Sorted Records
@@ -854,7 +946,7 @@ export default function App() {
         () => {
           const vcf = generateVCF(records);
           triggerDownload(vcf, 'GM_PURA_Upgraded_Contacts.vcf', 'text/vcard');
-          addToast(`Exported ${records.length} contacts to VCF file!`);
+          addToast(`Success: ${records.length} contacts exported in VCF format`, 'success');
         }
       );
     } else {
@@ -868,7 +960,7 @@ export default function App() {
         () => {
           const csv = generateCSV(records);
           triggerDownload(csv, 'GM_PURA_Upgraded_Contacts.csv', 'text/csv');
-          addToast(`Exported ${records.length} contacts to CSV spreadsheet!`);
+          addToast(`Success: ${records.length} contacts exported in CSV format`, 'success');
         }
       );
     }
@@ -889,6 +981,10 @@ export default function App() {
             handleLoadSampleContacts();
             navigateToApp();
           }}
+          onProcessRaw={(rawText) => {
+            handleProcessRaw(rawText);
+            navigateToApp();
+          }}
           darkMode={darkMode}
           onToggleTheme={() => setDarkMode(!darkMode)}
           totalContactsCount={totalCount}
@@ -904,7 +1000,7 @@ export default function App() {
       <Toast toasts={toasts} />
 
       {/* Top Application Workspace Navigation Bar */}
-      <div className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-xs">
+      <div className="sticky top-0 z-[100] bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-md">
         {/* Gambia flag top stripe accent */}
         <div className="h-1 flex w-full">
           <div className="flex-1 bg-red-600" />
@@ -914,33 +1010,41 @@ export default function App() {
           <div className="flex-1 bg-emerald-600" />
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 min-h-[64px] sm:min-h-[72px] flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
               id="backToLandingBtn"
               onClick={navigateToLanding}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700 transition cursor-pointer shrink-0"
+              title="Return Home"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Landing Page</span>
+              <Home className="w-3.5 h-3.5" />
+              <span>Home</span>
             </button>
 
-            <div className="h-4 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block" />
+            <div className="h-5 w-px bg-slate-300 dark:bg-slate-700 hidden sm:block shrink-0" />
 
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
-                9
-              </div>
-              <span className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white hidden md:inline">
-                PURA Contact Upgrader
-              </span>
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={navigateToLanding}
+                className="cursor-pointer transition-transform hover:scale-[1.02]"
+                title="Go to Home"
+              >
+                <img
+                  src={darkMode ? "/logo-for-darkmode.svg" : "/logo-for-lightmode.svg"}
+                  alt="Auto Contacts Upgrader Logo"
+                  className="h-12 sm:h-14 md:h-16 w-auto max-w-[200px] sm:max-w-[280px] object-contain transition-all"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             {totalCount > 0 && (
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold">
+              <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 {upgradedCount} / {totalCount} upgraded
               </span>
@@ -949,18 +1053,19 @@ export default function App() {
             <button
               type="button"
               onClick={handleLoadSampleContacts}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-1 transition cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               title="Load demo Gambian contacts"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">Load Sample</span>
+              <span className="inline">Load Sample</span>
             </button>
 
             <button
               type="button"
               onClick={() => setDarkMode(!darkMode)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 bg-slate-100/70 hover:bg-slate-200/80 dark:bg-slate-800/70 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 transition cursor-pointer"
               title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle theme"
             >
               {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
             </button>
@@ -969,44 +1074,51 @@ export default function App() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Header Section */}
+        {/* Workspace Banner */}
         <Header
           totalContacts={totalCount}
           upgradedCount={upgradedCount}
+          showReference={showReference}
+          onToggleReference={() => setShowReference(!showReference)}
         />
 
-        {/* Key Features Overview */}
-        <KeyFeaturesGrid />
+        {/* Optional Collapsible Reference Guide & Tester */}
+        {showReference && (
+          <div className="space-y-6 mb-6">
+            <PuraRulesGuide />
+            <LiveSandbox
+              includeCountryCode={includeCountryCode}
+              onAddContact={handleAddContact}
+            />
+          </div>
+        )}
 
-        {/* 1. PURA Rules Guide */}
-        <PuraRulesGuide />
 
-        {/* Live Sandbox & Quick Test */}
-        <LiveSandbox
-          includeCountryCode={includeCountryCode}
-          onAddContact={handleAddContact}
-        />
+        {/* 1 & 2. Import File and Paste Raw records */}
+        <ScrollReveal>
+          <ImportSection
+            onImportFile={handleImportFile}
+            onProcessRaw={handleProcessRaw}
+            onClearAll={handleClearAll}
+            onFileError={(msg) => addToast(msg, 'warn')}
+            totalRecords={totalCount}
+            importProgress={importProgress}
+          />
+        </ScrollReveal>
 
-        {/* 2 & 3. Import File and Paste Raw records */}
-        <ImportSection
-          onImportFile={handleImportFile}
-          onProcessRaw={handleProcessRaw}
-          onClearAll={handleClearAll}
-          onFileError={(msg) => addToast(msg, 'warn')}
-          totalRecords={totalCount}
-          importProgress={importProgress}
-        />
-
-        {/* 4. Review, Filter, Table & Format Exports */}
-        <div
-          ref={reviewSectionRef}
-          id="section-review-and-export"
-          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-sm scroll-mt-6"
-        >
+        {/* 2. Review & Filter */}
+        <ScrollReveal>
+          <div
+            ref={reviewSectionRef}
+            id="section-review-and-filter"
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-sm scroll-mt-24 mb-6"
+          >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
-              4. Review, Filter & Format Exports
-            </h2>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                2. Review & Filter
+              </h2>
+            </div>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
               Interactive Table
             </span>
@@ -1033,6 +1145,7 @@ export default function App() {
             redoSnapshots={redoStack}
             onUndoToSnapshot={handleUndoToSnapshot}
             onRedoToSnapshot={handleRedoToSnapshot}
+            onClearWorkspace={handleClearAll}
           />
 
           <ContactTable
@@ -1063,21 +1176,122 @@ export default function App() {
             onCleanAllSharedNumbers={() => handleBulkMergeShared('slash')}
             filterOption={filterOption}
             onFilterChange={setFilterOption}
+            isLoading={Boolean(importProgress?.isProcessing || isAnalyzing)}
+            searchQuery={searchQuery}
           />
 
-          <ExportActionBar
-            includeCountryCode={includeCountryCode}
-            onToggleCountryCode={handleToggleCountryCode}
-            selectedCount={selectedIds.size}
-            totalCount={totalCount}
-            onAnalyzeDuplicates={handleOpenDuplicateAnalysis}
-            onMergeSelected={handleOpenMergeForSelected}
-            onDeleteSelected={handleDeleteSelected}
-            onExportVCF={handleExportVCF}
-            onExportCSV={handleExportCSV}
-          />
-        </div>
+          {totalCount > 0 && (
+            <div className="mt-6 mb-6">
+              <ScrollReveal>
+                <OperatorDistributionChart data={operatorData} />
+              </ScrollReveal>
+            </div>
+          )}
+
+          {/* Section 2 Footer Actions / Duplicate Analysis Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700/80">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              {/* Analyze Duplicates Button */}
+              <button
+                id="analyzeDuplicatesBtn"
+                onClick={handleOpenDuplicateAnalysis}
+                disabled={records.length === 0}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer active:scale-95"
+              >
+                <CopyCheck className="w-4 h-4" />
+                <span>Analyze Duplicates & Conflicts</span>
+                {duplicateAnalysis.exactCount + duplicateAnalysis.sharedCount + duplicateAnalysis.repeatedCount + duplicateAnalysis.missingPhoneCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-extrabold shadow-xs">
+                    {duplicateAnalysis.exactCount + duplicateAnalysis.sharedCount + duplicateAnalysis.repeatedCount + duplicateAnalysis.missingPhoneCount} flagged
+                  </span>
+                )}
+              </button>
+
+              {totalCount > 0 && (
+                <button
+                  id="clearBtn"
+                  onClick={handleClearAll}
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer active:scale-95"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Clear Workspace ({totalCount})</span>
+                </button>
+              )}
+
+              {records.length > 0 && (duplicateAnalysis.exactCount + duplicateAnalysis.sharedCount + duplicateAnalysis.repeatedCount + duplicateAnalysis.missingPhoneCount === 0) && (
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  No duplicate conflicts
+                </span>
+              )}
+            </div>
+
+            {/* Batch Selection Operations */}
+            <div className="flex flex-wrap items-center gap-2">
+              {selectedIds.size >= 2 && (
+                <button
+                  id="mergeSelectedBtn"
+                  onClick={handleOpenMergeForSelected}
+                  className="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer animate-fade-in"
+                >
+                  <GitMerge className="w-4 h-4" />
+                  <span>Merge Selected ({selectedIds.size})</span>
+                </button>
+              )}
+
+              {selectedIds.size > 0 && (
+                <button
+                  id="deleteSelectedBtn"
+                  onClick={handleDeleteSelected}
+                  className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Selected ({selectedIds.size})</span>
+                </button>
+              )}
+
+              {selectedIds.size > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-2 py-1 cursor-pointer"
+                >
+                  Deselect all
+                </button>
+              )}
+            </div>
+          </div>
+          </div>
+        </ScrollReveal>
+
+        {/* 3. Format Exports */}
+        <ScrollReveal>
+          <div
+            id="section-format-exports"
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                3. Format & Export
+              </h2>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                {upgradedCount} / {totalCount} Ready
+              </span>
+            </div>
+
+            <ExportActionBar
+              includeCountryCode={includeCountryCode}
+              onToggleCountryCode={handleToggleCountryCode}
+              selectedCount={selectedIds.size}
+              totalCount={totalCount}
+              onExportVCF={handleExportVCF}
+              onExportCSV={handleExportCSV}
+            />
+          </div>
+        </ScrollReveal>
       </div>
+
+      <BackToTop />
 
       {/* Duplicate Analysis Modal */}
       <DuplicateModal
@@ -1095,11 +1309,49 @@ export default function App() {
         onCleanRepeatedNumbers={handleCleanAllRepeatedNumbers}
         onBulkMergeShared={handleBulkMergeShared}
         onStartSequentialMerge={handleStartSequentialMerge}
+        onStartExactWizard={() => setIsExactWizardOpen(true)}
+        onStartRepeatedWizard={() => setIsRepeatedWizardOpen(true)}
+        onStartMissingPhoneWizard={() => setIsMissingPhoneWizardOpen(true)}
         onClearMissingContacts={handleDeleteAllMissingPhoneContacts}
+      />
+
+      {/* Exact Duplicate Wizard Modal */}
+      <ExactDuplicateWizardModal
+        isOpen={isExactWizardOpen}
+        onClose={() => setIsExactWizardOpen(false)}
+        groups={duplicateAnalysis.exactGroups}
+        allRecords={records}
+        onKeepRecord={handleKeepExactRecord}
+        onBulkResolveAll={handleRemoveExactDuplicates}
+        includeCountryCode={includeCountryCode}
+      />
+
+      {/* Repeated Numbers Wizard Modal */}
+      <RepeatedNumbersWizardModal
+        isOpen={isRepeatedWizardOpen}
+        onClose={() => setIsRepeatedWizardOpen(false)}
+        repeatedGroups={duplicateAnalysis.repeatedGroups}
+        allRecords={records}
+        onSaveContactPhones={handleSaveContactPhones}
+        onCleanAllRepeated={handleCleanAllRepeatedNumbers}
+        includeCountryCode={includeCountryCode}
+      />
+
+      {/* Missing Phone Wizard Modal */}
+      <MissingPhoneWizardModal
+        isOpen={isMissingPhoneWizardOpen}
+        onClose={() => setIsMissingPhoneWizardOpen(false)}
+        missingGroups={missingPhoneGroups}
+        allRecords={records}
+        onAddPhoneToContact={handleAddPhoneToContact}
+        onDeleteContact={handleDeleteContact}
+        onPurgeAllMissing={handleDeleteAllMissingPhoneContacts}
+        includeCountryCode={includeCountryCode}
       />
 
       {/* Merge Contacts Modal */}
       <MergeContactsModal
+        key={mergingContacts ? mergingContacts.map((c) => c.id).join('-') : 'none'}
         isOpen={!!mergingContacts && mergingContacts.length >= 2}
         contacts={mergingContacts || []}
         onClose={handleCancelMergeModal}
@@ -1135,6 +1387,7 @@ export default function App() {
         format={exportFormat}
         records={records}
         onConfirmExport={handleConfirmExport}
+        includeCountryCode={includeCountryCode}
       />
     </div>
   );

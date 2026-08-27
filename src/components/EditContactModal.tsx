@@ -30,7 +30,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
 
   if (!isOpen || !record) return null;
 
-  const phoneParts = rawPhone.split(/[,;\/]/).map((s) => s.trim()).filter(Boolean);
+  const phoneParts = rawPhone.split(/[,]/).map((s) => s.trim()).filter(Boolean);
   const previews = phoneParts.map((p) => processSingleNumber(p, includeCountryCode));
 
   const handleSave = (e: React.FormEvent) => {

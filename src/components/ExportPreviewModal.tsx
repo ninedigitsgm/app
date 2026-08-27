@@ -22,6 +22,7 @@ interface ExportPreviewModalProps {
   format: 'CSV' | 'VCF';
   records: ContactRecord[];
   onConfirmExport: () => void;
+  includeCountryCode?: boolean;
 }
 
 export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
@@ -30,6 +31,7 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
   format,
   records,
   onConfirmExport,
+  includeCountryCode = true,
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'raw'>('table');
   const [copied, setCopied] = useState(false);
@@ -244,7 +246,15 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
           <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
           <div className="text-xs text-slate-600 dark:text-slate-300">
             <span className="font-bold text-slate-800 dark:text-slate-200 block mb-0.5">PURA 9-Digit Number Plan Compliance Verified</span>
-            All detected Gambia numbers have been standardized to 9-digits with proper country codes (+220), matching carrier allocations (Africell, QCell, Comium, Gamcel, Gamtel).
+            {includeCountryCode ? (
+              <span>
+                All detected Gambia numbers have been standardized to 9-digits with proper country codes (+220), matching carrier allocations (Africell, QCell, Comium, Gamcel, Gamtel).
+              </span>
+            ) : (
+              <span>
+                All detected Gambia numbers have been standardized to 9-digits matching carrier allocations (Africell, QCell, Comium, Gamcel, Gamtel), omitting the (+220) country code prefix as preferred.
+              </span>
+            )}
           </div>
         </div>
 

@@ -18,7 +18,8 @@ import {
   ArrowDownAZ,
   ArrowUpZA,
   ListOrdered,
-  Signal
+  Signal,
+  Trash2
 } from 'lucide-react';
 import { FilterOption, SortOption } from '../types';
 import { OperatorLogo } from './OperatorLogo';
@@ -44,6 +45,7 @@ interface ReviewToolbarProps {
   redoSnapshots: { description: string }[];
   onUndoToSnapshot: (index: number) => void;
   onRedoToSnapshot: (index: number) => void;
+  onClearWorkspace?: () => void;
 }
 
 interface FilterItem {
@@ -223,6 +225,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
   redoSnapshots,
   onUndoToSnapshot,
   onRedoToSnapshot,
+  onClearWorkspace,
 }) => {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -322,63 +325,40 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
     <div className="space-y-4 mb-4">
       {/* Stat Badges Row */}
       <div id="statsRow" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Loaded</span>
-          <div className="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
+        <div className="p-1.5 sm:p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
+          <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Total Loaded</span>
+          <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
             <span id="statTotal">{totalCount}</span>
-            <span className="text-xs font-normal text-slate-400 ml-1.5">
+            <span className="text-[10px] sm:text-xs font-normal text-slate-400 ml-1.5 whitespace-nowrap">
               (Showing: <span id="statShowing">{showingCount}</span>)
             </span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 shadow-xs">
-          <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Upgraded (+83/+86/+87)</span>
-          <div id="statUpgraded" className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+        <div className="p-1.5 sm:p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
+          <span className="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-tight">Upgraded (+83/+86/+87)</span>
+          <div id="statUpgraded" className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
             {upgradedCount}
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 shadow-xs">
-          <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">Deferred / Review</span>
-          <div id="statReview" className="text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
+        <div className="p-1.5 sm:p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
+          <span className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-medium leading-tight">Deferred / Review</span>
+          <div id="statReview" className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
             {reviewCount}
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 shadow-xs flex flex-col justify-between">
-          <span className="text-xs text-blue-700 dark:text-blue-400 font-medium">Selected for Action</span>
-          <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
+        <div className="p-1.5 sm:p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
+          <span className="text-[10px] sm:text-xs text-blue-700 dark:text-blue-400 font-medium leading-tight">Selected for Action</span>
+          <div className="text-lg sm:text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
             {selectedCount}
           </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
+      {/* Filter and Actions Controls Row */}
       <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-3 w-full">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            id="searchInput"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by contact name, original number, or upgraded digits..."
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
-          />
-          {searchQuery && (
-            <button
-              id="clearSearch"
-              onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-              title="Clear search"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
         {/* Sort */}
         <div className="relative w-full md:w-48 lg:w-56 shrink-0" ref={sortDropdownRef}>
           <button
@@ -392,9 +372,9 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                 : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200'
             } text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition`}
           >
-            <div className="flex items-center gap-2.5 truncate">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {currentSortItem.icon}
-              <span className="truncate">{currentSortItem.label}</span>
+              <span className="whitespace-normal break-words leading-tight">{currentSortItem.label}</span>
             </div>
             <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -403,7 +383,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
             <div
               role="listbox"
               aria-label="Sort contacts list"
-              className="absolute z-50 right-0 left-0 mt-1.5 max-h-80 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl py-1.5 text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100 divide-y divide-slate-100 dark:divide-slate-700/60"
+              className="absolute z-50 right-0 left-0 mt-1.5 max-h-80 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl py-1.5 text-xs sm:text-sm animate-in fade-in zoom-in-95 duration-100 divide-y divide-slate-100 dark:divide-slate-700/65"
             >
               <div className="py-1">
                 {SORT_ITEMS.map((item) => {
@@ -423,9 +403,9 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                           : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/70'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 truncate">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         {item.icon}
-                        <span className="truncate">{item.label}</span>
+                        <span className="whitespace-normal break-words leading-tight">{item.label}</span>
                       </div>
                       {isSelected && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />}
                     </button>
@@ -437,7 +417,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
         </div>
 
         {/* Custom Filter Dropdown with Operator Logos */}
-        <div className="relative w-full md:w-60 lg:w-72 shrink-0" ref={filterDropdownRef}>
+        <div className="relative w-full md:w-64 lg:w-72 shrink-0" ref={filterDropdownRef}>
           <button
             id="filterSelect"
             type="button"
@@ -450,9 +430,9 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                 : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200'
             } text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition`}
           >
-            <div className="flex items-center gap-2 truncate">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               {currentFilterItem.icon}
-              <span className="truncate">{currentFilterItem.label}</span>
+              <span className="whitespace-normal break-words leading-tight">{currentFilterItem.label}</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {filterOption !== 'all' && (
@@ -586,8 +566,10 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
           )}
         </div>
 
-        {/* Undo / Redo Actions Group */}
-        <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs shrink-0 h-[38px] relative gap-0">
+        {/* Actions & New Contact Row Container */}
+        <div className="flex items-center justify-between sm:justify-start gap-2.5 w-full md:w-auto">
+          {/* Undo / Redo Actions Group */}
+          <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs shrink-0 h-[38px] relative gap-0 flex-1 sm:flex-initial">
           
           {/* UNDO SECTION */}
           <div ref={undoRef} className="relative h-full flex items-center">
@@ -717,16 +699,53 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
             )}
           </div>
 
+          </div>
+
+          {/* Add Contact Button */}
+          <button
+            onClick={onOpenAddModal}
+            className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0 h-[38px] flex-1 sm:flex-initial"
+          >
+            <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span>New Contact</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Search Bar immediately above contacts table */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
+        <div className="relative flex-1 min-w-0">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            id="searchInput"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search by contact name, original number, or upgraded digits..."
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs truncate"
+          />
+          {searchQuery && (
+            <button
+              id="clearSearch"
+              onClick={() => onSearchChange('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              title="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        {/* Add Contact Button */}
-        <button
-          onClick={onOpenAddModal}
-          className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0 h-[38px]"
-        >
-          <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <span>New Contact</span>
-        </button>
+        {totalCount > 0 && onClearWorkspace && (
+          <button
+            id="clearBtnTop"
+            onClick={onClearWorkspace}
+            className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition cursor-pointer active:scale-95 shrink-0"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Clear Workspace ({totalCount})</span>
+          </button>
+        )}
       </div>
 
       {/* Active Filter Chips Bar */}
