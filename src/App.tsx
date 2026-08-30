@@ -23,7 +23,6 @@ import { BackToTop } from './components/BackToTop';
 import { OperatorDistributionChart } from './components/OperatorDistributionChart';
 import { Toast, ToastMessage } from './components/Toast';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
-import { PwaSplashScreen } from './components/PwaSplashScreen';
 import { 
   ContactRecord, 
   FilterOption, 
@@ -1502,7 +1501,6 @@ export default function App() {
           deferredCount={reviewCount}
         />
         <PwaInstallPrompt />
-        <PwaSplashScreen onEnterWorkspace={navigateToApp} onEnterLanding={navigateToLanding} />
       </>
     );
   }
@@ -1959,7 +1957,6 @@ export default function App() {
 
       {/* PWA Install Prompt & Offline Notification */}
       <PwaInstallPrompt />
-      <PwaSplashScreen onEnterWorkspace={navigateToApp} onEnterLanding={navigateToLanding} />
     </div>
   );
 }
