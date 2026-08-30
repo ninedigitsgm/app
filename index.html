@@ -9,11 +9,21 @@
     <meta property="og:description" content="Upgrade all your Gambian contacts to 9 digits automatically. Fast, safe, and accurate." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇬🇲</text></svg>">
+    
+    <!-- PWA Web App Manifest & Mobile Configuration -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#0284c7" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="9Digits GM" />
+    <link rel="apple-touch-icon" href="./pwa-icon.svg" />
+
+    <link rel="icon" href="./pwa-icon.svg" type="image/svg+xml" />
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>
 

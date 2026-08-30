@@ -245,7 +245,7 @@ export function processSingleNumber(raw: string, includeCountryCode = true): Num
       cleaned,
       result: originalRaw,
       status: 'review',
-      label: 'Review Needed (Invalid 9-digit number — inner prefix not part of valid GSM series / reserved service)',
+      label: 'Review Needed (Invalid 9-digit number: inner prefix not part of valid GSM series / reserved service)',
       operator: 'Unknown',
       originalRaw,
     };
@@ -305,7 +305,7 @@ export function processSingleNumber(raw: string, includeCountryCode = true): Num
   if (cleaned.length < 7) {
     reviewReason = `Review Needed (Too short: ${cleaned.length} digits)`;
   } else if (cleaned.length === 8) {
-    reviewReason = 'Review Needed (8 digits — unrecognized length)';
+    reviewReason = 'Review Needed (8 digits: unrecognized length)';
   } else if (cleaned.length > 9) {
     reviewReason = `Review Needed (Too long: ${cleaned.length} digits)`;
   }
@@ -540,7 +540,24 @@ export function analyzeDuplicates(records: ContactRecord[]): DuplicateAnalysisRe
     };
   }
 
-  const exactMap = new Map<string, { indices: number[]; name: string; phone: string }>();
+  // 1. Exact / Same-Name Duplicate Groups with Overlapping or Subset Phone Numbers
+  // Group records by normalized name
+  const nameToMeta = new Map<string, Array<{
+    index: number;
+    record: ContactRecord;
+    normName: string;
+    canonicalKeys: string[];
+    displayPhones: string[];
+  }>>();
+
+  const metaList: Array<{
+    index: number;
+    record: ContactRecord;
+    normName: string;
+    canonicalKeys: string[];
+    displayPhones: string[];
+  }> = [];
+
   const phoneToContacts = new Map<string, { displayPhone: string; nameMap: Map<string, number[]> }>();
 
   records.forEach((r, idx) => {
@@ -555,32 +572,27 @@ export function analyzeDuplicates(records: ContactRecord[]): DuplicateAnalysisRe
     }
 
     const normName = (r.name || '').toLowerCase().trim();
-    const phoneList = r.phoneNumbers.length > 0 
+    const phoneList = r.phoneNumbers && r.phoneNumbers.length > 0 
       ? r.phoneNumbers.map(p => p.originalRaw || p.cleaned || p.result).filter(Boolean)
       : [r.raw || r.result].filter(Boolean);
 
     // Repeated numbers within this single contact
     const seenInContact = new Set<string>();
     const repeatsInThisContact: string[] = [];
+    const canonicalKeys: string[] = [];
+    const displayPhones: string[] = [];
 
     phoneList.forEach(phoneStr => {
       const canonicalKey = getCanonicalPhoneKey(phoneStr);
       if (!canonicalKey) return;
 
+      canonicalKeys.push(canonicalKey);
+      displayPhones.push(phoneStr);
+
       if (seenInContact.has(canonicalKey)) {
         repeatsInThisContact.push(phoneStr);
       } else {
         seenInContact.add(canonicalKey);
-      }
-
-      // 1. Exact match check (distinct contacts sharing same name & phone)
-      const exactKey = `${normName}||${canonicalKey}`;
-      if (!exactMap.has(exactKey)) {
-        exactMap.set(exactKey, { indices: [], name: r.name, phone: phoneStr });
-      }
-      const exactEntry = exactMap.get(exactKey)!;
-      if (!exactEntry.indices.includes(idx)) {
-        exactEntry.indices.push(idx);
       }
 
       // 2. Phone mapping for shared numbers across distinct contacts
@@ -609,13 +621,89 @@ export function analyzeDuplicates(records: ContactRecord[]): DuplicateAnalysisRe
         repeatedPhones: repeatsInThisContact,
       });
     }
+
+    const meta = {
+      index: idx,
+      record: r,
+      normName,
+      canonicalKeys,
+      displayPhones,
+    };
+    metaList.push(meta);
+
+    if (normName && canonicalKeys.length > 0) {
+      if (!nameToMeta.has(normName)) {
+        nameToMeta.set(normName, []);
+      }
+      nameToMeta.get(normName)!.push(meta);
+    }
   });
 
   const exactGroups: Array<{ key: string; indices: number[]; name: string; phone: string }> = [];
-  exactMap.forEach((entry, key) => {
-    if (entry.indices.length > 1) {
-      exactGroups.push({ key, ...entry });
-      entry.indices.forEach(i => exactIndices.add(i));
+
+  nameToMeta.forEach((sameNameList, normName) => {
+    if (sameNameList.length < 2) return;
+
+    // Build connected components for same-name records that share at least 1 canonical phone key
+    const visited = new Set<number>();
+
+    for (let i = 0; i < sameNameList.length; i++) {
+      if (visited.has(sameNameList[i].index)) continue;
+
+      const component: typeof sameNameList = [];
+      const queue: typeof sameNameList = [sameNameList[i]];
+      visited.add(sameNameList[i].index);
+
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        component.push(curr);
+        const currKeySet = new Set(curr.canonicalKeys);
+
+        for (let j = 0; j < sameNameList.length; j++) {
+          const neighbor = sameNameList[j];
+          if (!visited.has(neighbor.index)) {
+            const sharesKey = neighbor.canonicalKeys.some(k => currKeySet.has(k));
+            if (sharesKey) {
+              visited.add(neighbor.index);
+              queue.push(neighbor);
+            }
+          }
+        }
+      }
+
+      if (component.length > 1) {
+        // Sort indices within the group so the record with the most phone numbers comes first,
+        // followed by original index
+        component.sort((a, b) => {
+          const countA = a.canonicalKeys.length;
+          const countB = b.canonicalKeys.length;
+          if (countB !== countA) return countB - countA;
+          return a.index - b.index;
+        });
+
+        const groupIndices = component.map(c => c.index);
+        groupIndices.forEach(idx => exactIndices.add(idx));
+
+        // Collect unique display phones for the group header
+        const uniquePhones: string[] = [];
+        const seenPhones = new Set<string>();
+        component.forEach(c => {
+          c.displayPhones.forEach(p => {
+            const k = getCanonicalPhoneKey(p);
+            if (k && !seenPhones.has(k)) {
+              seenPhones.add(k);
+              uniquePhones.push(p);
+            }
+          });
+        });
+
+        exactGroups.push({
+          key: `${normName}||${groupIndices.join('-')}`,
+          name: component[0].record.name,
+          phone: uniquePhones.join(', '),
+          indices: groupIndices,
+        });
+      }
     }
   });
 
@@ -656,15 +744,27 @@ export function analyzeDuplicates(records: ContactRecord[]): DuplicateAnalysisRe
   };
 }
 
+export interface MergedGroupDetail {
+  resultRecord: ContactRecord;
+  originalNames: string[];
+  phone: string;
+}
+
 /**
  * Removes internal repeated numbers from contacts by preserving only unique phone numbers per contact.
  */
 export function removeInternalRepeatedNumbers(
   records: ContactRecord[],
   includeCountryCode = true
-): { updatedRecords: ContactRecord[]; cleanedContactsCount: number; removedNumbersCount: number } {
+): { 
+  updatedRecords: ContactRecord[]; 
+  cleanedContactsCount: number; 
+  removedNumbersCount: number;
+  affectedRecords: ContactRecord[];
+} {
   let cleanedContactsCount = 0;
   let removedNumbersCount = 0;
+  const affectedRecords: ContactRecord[] = [];
 
   const updatedRecords = records.map((record, idx) => {
     const rawParts = (record.raw || '')
@@ -696,7 +796,9 @@ export function removeInternalRepeatedNumbers(
     if (uniqueRawParts.length < rawParts.length) {
       cleanedContactsCount++;
       const newRaw = uniqueRawParts.join(', ');
-      return processFullContact(record.name, newRaw, includeCountryCode, idx, record.id);
+      const processed = processFullContact(record.name, newRaw, includeCountryCode, idx, record.id);
+      affectedRecords.push(processed);
+      return processed;
     }
 
     return { ...record, originalIndex: idx };
@@ -706,40 +808,110 @@ export function removeInternalRepeatedNumbers(
     updatedRecords,
     cleanedContactsCount,
     removedNumbersCount,
+    affectedRecords,
   };
 }
 
 /**
- * Bulk deduplication: automatically keeps 1 copy of every exact duplicate contact (matching name & canonical phone).
+ * Bulk deduplication: automatically keeps the most complete copy of every exact/same-name duplicate cluster
+ * (records with identical name sharing phone numbers). Discards copies with fewer numbers or redundant duplicates,
+ * while ensuring no unique phone number is lost.
  */
-export function bulkMergeExactDuplicates(records: ContactRecord[]): {
+export function bulkMergeExactDuplicates(
+  records: ContactRecord[],
+  includeCountryCode = true
+): {
   updatedRecords: ContactRecord[];
   removedCount: number;
+  affectedRecords: ContactRecord[];
 } {
-  const seen = new Set<string>();
-  const filtered: ContactRecord[] = [];
+  if (!records || records.length === 0) {
+    return { updatedRecords: [], removedCount: 0, affectedRecords: [] };
+  }
+
+  const analysis = analyzeDuplicates(records);
+  if (analysis.exactGroups.length === 0) {
+    return { updatedRecords: [...records], removedCount: 0, affectedRecords: [] };
+  }
+
+  // Set of record indices to remove and map of keeper index to updated ContactRecord
+  const removeIndexSet = new Set<number>();
+  const keeperUpdates = new Map<number, ContactRecord>();
+  const affectedRecords: ContactRecord[] = [];
   let removedCount = 0;
 
-  records.forEach((r) => {
-    const normName = (r.name || '').toLowerCase().trim();
-    const phoneList = r.phoneNumbers.length > 0
-      ? r.phoneNumbers.map(p => getCanonicalPhoneKey(p.originalRaw || p.result)).filter(Boolean)
-      : [getCanonicalPhoneKey(r.raw || r.result)].filter(Boolean);
+  analysis.exactGroups.forEach((group) => {
+    // Indices are already sorted with the most complete record first
+    const keeperIdx = group.indices[0];
+    const keeperRecord = records[keeperIdx];
+    const otherIndices = group.indices.slice(1);
 
-    const primaryKey = `${normName}||${phoneList.sort().join(';')}`;
-    if (seen.has(primaryKey)) {
+    // Collect all phone numbers across all records in the group
+    const keeperCanonicalKeys = new Set(
+      keeperRecord.phoneNumbers && keeperRecord.phoneNumbers.length > 0
+        ? keeperRecord.phoneNumbers.map(p => getCanonicalPhoneKey(p.originalRaw || p.result)).filter(Boolean)
+        : [getCanonicalPhoneKey(keeperRecord.raw || keeperRecord.result)].filter(Boolean)
+    );
+
+    const extraRawPhones: string[] = [];
+
+    otherIndices.forEach((otherIdx) => {
+      removeIndexSet.add(otherIdx);
       removedCount++;
+
+      const otherRec = records[otherIdx];
+      const otherPhoneList = otherRec.phoneNumbers && otherRec.phoneNumbers.length > 0
+        ? otherRec.phoneNumbers.map(p => p.originalRaw || p.result)
+        : [otherRec.raw || otherRec.result];
+
+      otherPhoneList.forEach((phoneStr) => {
+        const key = getCanonicalPhoneKey(phoneStr);
+        if (key && !keeperCanonicalKeys.has(key)) {
+          keeperCanonicalKeys.add(key);
+          extraRawPhones.push(phoneStr);
+        }
+      });
+    });
+
+    if (extraRawPhones.length > 0) {
+      // Merge any extra phone numbers into keeper so no unique data is lost
+      const currentRaw = keeperRecord.raw || '';
+      const combinedRaw = [currentRaw, ...extraRawPhones].filter(Boolean).join(', ');
+      const upgradedKeeper = processFullContact(
+        keeperRecord.name,
+        combinedRaw,
+        includeCountryCode,
+        keeperIdx,
+        keeperRecord.id
+      );
+      keeperUpdates.set(keeperIdx, upgradedKeeper);
+      affectedRecords.push(upgradedKeeper);
     } else {
-      seen.add(primaryKey);
-      filtered.push({ ...r, originalIndex: filtered.length });
+      keeperUpdates.set(keeperIdx, keeperRecord);
+      affectedRecords.push(keeperRecord);
     }
   });
 
+  const updatedRecords: ContactRecord[] = [];
+  records.forEach((r, idx) => {
+    if (removeIndexSet.has(idx)) {
+      return; // Omit deleted duplicate copy with fewer contacts/phone numbers
+    }
+    const finalRec = keeperUpdates.get(idx) || r;
+    updatedRecords.push({
+      ...finalRec,
+      originalIndex: updatedRecords.length,
+    });
+  });
+
   return {
-    updatedRecords: filtered,
+    updatedRecords,
     removedCount,
+    affectedRecords,
   };
 }
+
+export type MergeStrategy = 'first' | 'second' | 'and' | 'slash';
 
 /**
  * Bulk merge of all shared phone number groups using a selected name combination strategy.
@@ -747,15 +919,22 @@ export function bulkMergeExactDuplicates(records: ContactRecord[]): {
 export function bulkMergeSharedGroups(
   records: ContactRecord[],
   includeCountryCode = true,
-  strategy: 'slash' | 'and' | 'first' = 'slash'
-): { updatedRecords: ContactRecord[]; mergedGroupsCount: number; reducedCount: number } {
+  strategy: MergeStrategy = 'first'
+): { 
+  updatedRecords: ContactRecord[]; 
+  mergedGroupsCount: number; 
+  reducedCount: number;
+  affectedRecords: ContactRecord[];
+  mergedDetails: MergedGroupDetail[];
+} {
   const analysis = analyzeDuplicates(records);
   if (analysis.sharedGroups.length === 0) {
-    return { updatedRecords: records, mergedGroupsCount: 0, reducedCount: 0 };
+    return { updatedRecords: records, mergedGroupsCount: 0, reducedCount: 0, affectedRecords: [], mergedDetails: [] };
   }
 
   const indicesToReplace = new Map<number, ContactRecord>();
   const indicesToRemove = new Set<number>();
+  const mergedDetails: MergedGroupDetail[] = [];
 
   analysis.sharedGroups.forEach((group) => {
     const groupRecords = group.indices.map(i => records[i]).filter(Boolean);
@@ -763,7 +942,9 @@ export function bulkMergeSharedGroups(
 
     const uniqueNames = Array.from(new Set(groupRecords.map(r => r.name.trim()))).filter(Boolean);
     let chosenName = uniqueNames[0] || 'Merged Contact';
-    if (strategy === 'slash') {
+    if (strategy === 'second') {
+      chosenName = uniqueNames[1] || uniqueNames[0] || 'Merged Contact';
+    } else if (strategy === 'slash') {
       chosenName = uniqueNames.join(' / ');
     } else if (strategy === 'and') {
       chosenName = uniqueNames.join(' & ');
@@ -782,6 +963,12 @@ export function bulkMergeSharedGroups(
       group.indices[0],
       groupRecords[0].id
     );
+
+    mergedDetails.push({
+      resultRecord: mergedRecord,
+      originalNames: uniqueNames,
+      phone: group.phone,
+    });
 
     // Primary index gets replaced, subsequent indices get removed
     indicesToReplace.set(group.indices[0], mergedRecord);
@@ -802,10 +989,14 @@ export function bulkMergeSharedGroups(
     }
   });
 
+  const affectedRecords = Array.from(indicesToReplace.values());
+
   return {
     updatedRecords,
     mergedGroupsCount: analysis.sharedGroups.length,
     reducedCount: records.length - updatedRecords.length,
+    affectedRecords,
+    mergedDetails,
   };
 }
 
@@ -865,6 +1056,7 @@ export function parseVCF(text: string, includeCountryCode = true): ContactRecord
     const lines = v.split(/\r?\n/);
     let name = '';
     const phones: string[] = [];
+    const extraLines: string[] = [];
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i].trim();
@@ -898,6 +1090,7 @@ export function parseVCF(text: string, includeCountryCode = true): ContactRecord
             name = nParts.reverse().join(' ');
           }
         }
+        extraLines.push(line);
       } else if (upper.startsWith('TEL')) {
         const colonIdx = line.indexOf(':');
         if (colonIdx !== -1) {
@@ -909,83 +1102,198 @@ export function parseVCF(text: string, includeCountryCode = true): ContactRecord
             }
           });
         }
+      } else if (upper.startsWith('BEGIN:VCARD') || upper.startsWith('VERSION:')) {
+        // Skip vCard structural wrapper lines as generateVCF handles them
+      } else {
+        extraLines.push(line);
       }
     }
 
     const contactName = name || `Unnamed Contact ${results.length + 1}`;
     const combinedPhones = phones.join(', ');
 
-    results.push(processFullContact(contactName, combinedPhones, includeCountryCode, results.length));
+    const record = processFullContact(contactName, combinedPhones, includeCountryCode, results.length);
+    if (extraLines.length > 0) {
+      record.extraVcardLines = extraLines;
+    }
+    results.push(record);
   });
 
   return results;
 }
 
+function parseCSVLine(text: string): string[] {
+  const result: string[] = [];
+  let inQuotes = false;
+  let currentVal = '';
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') {
+      if (inQuotes && text[i + 1] === '"') {
+        currentVal += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(currentVal.trim());
+      currentVal = '';
+    } else {
+      currentVal += char;
+    }
+  }
+  result.push(currentVal.trim());
+  return result.map(s => s.replace(/^["']|["']$/g, ''));
+}
+
 /**
- * Parses CSV or raw lines into ContactRecord array.
+ * Parses CSV or raw lines into ContactRecord array, with intelligent field mapping for Contact, Mobile, Telephone fields.
  */
 export function parseCSV(text: string, includeCountryCode = true): ContactRecord[] {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
   const results: ContactRecord[] = [];
+  if (lines.length === 0) return results;
 
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
+  // Check if first line is headers
+  const firstLineCols = lines[0].includes('\t') ? lines[0].split('\t').map(s => s.trim()) : parseCSVLine(lines[0]);
+  const lowerCols = firstLineCols.map(c => c.toLowerCase());
+  
+  const hasHeader = lowerCols.some(c => 
+    c.includes('name') || c.includes('phone') || c.includes('mobile') || c.includes('telephone') || c.includes('cell') || c.includes('first') || c.includes('last') || c.includes('company') || c.includes('contact')
+  );
 
-    // Ignore CSV header if present
-    if (idx === 0 && (trimmed.toLowerCase().includes('name') && (trimmed.toLowerCase().includes('phone') || trimmed.toLowerCase().includes('number') || trimmed.toLowerCase().includes('mobile')))) {
-      return;
+  let headers: string[] = [];
+  let startIndex = 0;
+
+  if (hasHeader) {
+    headers = firstLineCols;
+    startIndex = 1;
+  }
+
+  let nameIdx = -1;
+  let firstNameIdx = -1;
+  let lastNameIdx = -1;
+  let mobileIdx = -1;
+  let phoneIdx = -1;
+  let telIdx = -1;
+
+  if (headers.length > 0) {
+    headers.forEach((h, idx) => {
+      const lh = h.toLowerCase();
+      if ((lh.includes('name') && !lh.includes('file') && !lh.includes('nick')) || lh === 'name' || lh === 'contact name' || lh === 'display name') {
+        if (nameIdx === -1) nameIdx = idx;
+      }
+      if (lh.includes('first name') || lh === 'first' || lh === 'given name') firstNameIdx = idx;
+      if (lh.includes('last name') || lh === 'last' || lh === 'family name' || lh === 'surname') lastNameIdx = idx;
+      if (lh.includes('mobile') || lh.includes('cell') || lh.includes('cellular')) {
+        if (mobileIdx === -1) mobileIdx = idx;
+      }
+      if (lh.includes('telephone') || lh === 'tel') {
+        if (telIdx === -1) telIdx = idx;
+      }
+      if (lh.includes('phone') || lh.includes('number') || lh.includes('primary phone') || lh.includes('phone 1') || lh.includes('home phone') || lh.includes('business phone')) {
+        if (phoneIdx === -1) phoneIdx = idx;
+      }
+    });
+  }
+
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.includes('\t') ? line.split('\t').map(s => s.trim().replace(/^["']|["']$/g, '')) : parseCSVLine(line);
+    
+    if (headers.length > 0) {
+      while (cols.length < headers.length) {
+        cols.push('');
+      }
     }
 
-    let name = 'Unnamed Contact';
+    let name = '';
     let phone = '';
 
-    if (trimmed.includes(',')) {
-      const parts = trimmed.split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
-      if (parts.length === 1) {
-        phone = parts[0];
-      } else if (parts.length === 2) {
-        name = parts[0] || 'Unnamed Contact';
-        phone = parts[1];
-      } else {
-        // Last item is phone, previous are name parts
-        phone = parts[parts.length - 1];
-        name = parts.slice(0, parts.length - 1).join(' ') || 'Unnamed Contact';
+    if (headers.length > 0) {
+      if (firstNameIdx !== -1 || lastNameIdx !== -1) {
+        const f = firstNameIdx !== -1 ? cols[firstNameIdx] || '' : '';
+        const l = lastNameIdx !== -1 ? cols[lastNameIdx] || '' : '';
+        const combined = `${f} ${l}`.trim();
+        if (combined) name = combined;
+      } 
+      if (!name && nameIdx !== -1 && cols[nameIdx]) {
+        name = cols[nameIdx];
       }
-    } else if (trimmed.includes('\t')) {
-      const parts = trimmed.split('\t').map(s => s.trim());
-      if (parts.length >= 2) {
-        name = parts[0] || 'Unnamed Contact';
-        phone = parts[1];
-      } else {
-        phone = parts[0];
+      if (!name) {
+        name = 'Unnamed Contact';
       }
+
+      // Phone extraction priority: mobileIdx -> telIdx -> phoneIdx -> any column with phone pattern
+      let rawPhone = '';
+      const phoneIndices = [mobileIdx, telIdx, phoneIdx].filter(idx => idx !== -1);
+      for (const idx of phoneIndices) {
+        if (cols[idx] && cols[idx].trim().length > 0) {
+          rawPhone = cols[idx];
+          break;
+        }
+      }
+
+      if (!rawPhone) {
+        // Scan all columns for phone-like value
+        for (let c = 0; c < cols.length; c++) {
+          const val = cols[c];
+          if (val && (/^[\+\(\)0-9\-\s]{5,}$/.test(val) || /[0-9]{4,}/.test(val))) {
+            const hName = headers[c]?.toLowerCase() || '';
+            if (hName.includes('fax') || hName.includes('email') || hName.includes('address') || hName.includes('zip') || hName.includes('postal') || hName.includes('date') || hName.includes('notes') || hName.includes('status') || hName.includes('type')) {
+              continue;
+            }
+            rawPhone = val;
+            break;
+          }
+        }
+      }
+      phone = rawPhone;
     } else {
-      // Single line phone or name number
-      const words = trimmed.split(/\s+/);
-      const lastWord = words[words.length - 1];
-      if (/^(\+?[0-9\-\(\)]+)$/.test(lastWord)) {
-        phone = lastWord;
-        name = words.slice(0, words.length - 1).join(' ') || 'Unnamed Contact';
-      } else {
-        phone = trimmed;
+      if (cols.length === 1) {
+        phone = cols[0];
+      } else if (cols.length === 2) {
+        name = cols[0] || '';
+        phone = cols[1];
+      } else if (cols.length > 2) {
+        name = cols[0] || '';
+        phone = cols[cols.length - 1];
       }
     }
 
-    results.push(processFullContact(name, phone, includeCountryCode, results.length));
-  });
+    if (!name) name = 'Unnamed Contact';
+
+    const record = processFullContact(name, phone, includeCountryCode, results.length);
+    if (headers.length > 0) {
+      record.csvHeaders = headers;
+      record.csvRowValues = cols;
+    } else if (cols.length > 2) {
+      record.extraCsvColumns = cols.slice(1, cols.length - 1);
+    }
+    results.push(record);
+  }
 
   return results;
 }
 
 /**
- * Generates standards-compliant vCard 3.0 string.
+ * Generates standards-compliant vCard 3.0 string, preserving all extra non-phone fields as is.
  */
 export function generateVCF(records: ContactRecord[]): string {
   return records.map(r => {
     const lines: string[] = ['BEGIN:VCARD', 'VERSION:3.0'];
     lines.push(`FN:${r.name}`);
     
+    // Preserve extra vCard lines (Email, Address, Notes, Org, Title, etc.) as is
+    if (r.extraVcardLines && r.extraVcardLines.length > 0) {
+      r.extraVcardLines.forEach(l => {
+        const upper = l.toUpperCase();
+        if (!upper.startsWith('FN:') && !upper.startsWith('N:') && !upper.startsWith('TEL')) {
+          lines.push(l);
+        }
+      });
+    }
+
     // Separate TEL entries for each phone number
     const numbers = r.phoneNumbers.length > 0 
       ? r.phoneNumbers.map(p => p.result) 
@@ -1002,16 +1310,58 @@ export function generateVCF(records: ContactRecord[]): string {
 }
 
 /**
- * Generates CSV string for export with simplified "Contact Name" and "Mobile" columns.
+ * Generates CSV string for export, preserving all original columns and headers, and updating only the mobile/telephone number.
  */
 export function generateCSV(records: ContactRecord[]): string {
-  const rows = ['"Contact Name","Mobile"'];
-  records.forEach(r => {
-    const escapedName = r.name.replace(/"/g, '""');
-    const escapedMobile = r.result.replace(/"/g, '""');
-    rows.push(`"${escapedName}","${escapedMobile}"`);
-  });
-  return rows.join('\r\n');
+  const firstWithHeader = records.find(r => r.csvHeaders && r.csvHeaders.length > 0 && r.csvRowValues);
+  if (firstWithHeader && firstWithHeader.csvHeaders && firstWithHeader.csvRowValues) {
+    const headers = firstWithHeader.csvHeaders;
+    let mobileIdx = -1;
+    let telIdx = -1;
+    let phoneIdx = -1;
+    headers.forEach((h, idx) => {
+      const lh = h.toLowerCase();
+      if (lh.includes('mobile') || lh.includes('cell')) {
+        if (mobileIdx === -1) mobileIdx = idx;
+      }
+      if (lh.includes('telephone') || lh === 'tel') {
+        if (telIdx === -1) telIdx = idx;
+      }
+      if (lh.includes('phone') || lh.includes('number')) {
+        if (phoneIdx === -1) phoneIdx = idx;
+      }
+    });
+    const targetIdx = mobileIdx !== -1 ? mobileIdx : (telIdx !== -1 ? telIdx : (phoneIdx !== -1 ? phoneIdx : -1));
+
+    const rows = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',')];
+    records.forEach(r => {
+      let rowCols = r.csvRowValues ? [...r.csvRowValues] : [];
+      while (rowCols.length < headers.length) {
+        rowCols.push('');
+      }
+      if (targetIdx >= 0 && targetIdx < rowCols.length) {
+        rowCols[targetIdx] = r.result;
+      } else if (headers.length > 0) {
+        rowCols[rowCols.length - 1] = r.result;
+      }
+      const escapedRow = rowCols.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',');
+      rows.push(escapedRow);
+    });
+    return rows.join('\r\n');
+  } else {
+    const rows = ['"Contact Name","Mobile"'];
+    records.forEach(r => {
+      const escapedName = r.name.replace(/"/g, '""');
+      const escapedMobile = r.result.replace(/"/g, '""');
+      if (r.extraCsvColumns && r.extraCsvColumns.length > 0) {
+        const escapedExtra = r.extraCsvColumns.map(c => c.replace(/"/g, '""')).join('","');
+        rows.push(`"${escapedName}","${escapedExtra}","${escapedMobile}"`);
+      } else {
+        rows.push(`"${escapedName}","${escapedMobile}"`);
+      }
+    });
+    return rows.join('\r\n');
+  }
 }
 
 /**

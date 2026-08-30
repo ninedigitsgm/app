@@ -5,19 +5,27 @@ export const BackToTop: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Mobile viewport check (< 640px)
       const isMobile = window.innerWidth < 640;
-      if (isMobile) {
-        // Show only near the bottom on mobile (within 200px)
-        const isNearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 200;
-        setShowScrollTop(isNearBottom);
-      } else {
-        // Default behavior for desktop
-        setShowScrollTop(window.scrollY > 400);
+      if (!isMobile) {
+        setShowScrollTop(false);
+        return;
       }
+
+      // Show ONLY towards the very end of the page (within last 350px of document height)
+      const scrollBottom = window.innerHeight + window.scrollY;
+      const totalHeight = document.documentElement.scrollHeight;
+      const isNearEnd = totalHeight > window.innerHeight && scrollBottom >= totalHeight - 350;
+
+      setShowScrollTop(isNearEnd);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
   if (!showScrollTop) return null;
@@ -26,7 +34,7 @@ export const BackToTop: React.FC = () => {
     <button
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-6 right-6 z-50 p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/30 transition-all duration-300 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 animate-fade-in"
+      className="sm:hidden fixed bottom-5 right-5 z-50 p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/30 transition-all duration-300 flex items-center justify-center cursor-pointer active:scale-95 animate-fade-in"
       title="Scroll to top"
       aria-label="Scroll to top"
     >
@@ -36,3 +44,4 @@ export const BackToTop: React.FC = () => {
     </button>
   );
 };
+

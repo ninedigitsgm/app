@@ -34,7 +34,14 @@ import {
   X,
   BookOpen,
   FlaskConical,
-  Compass
+  Compass,
+  Wifi,
+  Undo2,
+  Redo2,
+  Eye,
+  GitCompare,
+  History,
+  Trash2
 } from 'lucide-react';
 import { OperatorLogo } from './OperatorLogo';
 import { LiveSandbox } from './LiveSandbox';
@@ -42,6 +49,7 @@ import { BatchRawTester } from './BatchRawTester';
 import { PuraRulesGuide } from './PuraRulesGuide';
 import { GettingStartedTutorial } from './GettingStartedTutorial';
 import { ScrollReveal } from './ScrollReveal';
+import { BackToTop } from './BackToTop';
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -67,17 +75,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>('how-it-works');
-  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
 
-  // Track active section and scroll-to-top button visibility
+  // Track active section for navigation
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 400) {
-        setShowScrollTop(true);
-      } else {
-        setShowScrollTop(false);
-      }
-
       const sections = ['how-it-works', 'tutorial', 'features', 'pura-rules', 'live-tester', 'faq'];
       const scrollPosition = window.scrollY + 120;
 
@@ -165,17 +166,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Gambia Flag Accent Top Bar */}
-      <div className="h-1.5 flex w-full sticky top-0 z-50">
-        <div className="flex-1 bg-red-600" />
-        <div className="w-4 bg-white" />
-        <div className="flex-1 bg-blue-600" />
-        <div className="w-4 bg-white" />
-        <div className="flex-1 bg-emerald-600" />
+      <div className="h-1 sm:h-1.5 flex w-full sticky top-0 z-50">
+        <div className="flex-[6] bg-[#CE1126]" />
+        <div className="flex-[1] bg-white" />
+        <div className="flex-[4] bg-[#0C1C8C]" />
+        <div className="flex-[1] bg-white" />
+        <div className="flex-[6] bg-[#3A7728]" />
       </div>
 
       {/* Sticky Header Navigation */}
-      <header className="sticky top-1.5 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-colors">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 sm:py-2.5 min-h-[72px] sm:min-h-[84px] flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-colors">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-1 flex items-center justify-between gap-4">
           {/* Logo */}
           <div 
             className="flex items-center cursor-pointer select-none group" 
@@ -184,7 +185,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <img
               src={darkMode ? "/logo-for-darkmode.svg" : "/logo-for-lightmode.svg"}
               alt="Auto Contacts Upgrader Logo"
-              className="h-14 sm:h-16 md:h-20 w-auto max-w-[240px] sm:max-w-[320px] md:max-w-[380px] object-contain transition-transform group-hover:scale-[1.01]"
+              className="h-10 sm:h-12 w-auto max-w-[180px] sm:max-w-[240px] object-contain transition-transform group-hover:scale-[1.01]"
               referrerPolicy="no-referrer"
             />
           </div>
@@ -311,69 +312,96 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         )}
       </header>
 
+      {/* Decorative Strip - Gambia Flag Gradient (Red - White - Blue - White - Green) */}
+      <div
+        className="h-1.5 sm:h-2 w-full bg-[linear-gradient(to_right,#CE1126_0%,#CE1126_32%,#FFFFFF_38%,#0C1C8C_44%,#0C1C8C_56%,#FFFFFF_62%,#3A7728_68%,#3A7728_100%)] shadow-[0_4px_14px_rgba(0,0,0,0.22)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.7)] relative z-20"
+        aria-hidden="true"
+      />
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-8 pb-14 sm:pb-20">
+      <section className="relative overflow-hidden pt-8 sm:pt-10 lg:pt-2 pb-0 sm:pb-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-emerald-500/10 via-blue-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Gambia Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-xs mb-6">
-            <span className="text-sm">🇬🇲</span>
-            <span>Built for The Gambia</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center mb-4">
             {/* Left Column */}
-            <div className="lg:col-span-5 space-y-6 text-left">
-              <div className="space-y-3">
+            <div className="lg:col-span-5 space-y-4 text-left">
+              <div className="space-y-2">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
                   Upgrade All Your Contacts to{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-300">
-                    9 Digits
-                  </span>{' '}
-                  <span className="text-teal-700 dark:text-teal-400">Automatically</span>
+                    9 Digits Automatically
+                  </span>
                 </h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed pt-1">
                   Our smart tool cleans, formats, and upgrades your contacts to the new Gambian 9-digit numbering format in seconds. Accurate, fast, and 100% automatic.
                 </p>
               </div>
 
               {/* Checkmark List */}
-              <div className="space-y-2.5 pt-1">
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span>Upload contacts via vCard (.vcf) or CSV</span>
+                  <span><b>1st Step is a Safe Backup:</b> Exporting creates an instant safety copy on your device (easy recovery, zero panic)</span>
                 </div>
 
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span>Supports QCell (+83), Comium (+86), Africell (+87)</span>
+                  <span><b>No Direct Phonebook Edits:</b> Operates in a safe staging sandbox where contacts on your phone are never altered directly</span>
                 </div>
 
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span>Preserves non-Phase 1 numbers (Gamcel & Gamtel)</span>
+                  <span><b>Automatic 9-Digit Upgrades:</b> Supports QCell (+83), Comium (+86), Africell (+87)</span>
                 </div>
 
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span>International number safeguards (foreign country codes untouched)</span>
+                  <span><b>Visual Diffs &amp; Duplicate Merging:</b> Displays all changes clearly and merges identical or shared numbers with 1 click</span>
                 </div>
 
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span>Safe, secure & your data stays 100% private on your device</span>
+                  <span><b>Undo &amp; Redo Protection:</b> Made a mistake? Revert or re-apply edits instantly without restarting the whole process</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><b>Gamcel, Gamtel &amp; Foreign Protection:</b> Preserves non-Phase 1 contacts and foreign international numbers</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><b>Review, Export &amp; Clean Re-Import:</b> Download upgraded .vcf/.csv with guidance to delete old contacts to prevent duplication</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><b>Works Online &amp; Offline:</b> 100% on-device PWA privacy, zero server uploads &amp; zero mobile data consumption</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span>Accessible on any device (smartphones, tablets, and computers)</span>
                 </div>
               </div>
 
@@ -383,7 +411,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   type="button"
                   id="landingHeroUploadBtn"
                   onClick={onLaunchApp}
-                  className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm sm:text-base shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition cursor-pointer active:scale-95"
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition cursor-pointer active:scale-95"
                 >
                   <span>Upload & Upgrade Contacts</span>
                   <ArrowRight className="w-4 h-4" />
@@ -393,7 +421,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   type="button"
                   id="landingHeroDemoBtn"
                   onClick={onTryDemo}
-                  className="px-5 py-3.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-300 dark:border-slate-700 shadow-xs flex items-center gap-2 transition cursor-pointer"
+                  className="px-4 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-300 dark:border-slate-700 shadow-xs flex items-center gap-2 transition cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-amber-500" />
                   <span>Try Live Demo</span>
@@ -402,15 +430,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Right Column: Multi-Device Responsive Mockup */}
-            <div className="lg:col-span-7 relative flex items-center justify-center">
-              {/* New Responsive Device Mockups */}
+            <div className="lg:col-span-7 relative flex items-center justify-center lg:justify-end mt-6 sm:mt-8 lg:mt-0 w-full overflow-visible">
+              {/* Responsive Device Mockups */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative w-full max-w-3xl aspect-[16/9]"
+                className="relative w-full flex items-center justify-center lg:justify-end"
               >
-                <img src="/device-mockups.svg" alt="Device Mockups" className="w-full h-full object-contain" />
+                <img
+                  src="/consolidated-mockups.svg"
+                  alt="Gambia 9-Digit Upgrade Device Mockups"
+                  className="w-full lg:w-[122%] xl:w-[130%] max-w-none h-auto drop-shadow-2xl transition-transform duration-300 lg:-mr-4 xl:-mr-8"
+                />
               </motion.div>
             </div>
           </div>
@@ -422,54 +454,95 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 HOW IT WORKS
               </span>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-                Upgrade in <span className="text-emerald-600 dark:text-emerald-400">3 Simple Steps</span>
+                Upgrade Safely in <span className="text-emerald-600 dark:text-emerald-400">3 Simple Steps</span>
               </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto mt-1.5">
+                Safe on-device process with automatic phonebook backup, undo/redo controls, and clean re-importing.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center mb-3">
-                  1
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-6">
+              {/* Step 1 - Red */}
+              <div className="bg-red-50/60 dark:bg-red-950/25 p-6 rounded-2xl border border-red-100 dark:border-red-900/40 shadow-sm text-center flex flex-col items-center justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-red-600 text-white font-bold text-xs flex items-center justify-center mb-3 shadow-sm shadow-red-500/20 mx-auto">
+                    1
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-red-900/40 text-red-600 dark:text-red-400 flex items-center justify-center mb-3 shadow-xs mx-auto">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
+                    1. Export from Phone (Instant Backup)
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Export your contacts (.vcf or .csv). <b>This file is your safety backup</b>, so you can restore anytime. No panic, complete peace of mind!
+                  </p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3">
-                  <Upload className="w-6 h-6" />
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-red-100/80 dark:bg-red-900/40 text-[11px] font-bold text-red-700 dark:text-red-300">
+                  🛡️ Safe &amp; Reversible Backup
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
-                  1. Import Contacts File
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Upload your Apple/Android (.vcf) or spreadsheet (.csv) file securely on-device.
-                </p>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center mb-3">
-                  2
+              {/* Step 2 - Blue */}
+              <div className="bg-blue-50/60 dark:bg-blue-950/25 p-6 rounded-2xl border border-blue-100 dark:border-blue-900/40 shadow-sm text-center flex flex-col items-center justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center mb-3 shadow-sm shadow-blue-500/20 mx-auto">
+                    2
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 shadow-xs mx-auto">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
+                    2. Import, Clean &amp; Undo/Redo
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Operates in a safe staging area (doesn't modify your phonebook directly). View all before/after changes, merge duplicates, and use <b>Undo &amp; Redo</b> if you make a mistake without restarting.
+                  </p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
-                  <Sparkles className="w-6 h-6" />
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-[11px] font-bold text-blue-700 dark:text-blue-300">
+                  ↩️ Undo/Redo &amp; Visual Diffs
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
-                  2. Review & Filter
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Inspect upgraded numbers, search operators, and detect duplicates interactively.
-                </p>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm text-center flex flex-col items-center">
-                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center mb-3">
-                  3
+              {/* Step 3 - Green */}
+              <div className="bg-emerald-50/60 dark:bg-emerald-950/25 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 shadow-sm text-center flex flex-col items-center justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center mb-3 shadow-sm shadow-emerald-500/20 mx-auto">
+                    3
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 shadow-xs mx-auto">
+                    <Download className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
+                    3. Export &amp; Clean Re-Import
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Download your clean 9-digit file. <b>Pro-Tip:</b> Delete old contacts on your phone before re-importing to prevent duplicate Non-Gambian, Gamcel/Gamtel, or old 7-digit numbers!
+                  </p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
-                  <Download className="w-6 h-6" />
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                  ✨ Zero Duplicate Clutter
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
-                  3. Format & Export
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Toggle +220 country code prefix and download your upgraded VCF or CSV instantly.
-                </p>
+              </div>
+            </div>
+
+            {/* Anti-Duplication & Golden Safety Rule Banner */}
+            <div className="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-blue-500/10 dark:from-amber-950/40 dark:via-emerald-950/40 dark:to-blue-950/40 border border-amber-300/60 dark:border-amber-700/60 rounded-2xl p-4 sm:p-5 text-left flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>The Golden Re-Import Rule: Delete Old Contacts Before Re-importing</span>
+                    <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 bg-amber-200 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 rounded-full">
+                      Important
+                    </span>
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                    Since your exported file from Step 1 is already saved safely on your device as a backup, always delete your existing contacts on your phone before re-importing the upgraded file. This ensures you avoid duplicates of <b>Non-Gambian numbers</b>, <b>Gamcel &amp; Gamtel numbers</b>, and <b>old 7-digit entries</b>.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -522,7 +595,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
               <div>
                 <div className="text-lg sm:text-xl font-black">{successRate}%</div>
-                <div className="text-[11px] text-emerald-100 font-medium">Success Rate</div>
+                <div className="text-[11px] text-emerald-100 font-medium">Successful Upgrade</div>
               </div>
             </div>
           </div>
@@ -549,18 +622,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 1. 100% Client-Side Privacy */}
                 <ScrollReveal delay={0}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-emerald-400 dark:hover:border-emerald-600 transition h-full">
+                  <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex flex-col justify-between hover:border-emerald-400 dark:hover:border-emerald-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 shadow-xs">
                         <Lock className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
                         100% Client-Side Privacy
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Your address book never leaves your phone or computer. All processing runs entirely inside local browser memory.
+                        Your address book never leaves your phone or computer. All processing runs entirely inside local browser memory with zero server uploads.
                       </p>
                     </div>
                     <div className="mt-3 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -569,135 +643,162 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                 </ScrollReveal>
 
+                {/* 2. Works Online & Offline (2nd position as requested) */}
                 <ScrollReveal delay={50}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-blue-400 dark:hover:border-blue-600 transition h-full">
+                  <div className="bg-cyan-50/50 dark:bg-cyan-950/20 p-5 rounded-2xl border border-cyan-100 dark:border-cyan-900/30 shadow-xs flex flex-col justify-between hover:border-cyan-400 dark:hover:border-cyan-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3">
-                        <Globe2 className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-3 shadow-xs">
+                        <Wifi className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        Foreign Number Protection
+                        Works Online &amp; Offline
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Safeguards international numbers (Senegal +221, UK +44, USA +1, etc.) preventing corrupt modifications.
+                        Installable Progressive Web App (PWA) operating seamlessly with or without internet. Clean, convert, and export anywhere with zero mobile data charges.
                       </p>
                     </div>
-                    <div className="mt-3 text-[11px] font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Foreign Codes Untouched
+                    <div className="mt-3 text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Full PWA &amp; Offline Support
                     </div>
                   </div>
                 </ScrollReveal>
 
+                {/* 3. Export as Instant Safety Backup */}
                 <ScrollReveal delay={100}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-amber-400 dark:hover:border-amber-600 transition h-full">
+                  <div className="bg-amber-50/50 dark:bg-amber-950/20 p-5 rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-xs flex flex-col justify-between hover:border-amber-400 dark:hover:border-amber-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
-                        <ShieldAlert className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 shadow-xs">
+                        <ShieldCheck className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        Gamcel & Gamtel Protected
+                        Instant Backup &amp; Safe Recovery
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Gamcel 9-series mobile numbers and Gamtel fixed landlines remain properly preserved as 7 digits per PURA Phase 1.
+                        The 1st step exports your contacts to your device, creating a permanent safety backup. Restoration is always effortless with zero panic.
                       </p>
                     </div>
                     <div className="mt-3 text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Phase 1 Compliance
+                      <Check className="w-3.5 h-3.5" /> Reversible &amp; Stress-Free
                     </div>
                   </div>
                 </ScrollReveal>
 
+                {/* 4. Safe Staging / No Direct Phonebook Alteration */}
                 <ScrollReveal delay={150}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-purple-400 dark:hover:border-purple-600 transition h-full">
+                  <div className="bg-blue-50/50 dark:bg-blue-950/20 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 shadow-xs flex flex-col justify-between hover:border-blue-400 dark:hover:border-blue-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 shadow-xs">
+                        <Eye className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
+                        Safe Sandbox &amp; Visual Diffs
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Doesn't modify your phonebook directly. Imports into a safe staging area where all prefix transformations and changes are displayed transparently.
+                      </p>
+                    </div>
+                    <div className="mt-3 text-[11px] font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Non-Destructive Preview
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* 5. Undo & Redo Safeguard */}
+                <ScrollReveal delay={200}>
+                  <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 shadow-xs flex flex-col justify-between hover:border-indigo-400 dark:hover:border-indigo-600 transition h-full">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 shadow-xs">
+                        <RotateCcw className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
+                        Undo &amp; Redo Action History
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Made a mistaken edit or accidental delete? Revert or step forward instantly with multi-step Undo &amp; Redo without restarting from scratch.
+                      </p>
+                    </div>
+                    <div className="mt-3 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Full History Rollback
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* 6. Dual-Layer Duplicate Cleanup & Merging */}
+                <ScrollReveal delay={250}>
+                  <div className="bg-purple-50/50 dark:bg-purple-950/20 p-5 rounded-2xl border border-purple-100 dark:border-purple-900/30 shadow-xs flex flex-col justify-between hover:border-purple-400 dark:hover:border-purple-600 transition h-full">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3 shadow-xs">
                         <SearchCheck className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        Dual-Layer Deduplication
+                        Cleanup &amp; Merge Duplicates
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Automatically identifies identical name/number entries and flags shared numbers across different names with 1-click merge.
+                        Detects duplicate names, identical numbers, and shared lines across multiple entries with interactive 1-click merge resolutions.
                       </p>
                     </div>
                     <div className="mt-3 text-[11px] font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Clean Contact Books
+                      <Check className="w-3.5 h-3.5" /> Clutter-Free Address Books
                     </div>
                   </div>
                 </ScrollReveal>
 
-                <ScrollReveal delay={200}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-teal-400 dark:hover:border-teal-600 transition h-full">
+                {/* 7. Clean Re-Import Best Practice */}
+                <ScrollReveal delay={300}>
+                  <div className="bg-rose-50/50 dark:bg-rose-950/20 p-5 rounded-2xl border border-rose-100 dark:border-rose-900/30 shadow-xs flex flex-col justify-between hover:border-rose-400 dark:hover:border-rose-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-3 shadow-xs">
+                        <Trash2 className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
+                        Clean Re-Import Safety Guide
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Step-by-step guidance to delete previous contacts before re-importing, preventing duplicate Non-Gambian, Gamcel/Gamtel, and old 7-digit numbers.
+                      </p>
+                    </div>
+                    <div className="mt-3 text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Zero Ghost Duplicates
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* 8. Gamcel & Gamtel Phase 1 Compliance */}
+                <ScrollReveal delay={350}>
+                  <div className="bg-orange-50/50 dark:bg-orange-950/20 p-5 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-xs flex flex-col justify-between hover:border-orange-400 dark:hover:border-orange-600 transition h-full">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-3 shadow-xs">
+                        <ShieldAlert className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
+                        Gamcel &amp; Gamtel Safeguards
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Gamcel 9-series mobile numbers and Gamtel fixed landlines remain properly preserved as 7 digits per official PURA Phase 1 guidelines.
+                      </p>
+                    </div>
+                    <div className="mt-3 text-[11px] font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Phase 1 Compliant
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* 9. Universal Device & vCard 3.0 Compatibility */}
+                <ScrollReveal delay={400}>
+                  <div className="bg-teal-50/50 dark:bg-teal-950/20 p-5 rounded-2xl border border-teal-100 dark:border-teal-900/30 shadow-xs flex flex-col justify-between hover:border-teal-400 dark:hover:border-teal-600 transition h-full">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-3 shadow-xs">
                         <Smartphone className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        iOS & Android vCard 3.0
+                        iOS &amp; Android vCard 3.0
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Exports pristine .vcf format supported by Apple iPhone Contacts, Google Contacts, Samsung, and WhatsApp.
+                        Exports pristine .vcf and .csv formats compatible with Apple iPhone Contacts, Google Contacts, Samsung Galaxy, and WhatsApp.
                       </p>
                     </div>
                     <div className="mt-3 text-[11px] font-semibold text-teal-600 dark:text-teal-400 flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" /> Native Address Book Sync
-                    </div>
-                  </div>
-                </ScrollReveal>
-
-                <ScrollReveal delay={250}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-pink-400 dark:hover:border-pink-600 transition h-full">
-                    <div>
-                      <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-950 text-pink-600 dark:text-pink-400 flex items-center justify-center mb-3">
-                        <Smile className="w-5 h-5" />
-                      </div>
-                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        Emoji & UTF-8 Decoder
-                      </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Decodes Quoted-Printable strings and preserves emojis, accents, and custom contact tags seamlessly.
-                      </p>
-                    </div>
-                    <div className="mt-3 text-[11px] font-semibold text-pink-600 dark:text-pink-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Zero Character Loss
-                    </div>
-                  </div>
-                </ScrollReveal>
-
-                <ScrollReveal delay={300}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-indigo-400 dark:hover:border-indigo-600 transition h-full">
-                    <div>
-                      <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3">
-                        <SortAsc className="w-5 h-5" />
-                      </div>
-                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        A-Z Jump Bar & Sorting
-                      </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Navigate thousands of contacts effortlessly with the alphabetical jump strip and multi-criteria sorting.
-                      </p>
-                    </div>
-                    <div className="mt-3 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Fast Navigation
-                    </div>
-                  </div>
-                </ScrollReveal>
-
-                <ScrollReveal delay={350}>
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between hover:border-rose-400 dark:hover:border-rose-600 transition h-full">
-                    <div>
-                      <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-3">
-                        <SlidersHorizontal className="w-5 h-5" />
-                      </div>
-                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        Prefix Matrix & Filters
-                      </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Filter by operator, preview status, and export with or without the +220 country code prefix on demand.
-                      </p>
-                    </div>
-                    <div className="mt-3 text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Flexible Export Formats
                     </div>
                   </div>
                 </ScrollReveal>
@@ -803,6 +904,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
+      {/* Decorative Strip - Gambia Flag Gradient (Red - White - Blue - White - Green) */}
+      <div
+        className="h-1.5 sm:h-2 w-full bg-[linear-gradient(to_right,#CE1126_0%,#CE1126_32%,#FFFFFF_38%,#0C1C8C_44%,#0C1C8C_56%,#FFFFFF_62%,#3A7728_68%,#3A7728_100%)] shadow-[0_-4px_14px_rgba(0,0,0,0.18),0_4px_14px_rgba(0,0,0,0.22)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.55),0_4px_18px_rgba(0,0,0,0.7)] relative z-20"
+        aria-hidden="true"
+      />
+
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 text-center text-xs text-slate-500 dark:text-slate-400">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -822,25 +929,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           </div>
           <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-xs">
+              <span className="text-sm">🇬🇲</span>
+              <span>Built for The Gambia</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
             <span>Built in compliance with PURA Gambia National Numbering Plan</span>
           </div>
         </div>
       </footer>
 
-      {/* Floating Smooth Scroll-to-Top Button */}
-      {showScrollTop && (
-        <button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/30 transition-all duration-300 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 animate-fade-in"
-          title="Scroll to top"
-          aria-label="Scroll to top"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
-          </svg>
-        </button>
-      )}
+      {/* Mobile-only Scroll-to-Top Button near end of page */}
+      <BackToTop />
     </div>
   );
 };

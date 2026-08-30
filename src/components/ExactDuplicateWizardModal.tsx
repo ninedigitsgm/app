@@ -41,12 +41,22 @@ export const ExactDuplicateWizardModal: React.FC<ExactDuplicateWizardModalProps>
     .map((idx) => allRecords[idx])
     .filter((r): r is ContactRecord => Boolean(r));
 
-  // If selectedKeepId is not in groupRecords, default to the first record
+  // Determine the record with the most phone numbers
+  const getPhoneCount = (r: ContactRecord) => {
+    if (r.phoneNumbers && r.phoneNumbers.length > 0) return r.phoneNumbers.length;
+    if (r.raw) return r.raw.split(/[,;/]/).length;
+    return 1;
+  };
+
+  const maxPhoneCount = Math.max(...groupRecords.map(getPhoneCount), 1);
+
+  // If selectedKeepId is not in groupRecords, default to the record with the most numbers (first in groupRecords)
   const currentKeepId = groupRecords.some((r) => r.id === selectedKeepId)
     ? selectedKeepId
     : groupRecords[0]?.id || '';
 
   const handleNext = () => {
+    setSelectedKeepId('');
     if (activeIndex < groups.length - 1) {
       setCurrentGroupIdx(activeIndex + 1);
     } else {
@@ -55,6 +65,7 @@ export const ExactDuplicateWizardModal: React.FC<ExactDuplicateWizardModalProps>
   };
 
   const handlePrev = () => {
+    setSelectedKeepId('');
     if (activeIndex > 0) {
       setCurrentGroupIdx(activeIndex - 1);
     }
@@ -64,6 +75,7 @@ export const ExactDuplicateWizardModal: React.FC<ExactDuplicateWizardModalProps>
     const keepId = currentKeepId;
     const removeIds = groupRecords.filter((r) => r.id !== keepId).map((r) => r.id);
     onKeepRecord(currentGroup.key, keepId, removeIds);
+    setSelectedKeepId('');
 
     if (groups.length <= 1) {
       onClose();
@@ -73,11 +85,11 @@ export const ExactDuplicateWizardModal: React.FC<ExactDuplicateWizardModalProps>
   return (
     <div
       id="exactDuplicateWizardModal"
-      className="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 z-60"
+      className="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-xs flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto z-[200]"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full max-w-xl my-auto shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[88vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -158,11 +170,19 @@ export const ExactDuplicateWizardModal: React.FC<ExactDuplicateWizardModalProps>
                         />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                        <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
                           <span>Copy #{rIdx + 1}</span>
                           <span className="text-[10px] font-normal text-slate-400">(Index {rec.originalIndex + 1})</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            getPhoneCount(rec) === maxPhoneCount && maxPhoneCount > 1
+                              ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}>
+                            {getPhoneCount(rec)} {getPhoneCount(rec) === 1 ? 'phone' : 'phones'}
+                            {getPhoneCount(rec) === maxPhoneCount && maxPhoneCount > 1 ? ' (Most Complete)' : ''}
+                          </span>
                           {isSelected && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100">
                               Will Keep
                             </span>
                           )}

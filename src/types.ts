@@ -22,6 +22,10 @@ export interface ContactRecord {
   phoneNumbers: NumberProcessResult[];
   originalIndex: number;
   hasRepeatedNumbers?: boolean;
+  extraVcardLines?: string[];
+  extraCsvColumns?: string[];
+  csvHeaders?: string[];
+  csvRowValues?: string[];
 }
 
 export interface RepeatedGroup {
@@ -46,7 +50,13 @@ export interface DuplicateAnalysisResult {
   missingPhoneGroups: Array<{ contactIndex: number; contactId: string; name: string }>;
 }
 
-export type SortOption = 'name-asc' | 'name-desc' | 'original' | 'operator-asc' | 'status-asc';
+export type SortOption = 
+  | 'name-asc' 
+  | 'name-desc' 
+  | 'original' 
+  | 'operator-asc' 
+  | 'status-asc'
+  | 'duplicate-group';
 
 export type FilterOption = 
   | 'all' 
@@ -71,5 +81,30 @@ export interface InstructionProgressState {
   percent: number;
   status: 'running' | 'completed';
 }
+
+export interface AffectedContactItem {
+  id: string;
+  name: string;
+  originalPhone?: string;
+  upgradedPhone: string;
+  operator: OperatorName;
+  status: ContactStatus;
+  changeNote?: string;
+  previousNames?: string[];
+}
+
+export interface ActionSummaryData {
+  title: string;
+  description: string;
+  actionType: 'merge' | 'bulk-merge' | 'edit' | 'add' | 'deduplicate' | 'clean-repeated' | 'add-phone' | 'general';
+  affectedContacts: AffectedContactItem[];
+  stats?: {
+    totalBefore?: number;
+    totalAfter?: number;
+    removedOrMergedCount?: number;
+    cleanedCount?: number;
+  };
+}
+
 
 

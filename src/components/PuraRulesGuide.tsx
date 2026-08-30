@@ -32,7 +32,7 @@ export const PuraRulesGuide: React.FC = () => {
             <p className="text-xs text-amber-800/90 dark:text-amber-300/80 leading-snug">
               Applies to 7-digit numbers starting with:
               <br />
-              <b className="text-amber-950 dark:text-amber-200">3</b> (30–39) or{' '}
+              <b className="text-amber-950 dark:text-amber-200">3</b> (30-39) or{' '}
               <b className="text-amber-950 dark:text-amber-200">50, 51, 52, 53, 54, 55, 58, 59</b>
             </p>
           </div>
@@ -56,7 +56,7 @@ export const PuraRulesGuide: React.FC = () => {
             <p className="text-xs text-red-800/90 dark:text-red-300/80 leading-snug">
               Applies to 7-digit numbers starting with:
               <br />
-              <b className="text-red-950 dark:text-red-200">6</b> (60–69) or{' '}
+              <b className="text-red-950 dark:text-red-200">6</b> (60-69) or{' '}
               <b className="text-red-950 dark:text-red-200">84, 85, 86, 87</b>
             </p>
           </div>
@@ -80,8 +80,8 @@ export const PuraRulesGuide: React.FC = () => {
             <p className="text-xs text-[#9D207E]/90 dark:text-[#F3B3EB]/90 leading-snug">
               Applies to 7-digit numbers starting with:
               <br />
-              <b className="text-[#9D207E] dark:text-[#F3B3EB]">7</b> (70–79),{' '}
-              <b className="text-[#9D207E] dark:text-[#F3B3EB]">2</b> (20–29), or{' '}
+              <b className="text-[#9D207E] dark:text-[#F3B3EB]">7</b> (70-79),{' '}
+              <b className="text-[#9D207E] dark:text-[#F3B3EB]">2</b> (20-29), or{' '}
               <b className="text-[#9D207E] dark:text-[#F3B3EB]">40, 41, 45</b>
             </p>
           </div>

@@ -19,7 +19,8 @@ import {
   ArrowUpZA,
   ListOrdered,
   Signal,
-  Trash2
+  Trash2,
+  GitMerge
 } from 'lucide-react';
 import { FilterOption, SortOption } from '../types';
 import { OperatorLogo } from './OperatorLogo';
@@ -142,6 +143,7 @@ const SORT_LABELS: Record<SortOption, string> = {
   'original': 'Original Import Order',
   'operator-asc': 'Network Operator',
   'status-asc': 'Upgrade Status',
+  'duplicate-group': 'Group Duplicates (Shared & Exact)',
 };
 
 interface SortItem {
@@ -160,6 +162,11 @@ const SORT_ITEMS: SortItem[] = [
     value: 'name-desc',
     label: 'Name (Z → A)',
     icon: <ArrowUpZA className="w-4 h-4 text-blue-500 shrink-0" />,
+  },
+  {
+    value: 'duplicate-group',
+    label: 'Group Duplicates (Shared & Exact)',
+    icon: <GitMerge className="w-4 h-4 text-purple-500 shrink-0" />,
   },
   {
     value: 'original',
@@ -606,7 +613,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
 
             {/* UNDO DROPDOWN LIST */}
             {isUndoDropdownOpen && undoSnapshots.length > 0 && (
-              <div className="absolute top-[42px] left-0 z-50 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute top-[42px] left-0 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                 <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-500 tracking-wider uppercase">
                   Undo to past actions (max 10)
                 </div>
@@ -621,10 +628,10 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                           onUndoToSnapshot(reverseIdx);
                           setIsUndoDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between font-medium cursor-pointer"
+                        className="w-full text-left px-3 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between gap-2 font-medium cursor-pointer"
                       >
                         <span className="truncate pr-1">{undoSnapshots[reverseIdx].description}</span>
-                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-600 shrink-0 uppercase">
+                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 shrink-0 uppercase whitespace-nowrap">
                           -{sIdx + 1} Step{sIdx > 0 ? 's' : ''}
                         </span>
                       </button>
@@ -670,7 +677,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
 
             {/* REDO DROPDOWN LIST */}
             {isRedoDropdownOpen && redoSnapshots.length > 0 && (
-              <div className="absolute top-[42px] right-0 z-50 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute top-[42px] -left-16 sm:left-0 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                 <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-500 tracking-wider uppercase">
                   Redo next actions (max 10)
                 </div>
@@ -685,10 +692,10 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                           onRedoToSnapshot(reverseIdx);
                           setIsRedoDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between font-medium cursor-pointer"
+                        className="w-full text-left px-3 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between gap-2 font-medium cursor-pointer"
                       >
                         <span className="truncate pr-1">{redoSnapshots[reverseIdx].description}</span>
-                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-600 shrink-0 uppercase">
+                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 shrink-0 uppercase whitespace-nowrap">
                           +{sIdx + 1} Step{sIdx > 0 ? 's' : ''}
                         </span>
                       </button>

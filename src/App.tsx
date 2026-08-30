@@ -15,12 +15,22 @@ import { ExactDuplicateWizardModal } from './components/ExactDuplicateWizardModa
 import { RepeatedNumbersWizardModal } from './components/RepeatedNumbersWizardModal';
 import { MissingPhoneWizardModal } from './components/MissingPhoneWizardModal';
 import { ExportPreviewModal } from './components/ExportPreviewModal';
+import { ActionSummaryModal } from './components/ActionSummaryModal';
+import { CleanSharedModal } from './components/CleanSharedModal';
 import { InstructionProgressBar } from './components/InstructionProgressBar';
 import { ScrollReveal } from './components/ScrollReveal';
 import { BackToTop } from './components/BackToTop';
 import { OperatorDistributionChart } from './components/OperatorDistributionChart';
 import { Toast, ToastMessage } from './components/Toast';
-import { ContactRecord, FilterOption, SortOption, InstructionProgressState } from './types';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { 
+  ContactRecord, 
+  FilterOption, 
+  SortOption, 
+  InstructionProgressState,
+  ActionSummaryData,
+  AffectedContactItem 
+} from './types';
 import { 
   analyzeDuplicates, 
   generateCSV, 
@@ -31,6 +41,7 @@ import {
   triggerDownload,
   bulkMergeExactDuplicates,
   bulkMergeSharedGroups,
+  MergeStrategy,
   removeInternalRepeatedNumbers,
   isMissingPhone,
   getCanonicalPhoneKey
@@ -120,6 +131,7 @@ export default function App() {
     });
     setRecordsState(lastHistory.records);
     setSelectedIds(new Set());
+    setModifiedContactIds(new Set());
     addToast(`Undo: ${lastHistory.description}`, 'info');
   };
 
@@ -134,6 +146,7 @@ export default function App() {
     });
     setRecordsState(lastRedo.records);
     setSelectedIds(new Set());
+    setModifiedContactIds(new Set());
     addToast(`Redo: ${lastRedo.description}`, 'info');
   };
 
@@ -161,6 +174,7 @@ export default function App() {
     setHistory(newHistory);
     setRecordsState(targetSnapshot.records);
     setSelectedIds(new Set());
+    setModifiedContactIds(new Set());
     addToast(`Reverted back to: ${targetSnapshot.description}`, 'info');
   };
 
@@ -188,6 +202,7 @@ export default function App() {
     setRedoStack(newRedoStack);
     setRecordsState(targetSnapshot.records);
     setSelectedIds(new Set());
+    setModifiedContactIds(new Set());
     addToast(`Restored state to: ${targetSnapshot.description}`, 'info');
   };
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -209,6 +224,13 @@ export default function App() {
   // Export Preview state
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'CSV' | 'VCF'>('CSV');
+
+  // Clean Shared Modal state
+  const [isCleanSharedModalOpen, setIsCleanSharedModalOpen] = useState(false);
+
+  // Modified Contacts Highlights & Action Summary Modal state
+  const [modifiedContactIds, setModifiedContactIds] = useState<Set<string>>(new Set());
+  const [actionSummaryData, setActionSummaryData] = useState<ActionSummaryData | null>(null);
 
   // Import Progress state
   const [importProgress, setImportProgress] = useState<ImportProgressState | null>(null);
@@ -375,6 +397,8 @@ export default function App() {
       const parsed = parseCSV(SAMPLE_RAW_DATA, includeCountryCode);
       setRecords(parsed, "Load Sample Contacts");
       setSelectedIds(new Set());
+      setModifiedContactIds(new Set());
+      setActionSummaryData(null);
       setIsAnalyzing(false);
       addToast(`Loaded ${parsed.length} sample contacts`);
       scrollToReviewSection();
@@ -390,6 +414,7 @@ export default function App() {
         prev.map((r, i) => processFullContact(r.name, r.raw, nextVal, i, r.id)),
       `Toggle +220 Prefix (${nextVal ? 'ON' : 'OFF'})`
     );
+    setModifiedContactIds(new Set());
     addToast(
       nextVal ? 'Country code (+220) enabled for exports' : 'Country code prefix removed',
       'info'
@@ -421,6 +446,8 @@ export default function App() {
       setTimeout(() => {
         setRecords(parsed, `Import from ${filename}`);
         setSelectedIds(new Set());
+        setModifiedContactIds(new Set());
+        setActionSummaryData(null);
         setImportProgress(null);
         addToast(`Successfully loaded ${parsed.length} contacts from ${filename}`);
         scrollToReviewSection();
@@ -432,6 +459,8 @@ export default function App() {
     const parsed = parseCSV(rawText, includeCountryCode);
     setRecords(parsed, "Pasted Raw Contacts");
     setSelectedIds(new Set());
+    setModifiedContactIds(new Set());
+    setActionSummaryData(null);
     addToast(`Successfully processed ${parsed.length} pasted contacts`);
     scrollToReviewSection();
   };
@@ -439,6 +468,8 @@ export default function App() {
   const handleClearAll = () => {
     setRecords([], "Clear All Contacts");
     setSelectedIds(new Set());
+    setModifiedContactIds(new Set());
+    setActionSummaryData(null);
     setSequentialGroupIndex(null);
     setMergingContacts(null);
     addToast('All contacts cleared from memory', 'info');
@@ -453,12 +484,33 @@ export default function App() {
       records.length
     );
     setRecords((prev) => [newRecord, ...prev], `Add Contact: ${name}`);
+    setModifiedContactIds(new Set([newRecord.id]));
+    setActionSummaryData({
+      actionType: 'add',
+      title: 'New Contact Added',
+      description: `Added "${name}" formatted to 9-digit Gambian dialling standards.`,
+      affectedContacts: [
+        {
+          id: newRecord.id,
+          name: newRecord.name,
+          originalPhone: newRecord.raw,
+          upgradedPhone: newRecord.result,
+          operator: newRecord.operator,
+          status: newRecord.status,
+          changeNote: 'New contact entry standardized & created',
+        }
+      ],
+      stats: {
+        totalAffected: 1,
+      }
+    });
     addToast(`Added "${name}" to contact list`);
     scrollToReviewSection();
   };
 
   // Edit Contact
   const handleSaveEdit = (id: string, newName: string, newPhone: string) => {
+    const updatedRecord = processFullContact(newName, newPhone, includeCountryCode, 0, id);
     setRecords(
       (prev) =>
         prev.map((r, idx) =>
@@ -468,6 +520,26 @@ export default function App() {
         ),
       `Edit Contact: ${newName}`
     );
+    setModifiedContactIds(new Set([id]));
+    setActionSummaryData({
+      actionType: 'edit',
+      title: 'Contact Details Updated',
+      description: `Successfully modified information for "${newName}".`,
+      affectedContacts: [
+        {
+          id,
+          name: newName,
+          originalPhone: newPhone,
+          upgradedPhone: updatedRecord.result,
+          operator: updatedRecord.operator,
+          status: updatedRecord.status,
+          changeNote: 'Contact name and phone number updated',
+        }
+      ],
+      stats: {
+        totalAffected: 1,
+      }
+    });
     addToast('Contact updated successfully');
   };
 
@@ -543,9 +615,18 @@ export default function App() {
   };
 
   // Bulk Merge Handler
-  const handleBulkMergeShared = (strategy: 'slash' | 'and' | 'first') => {
+  const handleBulkMergeShared = (strategy: MergeStrategy = 'first') => {
+    setIsCleanSharedModalOpen(false);
     executeInstructionWithProgress(
-      `Bulk Merge Shared Groups (${strategy === 'slash' ? 'Slash /' : strategy === 'and' ? 'Ampersand &' : 'Keep 1st Name'})`,
+      `Bulk Merge Shared Groups (${
+        strategy === 'first' 
+          ? 'Keep 1st Name' 
+          : strategy === 'second' 
+          ? 'Keep 2nd Name' 
+          : strategy === 'and' 
+          ? 'Ampersand &' 
+          : 'Slash /'
+      })`,
       [
         'Analyzing contacts sharing identical phone lines...',
         'Consolidating names and resolving duplicate lines...',
@@ -555,6 +636,36 @@ export default function App() {
         const res = bulkMergeSharedGroups(records, includeCountryCode, strategy);
         setRecords(res.updatedRecords, `Bulk Merge Duplicates (${strategy})`);
         setSelectedIds(new Set());
+        
+        const affectedIds = new Set(res.affectedRecords.map((r) => r.id));
+        setModifiedContactIds(affectedIds);
+
+        const affectedItems: AffectedContactItem[] = res.mergedDetails.map((d) => ({
+          id: d.resultRecord.id,
+          name: d.resultRecord.name,
+          originalPhone: d.resultRecord.raw,
+          upgradedPhone: d.resultRecord.result,
+          operator: d.resultRecord.operator,
+          status: d.resultRecord.status,
+          previousNames: d.originalNames,
+          changeNote: strategy === 'first' 
+            ? `Merged ${d.originalNames.length} contacts (${d.originalNames.join(' + ')}) keeping 1st name "${d.resultRecord.name}"`
+            : strategy === 'second'
+            ? `Merged ${d.originalNames.length} contacts (${d.originalNames.join(' + ')}) keeping 2nd name "${d.resultRecord.name}"`
+            : `Merged ${d.originalNames.length} contacts (${d.originalNames.join(' + ')}) into 1 unified record`,
+        }));
+
+        setActionSummaryData({
+          actionType: 'bulk-merge',
+          title: 'Bulk Merge Shared Duplicates',
+          description: `Consolidated ${res.mergedGroupsCount} shared duplicate group${res.mergedGroupsCount === 1 ? '' : 's'} into ${res.affectedRecords.length} contacts (${res.reducedCount} contact${res.reducedCount === 1 ? '' : 's'} combined).`,
+          affectedContacts: affectedItems,
+          stats: {
+            totalAffected: res.affectedRecords.length,
+            removedOrMergedCount: res.reducedCount,
+          },
+        });
+
         addToast(`Bulk merged ${res.mergedGroupsCount} shared groups (${res.reducedCount} contacts consolidated)`);
       }
     );
@@ -572,6 +683,31 @@ export default function App() {
       () => {
         const res = removeInternalRepeatedNumbers(records, includeCountryCode);
         setRecords(res.updatedRecords, "Clean Internal Repeated Numbers");
+
+        const affectedIds = new Set(res.affectedRecords.map((r) => r.id));
+        setModifiedContactIds(affectedIds);
+
+        const affectedItems: AffectedContactItem[] = res.affectedRecords.map((r) => ({
+          id: r.id,
+          name: r.name,
+          originalPhone: r.raw,
+          upgradedPhone: r.result,
+          operator: r.operator,
+          status: r.status,
+          changeNote: 'Deduplicated redundant identical numbers from contact',
+        }));
+
+        setActionSummaryData({
+          actionType: 'clean-repeated',
+          title: 'Cleaned Repeated Internal Numbers',
+          description: `Cleaned redundant duplicate numbers across ${res.cleanedContactsCount} contact${res.cleanedContactsCount === 1 ? '' : 's'} (${res.removedNumbersCount} duplicate number${res.removedNumbersCount === 1 ? '' : 's'} removed).`,
+          affectedContacts: affectedItems,
+          stats: {
+            totalAffected: res.affectedRecords.length,
+            removedOrMergedCount: res.removedNumbersCount,
+          },
+        });
+
         addToast(`Cleaned redundant numbers in ${res.cleanedContactsCount} contacts (${res.removedNumbersCount} numbers removed)`);
       }
     );
@@ -589,10 +725,34 @@ export default function App() {
       () => {
         const res = removeInternalRepeatedNumbers([record], includeCountryCode);
         if (res.updatedRecords.length > 0) {
+          const updatedRec = res.updatedRecords[0];
           setRecords(
-            (prev) => prev.map((r) => (r.id === record.id ? res.updatedRecords[0] : r)),
+            (prev) => prev.map((r) => (r.id === record.id ? updatedRec : r)),
             `Clean Numbers: ${record.name}`
           );
+          setModifiedContactIds(new Set([record.id]));
+
+          setActionSummaryData({
+            actionType: 'clean-repeated',
+            title: `Cleaned Numbers for "${record.name}"`,
+            description: `Removed redundant duplicate phone numbers from "${record.name}".`,
+            affectedContacts: [
+              {
+                id: updatedRec.id,
+                name: updatedRec.name,
+                originalPhone: updatedRec.raw,
+                upgradedPhone: updatedRec.result,
+                operator: updatedRec.operator,
+                status: updatedRec.status,
+                changeNote: `Cleaned redundant internal duplicate phone digits`,
+              }
+            ],
+            stats: {
+              totalAffected: 1,
+              removedOrMergedCount: res.removedNumbersCount,
+            },
+          });
+
           addToast(`Removed redundant numbers from "${record.name}"`);
         }
       }
@@ -639,11 +799,11 @@ export default function App() {
   // Delete all contacts missing telephone numbers
   const handleDeleteAllMissingPhoneContacts = () => {
     executeInstructionWithProgress(
-      'Purge Contacts Without Phone Numbers',
+      'Delete Contacts Without Phone Numbers',
       [
         'Scanning for blank or empty telephone entries...',
-        'Purging unupgradable records from memory...',
-        'All empty contacts purged!'
+        'Removing unupgradable records from memory...',
+        'All empty contacts deleted!'
       ],
       () => {
         const toKeep = records.filter(
@@ -655,7 +815,7 @@ export default function App() {
           return;
         }
         const updated = toKeep.map((r, i) => ({ ...r, originalIndex: i }));
-        setRecords(updated, `Purge Empty Phone Contacts (${count})`);
+        setRecords(updated, `Delete Empty Phone Contacts (${count})`);
         setSelectedIds(new Set());
         addToast(`Deleted ${count} contact${count > 1 ? 's' : ''} with no phone number`);
       }
@@ -678,10 +838,12 @@ export default function App() {
     // Place the new merged record in the position of the first removed contact
     let replaced = false;
     const updatedRecords: ContactRecord[] = [];
+    let savedMergedId = '';
 
     records.forEach((r) => {
       if (idsSet.has(r.id)) {
          if (!replaced) {
+           savedMergedId = r.id;
            updatedRecords.push({ ...newRecord, originalIndex: updatedRecords.length, id: r.id });
            replaced = true;
          }
@@ -691,6 +853,7 @@ export default function App() {
     });
 
     if (!replaced) {
+      savedMergedId = newRecord.id;
       updatedRecords.push(newRecord);
     }
 
@@ -701,6 +864,32 @@ export default function App() {
       const next = new Set(prev);
       idsToRemove.forEach((id) => next.delete(id));
       return next;
+    });
+
+    const targetMerged = updatedRecords.find((r) => r.id === savedMergedId) || newRecord;
+    setModifiedContactIds(new Set([targetMerged.id]));
+
+    const originalNames = (mergingContacts || []).map((c) => c.name);
+    setActionSummaryData({
+      actionType: 'merge',
+      title: 'Contacts Merged Successfully',
+      description: `Consolidated ${idsToRemove.length} contact records into "${mergedData.name}".`,
+      affectedContacts: [
+        {
+          id: targetMerged.id,
+          name: targetMerged.name,
+          originalPhone: targetMerged.raw,
+          upgradedPhone: targetMerged.result,
+          operator: targetMerged.operator,
+          status: targetMerged.status,
+          previousNames: originalNames.length > 0 ? originalNames : undefined,
+          changeNote: `Merged ${idsToRemove.length} contacts into 1 unified 9-digit standardized record`,
+        }
+      ],
+      stats: {
+        totalAffected: 1,
+        removedOrMergedCount: idsToRemove.length - 1,
+      }
     });
 
     // Advance sequential flow if active
@@ -794,9 +983,34 @@ export default function App() {
         'Exact duplicates deduplicated successfully!'
       ],
       () => {
-        const res = bulkMergeExactDuplicates(records);
+        const res = bulkMergeExactDuplicates(records, includeCountryCode);
         setRecords(res.updatedRecords, `Auto-Deduplicate Exact Matches (${res.removedCount})`);
         setSelectedIds(new Set());
+
+        const affectedIds = new Set(res.affectedRecords.map((r) => r.id));
+        setModifiedContactIds(affectedIds);
+
+        const affectedItems: AffectedContactItem[] = res.affectedRecords.map((r) => ({
+          id: r.id,
+          name: r.name,
+          originalPhone: r.raw,
+          upgradedPhone: r.result,
+          operator: r.operator,
+          status: r.status,
+          changeNote: 'Preserved primary copy; purged identical duplicate entries',
+        }));
+
+        setActionSummaryData({
+          actionType: 'deduplicate',
+          title: 'Exact Duplicates Deduplicated',
+          description: `Removed ${res.removedCount} duplicate contact${res.removedCount === 1 ? '' : 's'} while preserving 1 clean copy of each.`,
+          affectedContacts: affectedItems,
+          stats: {
+            totalAffected: res.affectedRecords.length,
+            removedOrMergedCount: res.removedCount,
+          },
+        });
+
         addToast(`Removed ${res.removedCount} duplicate contacts (kept 1 copy of each)`);
       }
     );
@@ -805,6 +1019,8 @@ export default function App() {
   // Exact Duplicate Wizard Single Resolution Handler
   const handleKeepExactRecord = (_groupKey: string, _keepRecordId: string, removeRecordIds: string[]) => {
     const removeSet = new Set(removeRecordIds);
+    const keptRec = records.find((r) => r.id === _keepRecordId);
+
     setRecords(
       (prev) => prev.filter((r) => !removeSet.has(r.id)),
       `Resolve Exact Duplicate Copies (${removeRecordIds.length} removed)`
@@ -814,11 +1030,45 @@ export default function App() {
       removeRecordIds.forEach((id) => next.delete(id));
       return next;
     });
+
+    if (keptRec) {
+      setModifiedContactIds(new Set([_keepRecordId]));
+      setActionSummaryData({
+        actionType: 'deduplicate',
+        title: 'Duplicate Copies Resolved',
+        description: `Kept primary copy of "${keptRec.name}" and removed ${removeRecordIds.length} duplicate copy(ies).`,
+        affectedContacts: [
+          {
+            id: keptRec.id,
+            name: keptRec.name,
+            originalPhone: keptRec.raw,
+            upgradedPhone: keptRec.result,
+            operator: keptRec.operator,
+            status: keptRec.status,
+            changeNote: `Preserved primary contact; removed ${removeRecordIds.length} redundant duplicate copies`,
+          }
+        ],
+        stats: {
+          totalAffected: 1,
+          removedOrMergedCount: removeRecordIds.length,
+        }
+      });
+    }
+
     addToast(`Removed ${removeRecordIds.length} redundant duplicate copies`, 'info');
   };
 
   // Repeated Numbers Wizard Single Resolution Handler
   const handleSaveContactPhones = (contactId: string, updatedRawPhone: string) => {
+    const targetRec = records.find((r) => r.id === contactId);
+    const updatedRec = processFullContact(
+      targetRec?.name || 'Contact',
+      updatedRawPhone,
+      includeCountryCode,
+      0,
+      contactId
+    );
+
     setRecords(
       (prev) =>
         prev.map((r, idx) =>
@@ -828,11 +1078,41 @@ export default function App() {
         ),
       'Clean Internal Repeated Numbers'
     );
+    setModifiedContactIds(new Set([contactId]));
+    setActionSummaryData({
+      actionType: 'clean-repeated',
+      title: 'Cleaned Repeated Numbers',
+      description: `Updated phone numbers for "${updatedRec.name}".`,
+      affectedContacts: [
+        {
+          id: updatedRec.id,
+          name: updatedRec.name,
+          originalPhone: updatedRec.raw,
+          upgradedPhone: updatedRec.result,
+          operator: updatedRec.operator,
+          status: updatedRec.status,
+          changeNote: 'Redundant repeated phone numbers removed',
+        }
+      ],
+      stats: {
+        totalAffected: 1,
+      }
+    });
+
     addToast('Removed duplicate phone numbers from contact', 'info');
   };
 
   // Missing Phone Wizard Single Resolution Handler
   const handleAddPhoneToContact = (contactId: string, phone: string) => {
+    const targetRec = records.find((r) => r.id === contactId);
+    const updatedRec = processFullContact(
+      targetRec?.name || 'Contact',
+      phone,
+      includeCountryCode,
+      0,
+      contactId
+    );
+
     setRecords(
       (prev) =>
         prev.map((r, idx) =>
@@ -842,6 +1122,27 @@ export default function App() {
         ),
       'Add Number to Blank Contact'
     );
+    setModifiedContactIds(new Set([contactId]));
+    setActionSummaryData({
+      actionType: 'add-phone',
+      title: 'Phone Number Assigned',
+      description: `Assigned standardized phone number to "${updatedRec.name}".`,
+      affectedContacts: [
+        {
+          id: updatedRec.id,
+          name: updatedRec.name,
+          originalPhone: updatedRec.raw,
+          upgradedPhone: updatedRec.result,
+          operator: updatedRec.operator,
+          status: updatedRec.status,
+          changeNote: 'New phone number formatted & assigned',
+        }
+      ],
+      stats: {
+        totalAffected: 1,
+      }
+    });
+
     addToast('Phone number added and formatted for Gambian dialling', 'info');
   };
 
@@ -849,6 +1150,10 @@ export default function App() {
   const displayRecords = useMemo(() => {
     let list = [...records];
     const q = searchQuery.toLowerCase().trim();
+
+    // Fast O(1) mapping from contact ID to current position in records array
+    const idToRecordIndex = new Map<string, number>(records.map((r, i) => [r.id, i]));
+    const getRecordIndex = (r: ContactRecord): number => idToRecordIndex.get(r.id) ?? r.originalIndex;
 
     // 1. Search Query
     if (q) {
@@ -868,13 +1173,13 @@ export default function App() {
     } else if (filterOption === 'review') {
       list = list.filter((r) => r.status === 'review' || r.status === 'already');
     } else if (filterOption === 'duplicate-exact') {
-      list = list.filter((r) => duplicateAnalysis.exactIndices.has(r.originalIndex));
+      list = list.filter((r) => duplicateAnalysis.exactIndices.has(getRecordIndex(r)));
     } else if (filterOption === 'duplicate-shared') {
-      list = list.filter((r) => duplicateAnalysis.sharedIndices.has(r.originalIndex));
+      list = list.filter((r) => duplicateAnalysis.sharedIndices.has(getRecordIndex(r)));
     } else if (filterOption === 'repeated-number') {
-      list = list.filter((r) => r.hasRepeatedNumbers || duplicateAnalysis.repeatedIndices.has(r.originalIndex));
+      list = list.filter((r) => r.hasRepeatedNumbers || duplicateAnalysis.repeatedIndices.has(getRecordIndex(r)));
     } else if (filterOption === 'missing-phone') {
-      list = list.filter((r) => isMissingPhone(r) || duplicateAnalysis.missingPhoneIndices.has(r.originalIndex));
+      list = list.filter((r) => isMissingPhone(r) || duplicateAnalysis.missingPhoneIndices.has(getRecordIndex(r)));
     } else if (filterOption === 'qcell') {
       list = list.filter((r) => r.operator === 'QCell' || (r.phoneNumbers && r.phoneNumbers.some((p) => p.operator === 'QCell')));
     } else if (filterOption === 'comium') {
@@ -889,7 +1194,202 @@ export default function App() {
       list = list.filter((r) => r.operator === 'International' || (r.phoneNumbers && r.phoneNumbers.some((p) => p.operator === 'International')));
     }
 
-    // 3. Sorting
+    // 3. Sorting & Grouping
+    if (filterOption === 'duplicate-shared') {
+      // Group records by shared telephone number so contacts sharing the line are strictly adjacent
+      const indexToGroup = new Map<number, { phone: string; groupIdx: number }>();
+      duplicateAnalysis.sharedGroups.forEach((g, gIdx) => {
+        g.indices.forEach((idx) => {
+          if (!indexToGroup.has(idx)) {
+            indexToGroup.set(idx, { phone: g.phone, groupIdx: gIdx });
+          }
+        });
+      });
+
+      const groupMap = new Map<string, ContactRecord[]>();
+      const groupOrder: string[] = [];
+
+      list.forEach((r) => {
+        const gInfo = indexToGroup.get(getRecordIndex(r));
+        const groupKey = gInfo ? `shared-${gInfo.groupIdx}-${gInfo.phone}` : `other-${r.result || r.raw}`;
+        if (!groupMap.has(groupKey)) {
+          groupMap.set(groupKey, []);
+          groupOrder.push(groupKey);
+        }
+        groupMap.get(groupKey)!.push(r);
+      });
+
+      // Sort contacts within each shared group
+      groupOrder.forEach((key) => {
+        const members = groupMap.get(key)!;
+        if (sortOption === 'name-desc') {
+          members.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: 'base' }));
+        } else {
+          members.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        }
+      });
+
+      // Sort the groups themselves
+      if (sortOption === 'name-desc') {
+        groupOrder.sort((aKey, bKey) => {
+          const firstA = groupMap.get(aKey)![0]?.name || '';
+          const firstB = groupMap.get(bKey)![0]?.name || '';
+          return firstB.localeCompare(firstA, undefined, { sensitivity: 'base' });
+        });
+      } else if (sortOption === 'original') {
+        groupOrder.sort((aKey, bKey) => {
+          const firstA = groupMap.get(aKey)![0]?.originalIndex ?? 0;
+          const firstB = groupMap.get(bKey)![0]?.originalIndex ?? 0;
+          return firstA - firstB;
+        });
+      } else {
+        groupOrder.sort((aKey, bKey) => {
+          const firstA = groupMap.get(aKey)![0]?.name || '';
+          const firstB = groupMap.get(bKey)![0]?.name || '';
+          return firstA.localeCompare(firstB, undefined, { sensitivity: 'base' });
+        });
+      }
+
+      const groupedList: ContactRecord[] = [];
+      const seenGroupedIds = new Set<string>();
+      groupOrder.forEach((key) => {
+        groupMap.get(key)!.forEach((item) => {
+          if (!seenGroupedIds.has(item.id)) {
+            seenGroupedIds.add(item.id);
+            groupedList.push(item);
+          }
+        });
+      });
+      return groupedList;
+    }
+
+    if (filterOption === 'duplicate-exact') {
+      // Group records by exact duplicate key so duplicate copies are strictly adjacent
+      const indexToExactKey = new Map<number, string>();
+      duplicateAnalysis.exactGroups.forEach((g, gIdx) => {
+        g.indices.forEach((idx) => {
+          if (!indexToExactKey.has(idx)) {
+            indexToExactKey.set(idx, `exact-${gIdx}-${g.key}`);
+          }
+        });
+      });
+
+      const groupMap = new Map<string, ContactRecord[]>();
+      const groupOrder: string[] = [];
+
+      list.forEach((r) => {
+        const key = indexToExactKey.get(getRecordIndex(r)) || `exact-single-${r.name.toLowerCase()}||${r.result}`;
+        if (!groupMap.has(key)) {
+          groupMap.set(key, []);
+          groupOrder.push(key);
+        }
+        groupMap.get(key)!.push(r);
+      });
+
+      if (sortOption === 'name-desc') {
+        groupOrder.sort((aKey, bKey) => {
+          const firstA = groupMap.get(aKey)![0]?.name || '';
+          const firstB = groupMap.get(bKey)![0]?.name || '';
+          return firstB.localeCompare(firstA, undefined, { sensitivity: 'base' });
+        });
+      } else if (sortOption === 'original') {
+        groupOrder.sort((aKey, bKey) => {
+          const firstA = groupMap.get(aKey)![0]?.originalIndex ?? 0;
+          const firstB = groupMap.get(bKey)![0]?.originalIndex ?? 0;
+          return firstA - firstB;
+        });
+      } else {
+        groupOrder.sort((aKey, bKey) => {
+          const firstA = groupMap.get(aKey)![0]?.name || '';
+          const firstB = groupMap.get(bKey)![0]?.name || '';
+          return firstA.localeCompare(firstB, undefined, { sensitivity: 'base' });
+        });
+      }
+
+      const groupedList: ContactRecord[] = [];
+      const seenGroupedIds = new Set<string>();
+      groupOrder.forEach((key) => {
+        groupMap.get(key)!.forEach((item) => {
+          if (!seenGroupedIds.has(item.id)) {
+            seenGroupedIds.add(item.id);
+            groupedList.push(item);
+          }
+        });
+      });
+      return groupedList;
+    }
+
+    if (sortOption === 'duplicate-group') {
+      const sharedIndices = duplicateAnalysis.sharedIndices;
+      const exactIndices = duplicateAnalysis.exactIndices;
+      const repeatedIndices = duplicateAnalysis.repeatedIndices;
+      const missingIndices = duplicateAnalysis.missingPhoneIndices;
+
+      const sharedRecords = list.filter((r) => sharedIndices.has(getRecordIndex(r)));
+      const exactRecords = list.filter((r) => exactIndices.has(getRecordIndex(r)) && !sharedIndices.has(getRecordIndex(r)));
+      const repeatedRecords = list.filter((r) => (r.hasRepeatedNumbers || repeatedIndices.has(getRecordIndex(r))) && !sharedIndices.has(getRecordIndex(r)) && !exactIndices.has(getRecordIndex(r)));
+      const missingRecords = list.filter((r) => (isMissingPhone(r) || missingIndices.has(getRecordIndex(r))) && !sharedIndices.has(getRecordIndex(r)) && !exactIndices.has(getRecordIndex(r)) && !repeatedIndices.has(getRecordIndex(r)) && !r.hasRepeatedNumbers);
+      const regularRecords = list.filter((r) => !sharedIndices.has(getRecordIndex(r)) && !exactIndices.has(getRecordIndex(r)) && !r.hasRepeatedNumbers && !repeatedIndices.has(getRecordIndex(r)) && !isMissingPhone(r) && !missingIndices.has(getRecordIndex(r)));
+
+      // Group sharedRecords by shared phone
+      const indexToSharedGroup = new Map<number, number>();
+      duplicateAnalysis.sharedGroups.forEach((g, gIdx) => {
+        g.indices.forEach((idx) => indexToSharedGroup.set(idx, gIdx));
+      });
+      const sharedMap = new Map<number, ContactRecord[]>();
+      const sharedGroupOrder: number[] = [];
+      sharedRecords.forEach((r) => {
+        const gIdx = indexToSharedGroup.get(getRecordIndex(r)) ?? -1;
+        if (!sharedMap.has(gIdx)) {
+          sharedMap.set(gIdx, []);
+          sharedGroupOrder.push(gIdx);
+        }
+        sharedMap.get(gIdx)!.push(r);
+      });
+      const sortedShared: ContactRecord[] = [];
+      sharedGroupOrder.forEach((gIdx) => {
+        const members = sharedMap.get(gIdx)!;
+        members.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        sortedShared.push(...members);
+      });
+
+      // Group exactRecords by exact key
+      const indexToExactGroup = new Map<number, number>();
+      duplicateAnalysis.exactGroups.forEach((g, gIdx) => {
+        g.indices.forEach((idx) => indexToExactGroup.set(idx, gIdx));
+      });
+      const exactMap = new Map<number, ContactRecord[]>();
+      const exactGroupOrder: number[] = [];
+      exactRecords.forEach((r) => {
+        const gIdx = indexToExactGroup.get(getRecordIndex(r)) ?? -1;
+        if (!exactMap.has(gIdx)) {
+          exactMap.set(gIdx, []);
+          exactGroupOrder.push(gIdx);
+        }
+        exactMap.get(gIdx)!.push(r);
+      });
+      const sortedExact: ContactRecord[] = [];
+      exactGroupOrder.forEach((gIdx) => {
+        const members = exactMap.get(gIdx)!;
+        members.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        sortedExact.push(...members);
+      });
+
+      regularRecords.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+      const combinedGrouped = [...sortedShared, ...sortedExact, ...repeatedRecords, ...missingRecords, ...regularRecords];
+      const seenCombinedIds = new Set<string>();
+      const uniqueCombined: ContactRecord[] = [];
+      combinedGrouped.forEach((item) => {
+        if (!seenCombinedIds.has(item.id)) {
+          seenCombinedIds.add(item.id);
+          uniqueCombined.push(item);
+        }
+      });
+      return uniqueCombined;
+    }
+
+    // 3. Regular Individual Sorting
     if (sortOption === 'name-asc') {
       list.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
     } else if (sortOption === 'name-desc') {
@@ -902,7 +1402,16 @@ export default function App() {
       list.sort((a, b) => a.originalIndex - b.originalIndex);
     }
 
-    return list;
+    // Final safety deduplication
+    const finalSeenIds = new Set<string>();
+    const finalList: ContactRecord[] = [];
+    list.forEach((item) => {
+      if (!finalSeenIds.has(item.id)) {
+        finalSeenIds.add(item.id);
+        finalList.push(item);
+      }
+    });
+    return finalList;
   }, [records, searchQuery, filterOption, sortOption, duplicateAnalysis]);
 
   const handleToggleSelectAll = (checked: boolean) => {
@@ -991,6 +1500,7 @@ export default function App() {
           upgradedCount={upgradedCount}
           deferredCount={reviewCount}
         />
+        <PwaInstallPrompt />
       </>
     );
   }
@@ -1002,12 +1512,12 @@ export default function App() {
       {/* Top Application Workspace Navigation Bar */}
       <div className="sticky top-0 z-[100] bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-md">
         {/* Gambia flag top stripe accent */}
-        <div className="h-1 flex w-full">
-          <div className="flex-1 bg-red-600" />
-          <div className="w-4 bg-white" />
-          <div className="flex-1 bg-blue-600" />
-          <div className="w-4 bg-white" />
-          <div className="flex-1 bg-emerald-600" />
+        <div className="h-1 sm:h-1.5 flex w-full">
+          <div className="flex-[6] bg-[#CE1126]" />
+          <div className="flex-[1] bg-white" />
+          <div className="flex-[4] bg-[#0C1C8C]" />
+          <div className="flex-[1] bg-white" />
+          <div className="flex-[6] bg-[#3A7728]" />
         </div>
 
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2 min-h-[64px] sm:min-h-[72px] flex items-center justify-between gap-2 sm:gap-4">
@@ -1071,6 +1581,12 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* Decorative Strip - Gambia Flag Gradient (Red - White - Blue - White - Green) */}
+        <div
+          className="h-1.5 sm:h-2 w-full bg-[linear-gradient(to_right,#CE1126_0%,#CE1126_32%,#FFFFFF_38%,#0C1C8C_44%,#0C1C8C_56%,#FFFFFF_62%,#3A7728_68%,#3A7728_100%)] shadow-[0_4px_14px_rgba(0,0,0,0.22)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.7)] relative z-20"
+          aria-hidden="true"
+        />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -1161,6 +1677,9 @@ export default function App() {
             sharedDuplicateIds={duplicateAnalysis.sharedIndices}
             repeatedDuplicateIds={duplicateAnalysis.repeatedIndices}
             missingPhoneIds={duplicateAnalysis.missingPhoneIndices}
+            duplicateAnalysis={duplicateAnalysis}
+            modifiedContactIds={modifiedContactIds}
+            onClearModifiedHighlights={() => setModifiedContactIds(new Set())}
             onLoadSample={handleLoadSampleContacts}
             onImportFile={handleImportFile}
             onMerge={(contacts) => setMergingContacts(contacts)}
@@ -1173,9 +1692,11 @@ export default function App() {
             onCleanRepeatedNumbers={handleCleanSingleContactRepeated}
             onCleanAllRepeatedNumbers={handleCleanAllRepeatedNumbers}
             onDeleteAllMissingPhoneContacts={handleDeleteAllMissingPhoneContacts}
-            onCleanAllSharedNumbers={() => handleBulkMergeShared('slash')}
+            onCleanAllSharedNumbers={() => setIsCleanSharedModalOpen(true)}
+            onRemoveExactDuplicates={handleRemoveExactDuplicates}
             filterOption={filterOption}
             onFilterChange={setFilterOption}
+            onOpenDuplicateAnalysis={handleOpenDuplicateAnalysis}
             isLoading={Boolean(importProgress?.isProcessing || isAnalyzing)}
             searchQuery={searchQuery}
           />
@@ -1188,25 +1709,9 @@ export default function App() {
             </div>
           )}
 
-          {/* Section 2 Footer Actions / Duplicate Analysis Toolbar */}
+          {/* Section 2 Footer Actions / Workspace & Selection Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700/80">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              {/* Analyze Duplicates Button */}
-              <button
-                id="analyzeDuplicatesBtn"
-                onClick={handleOpenDuplicateAnalysis}
-                disabled={records.length === 0}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center gap-2 shadow-xs transition cursor-pointer active:scale-95"
-              >
-                <CopyCheck className="w-4 h-4" />
-                <span>Analyze Duplicates & Conflicts</span>
-                {duplicateAnalysis.exactCount + duplicateAnalysis.sharedCount + duplicateAnalysis.repeatedCount + duplicateAnalysis.missingPhoneCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-extrabold shadow-xs">
-                    {duplicateAnalysis.exactCount + duplicateAnalysis.sharedCount + duplicateAnalysis.repeatedCount + duplicateAnalysis.missingPhoneCount} flagged
-                  </span>
-                )}
-              </button>
-
               {totalCount > 0 && (
                 <button
                   id="clearBtn"
@@ -1300,18 +1805,57 @@ export default function App() {
         analysis={duplicateAnalysis}
         totalLoadedContacts={records.length}
         instructionProgress={instructionProgress}
-        onFilterExact={() => setFilterOption('duplicate-exact')}
-        onFilterShared={() => setFilterOption('duplicate-shared')}
-        onFilterRepeated={() => setFilterOption('repeated-number')}
-        onFilterMissing={() => setFilterOption('missing-phone')}
+        onFilterExact={() => {
+          setIsDuplicateModalOpen(false);
+          setSearchQuery('');
+          setFilterOption('duplicate-exact');
+          scrollToReviewSection();
+          addToast(`Filtered table to show Exact Duplicates (${duplicateAnalysis.exactCount} records)`, 'info');
+        }}
+        onFilterShared={() => {
+          setIsDuplicateModalOpen(false);
+          setSearchQuery('');
+          setFilterOption('duplicate-shared');
+          scrollToReviewSection();
+          addToast(`Filtered table to show Shared Phone Numbers (${duplicateAnalysis.sharedCount} records)`, 'info');
+        }}
+        onFilterRepeated={() => {
+          setIsDuplicateModalOpen(false);
+          setSearchQuery('');
+          setFilterOption('repeated-number');
+          scrollToReviewSection();
+          addToast(`Filtered table to show Repeated Numbers (${duplicateAnalysis.repeatedCount} records)`, 'info');
+        }}
+        onFilterMissing={() => {
+          setIsDuplicateModalOpen(false);
+          setSearchQuery('');
+          setFilterOption('missing-phone');
+          scrollToReviewSection();
+          addToast(`Filtered table to show No Telephone Number contacts (${duplicateAnalysis.missingPhoneCount} records)`, 'info');
+        }}
         onRemoveExactDuplicates={handleRemoveExactDuplicates}
-        onMergeGroup={handleOpenMergeForIndices}
+        onMergeGroup={(indices) => {
+          setIsDuplicateModalOpen(false);
+          handleOpenMergeForIndices(indices);
+        }}
         onCleanRepeatedNumbers={handleCleanAllRepeatedNumbers}
         onBulkMergeShared={handleBulkMergeShared}
-        onStartSequentialMerge={handleStartSequentialMerge}
-        onStartExactWizard={() => setIsExactWizardOpen(true)}
-        onStartRepeatedWizard={() => setIsRepeatedWizardOpen(true)}
-        onStartMissingPhoneWizard={() => setIsMissingPhoneWizardOpen(true)}
+        onStartSequentialMerge={() => {
+          setIsDuplicateModalOpen(false);
+          handleStartSequentialMerge();
+        }}
+        onStartExactWizard={() => {
+          setIsDuplicateModalOpen(false);
+          setIsExactWizardOpen(true);
+        }}
+        onStartRepeatedWizard={() => {
+          setIsDuplicateModalOpen(false);
+          setIsRepeatedWizardOpen(true);
+        }}
+        onStartMissingPhoneWizard={() => {
+          setIsDuplicateModalOpen(false);
+          setIsMissingPhoneWizardOpen(true);
+        }}
         onClearMissingContacts={handleDeleteAllMissingPhoneContacts}
       />
 
@@ -1389,6 +1933,30 @@ export default function App() {
         onConfirmExport={handleConfirmExport}
         includeCountryCode={includeCountryCode}
       />
+
+      {/* Clean Shared Numbers Options Modal */}
+      <CleanSharedModal
+        isOpen={isCleanSharedModalOpen}
+        onClose={() => setIsCleanSharedModalOpen(false)}
+        totalSharedCount={duplicateAnalysis.sharedCount}
+        sharedGroupsCount={duplicateAnalysis.sharedGroups.length}
+        sampleGroup={duplicateAnalysis.sharedGroups[0] || null}
+        onConfirm={(strat) => handleBulkMergeShared(strat)}
+        isLoading={!!(instructionProgress && instructionProgress.title.startsWith('Bulk Merge Shared Groups') && instructionProgress.status === 'running')}
+      />
+
+      {/* Action Summary & Affected Contacts Modal */}
+      <ActionSummaryModal
+        isOpen={Boolean(actionSummaryData)}
+        onClose={() => setActionSummaryData(null)}
+        data={actionSummaryData}
+        onViewInTable={() => {
+          scrollToReviewSection();
+        }}
+      />
+
+      {/* PWA Install Prompt & Offline Notification */}
+      <PwaInstallPrompt />
     </div>
   );
 }

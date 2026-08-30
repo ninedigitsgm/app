@@ -1,0 +1,51 @@
+{
+  "name": "Automatic 9 Digits - Gambia Contacts Upgrader",
+  "short_name": "9Digits GM",
+  "description": "Official PURA 9-digit Gambian contact conversion tool for Africell, QCell, Gamcel, and Comium numbers. 100% private, fast, and on-device.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "categories": ["utilities", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "./pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./logo-dark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Contacts Workspace",
+      "short_name": "Workspace",
+      "description": "Directly jump to the contact upgrade workspace",
+      "url": "./#app",
+      "icons": [{ "src": "./pwa-icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "PURA Rules Reference",
+      "short_name": "PURA Rules",
+      "description": "View official PURA 9-digit prefix migration rules",
+      "url": "./#rules",
+      "icons": [{ "src": "./pwa-icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}

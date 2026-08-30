@@ -147,11 +147,11 @@ export const MergeContactsModal: React.FC<MergeContactsModalProps> = ({
   return (
     <div
       id="mergeModal"
-      className="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 z-60"
+      className="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-xs flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto z-[200]"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden opacity-100"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full max-w-xl my-auto shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[88vh] overflow-hidden opacity-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header - Fixed (No Scroll) */}

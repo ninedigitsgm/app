@@ -87,11 +87,11 @@ export const MissingPhoneWizardModal: React.FC<MissingPhoneWizardModalProps> = (
   return (
     <div
       id="missingPhoneWizardModal"
-      className="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 z-60"
+      className="fixed inset-0 bg-slate-900/75 dark:bg-slate-950/85 backdrop-blur-xs flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto z-[200]"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] overflow-hidden"
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl w-full max-w-xl my-auto shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[88vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -198,7 +198,7 @@ export const MissingPhoneWizardModal: React.FC<MissingPhoneWizardModalProps> = (
             </button>
           </div>
 
-          {/* Bulk Purge Action Tip */}
+          {/* Bulk Delete All Action Tip */}
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-xs flex items-center justify-between gap-2">
             <div className="text-slate-600 dark:text-slate-300">
               Delete all {missingGroups.length} contacts missing numbers at once?
@@ -211,7 +211,7 @@ export const MissingPhoneWizardModal: React.FC<MissingPhoneWizardModalProps> = (
               className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shrink-0 cursor-pointer shadow-xs transition flex items-center gap-1"
             >
               <Trash2 className="w-3 h-3" />
-              <span>Purge All</span>
+              <span>Delete All</span>
             </button>
           </div>
         </div>

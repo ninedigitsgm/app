@@ -11,10 +11,15 @@ import {
   FileSpreadsheet, 
   Users, 
   ShieldCheck, 
-  HelpCircle,
-  FolderOpen,
-  RefreshCw,
-  FileText
+  HelpCircle, 
+  FolderOpen, 
+  RefreshCw, 
+  FileText,
+  RotateCcw,
+  Trash2,
+  AlertTriangle,
+  Lock,
+  Check
 } from 'lucide-react';
 
 export const GettingStartedTutorial: React.FC = () => {
@@ -24,36 +29,36 @@ export const GettingStartedTutorial: React.FC = () => {
   const steps = [
     {
       num: 1,
-      title: "Step 1: Export Your Contacts from Your Device",
-      subtitle: "How to save a copy of your phonebook as a file",
+      title: "Step 1: Export Your Contacts (Instant Safe Backup)",
+      subtitle: "Saves a complete backup file so recovery is easy with zero panic",
       icon: Upload,
       color: "emerald"
     },
     {
       num: 2,
-      title: "Step 2: Upload File to This Upgrader",
-      subtitle: "Secure, instant browser-based 9-digit conversion",
+      title: "Step 2: Upload to Safe Staging Sandbox",
+      subtitle: "Does NOT touch your phonebook directly; 100% on-device",
       icon: RefreshCw,
       color: "blue"
     },
     {
       num: 3,
-      title: "Step 3: Review, Filter & Clean",
-      subtitle: "Inspect QCell, Comium, Africell and remove duplicates",
+      title: "Step 3: Review, Diffs, Undo/Redo & Clean",
+      subtitle: "Inspect side-by-side changes, merge duplicates, use Undo/Redo",
       icon: Sparkles,
       color: "amber"
     },
     {
       num: 4,
       title: "Step 4: Download Upgraded File",
-      subtitle: "Save your ready-to-import vCard (.vcf) or CSV file",
+      subtitle: "Save your ready-to-import vCard (.vcf) or CSV when happy",
       icon: Download,
       color: "purple"
     },
     {
       num: 5,
-      title: "Step 5: Import Back Into Your Phone",
-      subtitle: "Enjoy seamless 9-digit calling and WhatsApp integration",
+      title: "Step 5: Delete Old Contacts & Re-Import",
+      subtitle: "Delete old entries first to prevent non-Gambian & 7-digit duplicates",
       icon: CheckCircle2,
       color: "teal"
     }
@@ -72,7 +77,7 @@ export const GettingStartedTutorial: React.FC = () => {
           How to Get Started (Step-by-Step)
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2">
-          No technical knowledge needed! Follow this plain-English guide from exporting your contacts to importing them back on any device.
+          No technical knowledge needed! Follow this plain-English guide covering your safety backup, live change preview, and clean re-importing.
         </p>
 
         {/* Device Tabs for Step 1 */}
@@ -165,7 +170,7 @@ export const GettingStartedTutorial: React.FC = () => {
         {activeStep === 1 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
                 1
               </div>
               <div>
@@ -173,36 +178,44 @@ export const GettingStartedTutorial: React.FC = () => {
                   Step 1: Exporting Your Contacts ({activeTab === 'android' ? 'Android Phone' : activeTab === 'iphone' ? 'iPhone' : activeTab === 'tablet' ? 'Tablet' : 'Desktop / Laptop'})
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Save your address book to your device as a vCard (.vcf) or CSV file.
+                  Exporting saves a permanent copy to your device, acting as an instant safety backup.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {/* Safety Backup Callout */}
+            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-200">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Step 1 Doubles as Your Safety Backup: </span>
+                When you export your contacts, that file is saved safely on your device as a 100% untouched backup. If you ever want to revert or recover, you have the original file right in your Downloads folder for easy recovery with zero panic!
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
               {activeTab === 'android' && (
                 <>
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                     <div className="font-bold text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                      <Smartphone className="w-4 h-4" /> Method A: Using Google Contacts App
+                      <Smartphone className="w-4 h-4" /> Method A: Google Contacts or Default Contacts App
                     </div>
                     <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
-                      <li>Open the <b>Contacts</b> app on your Android phone.</li>
-                      <li>Tap your <b>Profile Picture</b> or Menu icon in the top right.</li>
-                      <li>Tap <b>Contact settings</b> or <b>Manage contacts</b>.</li>
-                      <li>Tap <b>Export contacts</b> and select <b>Export to .vcf file</b>.</li>
-                      <li>Save the file to your phone's <b>Downloads</b> folder.</li>
+                      <li>Open the <b>Google Contacts</b> app or the <b>default Contacts app</b> your phone came with (such as Samsung Contacts, Xiaomi, Tecno, etc.).</li>
+                      <li>Tap your <b>Profile Picture</b>, the 3-dots menu, or <b>Fix &amp; manage / Settings</b>.</li>
+                      <li>Tap <b>Export contacts</b> or <b>Manage contacts</b> &rarr; <b>Export to .vcf file</b>.</li>
+                      <li>Select all contacts and save the file to your phone's <b>Downloads</b> folder.</li>
                     </ol>
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                     <div className="font-bold text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                      <FolderOpen className="w-4 h-4" /> Method B: Via Google Contacts Website
+                      <FolderOpen className="w-4 h-4" /> Method B: If Backed Up to Google Contacts
                     </div>
                     <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
-                      <li>Open web browser and go to <a href="https://contacts.google.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-semibold">contacts.google.com</a>.</li>
+                      <li>If you have backed up your contacts to Google Contacts, open any web browser and go to <a href="https://contacts.google.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-semibold">contacts.google.com</a>.</li>
                       <li>Sign in with your Google account.</li>
-                      <li>Click <b>Export</b> on the left menu.</li>
-                      <li>Choose <b>vCard (for iOS contacts)</b> or <b>Google CSV</b>, then click <b>Export</b>.</li>
+                      <li>Click <b>Export</b> on the left navigation menu.</li>
+                      <li>Choose <b>vCard (for iOS contacts / standard vCard)</b> or <b>Google CSV</b>, then click <b>Export</b>.</li>
                     </ol>
                   </div>
                 </>
@@ -263,25 +276,34 @@ export const GettingStartedTutorial: React.FC = () => {
         {activeStep === 2 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm shrink-0">
                 2
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Step 2: Upload Your Exported File Here
+                  Step 2: Upload to Safe Staging Sandbox
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Bring your contacts into the app securely with zero data leaves your device.
+                  Non-destructive staging area: contacts on your phone are NEVER changed directly.
                 </p>
+              </div>
+            </div>
+
+            {/* Privacy & Non-Destructive Reassurance */}
+            <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200">
+              <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Zero Direct Phonebook Modification: </span>
+                This app operates as an independent staging sandbox. It does not alter, delete, or modify contacts directly inside your phone's address book while you work. Everything runs in local browser memory.
               </div>
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
               <ol className="list-decimal list-inside text-xs sm:text-sm text-slate-700 dark:text-slate-200 space-y-2 leading-relaxed">
-                <li>Click the <b>"Launch App"</b> or <b>"Upload & Upgrade Contacts"</b> button at the top of the page.</li>
-                <li>Drag and drop your exported <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-emerald-600">.vcf</code> or <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-emerald-600">.csv</code> file into the upload box (or click to browse your computer or phone folders).</li>
-                <li>Alternatively, you can copy and paste raw contact lines directly into the text box.</li>
-                <li>Our tool instantly reads every name and phone number on your device — no cloud servers required!</li>
+                <li>Click the <b>"Upload &amp; Upgrade Contacts"</b> button at the top of the page.</li>
+                <li>Drag and drop your exported <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-emerald-600">.vcf</code> or <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-emerald-600">.csv</code> file into the upload box (or click to browse your files).</li>
+                <li>Alternatively, you can copy and paste raw contact text directly into the batch box.</li>
+                <li>Our tool instantly parses every contact on your device with 100% on-device speed.</li>
               </ol>
             </div>
           </div>
@@ -290,38 +312,47 @@ export const GettingStartedTutorial: React.FC = () => {
         {activeStep === 3 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-sm shrink-0">
                 3
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Step 3: Review, Filter & Clean Your Contacts
+                  Step 3: Review Changes, Merge Duplicates &amp; Use Undo/Redo
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Inspect the PURA 9-digit conversions and fix duplicates.
+                  Inspect before-and-after visual diffs, merge duplicate records, and undo mistakes freely.
                 </p>
+              </div>
+            </div>
+
+            {/* Undo/Redo & Visual Diff Callout */}
+            <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-start gap-2.5 text-xs text-indigo-900 dark:text-indigo-200">
+              <RotateCcw className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Undo &amp; Redo Protection: </span>
+                Made a mistaken edit or deleted a contact accidentally? Simply click the <b>Undo (↩️)</b> or <b>Redo (↪️)</b> buttons in the toolbar. You never have to restart the whole process from scratch!
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <div className="font-bold text-xs text-emerald-600 dark:text-emerald-400">1. QCell (+83) & Comium (+86) & Africell (+87)</div>
+                <div className="font-bold text-xs text-emerald-600 dark:text-emerald-400">1. QCell (+83), Comium (+86), Africell (+87)</div>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
-                  The app automatically detects network prefixes and adds <code className="bg-slate-100 dark:bg-slate-900 px-1">83</code>, <code className="bg-slate-100 dark:bg-slate-900 px-1">86</code>, or <code className="bg-slate-100 dark:bg-slate-900 px-1">87</code> correctly.
+                  All upgraded numbers are clearly displayed side-by-side with original prefixes highlighted in bright green.
                 </p>
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <div className="font-bold text-xs text-amber-600 dark:text-amber-400">2. Gamcel & Gamtel (Deferred)</div>
+                <div className="font-bold text-xs text-amber-600 dark:text-amber-400">2. Gamcel &amp; Gamtel Preserved</div>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
-                  Gamcel 9-series numbers and Gamtel landlines remain 7 digits as per PURA Phase 1 guidelines.
+                  Gamcel 9-series numbers and Gamtel landlines remain 7 digits per official PURA Phase 1 guidelines.
                 </p>
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
-                <div className="font-bold text-xs text-purple-600 dark:text-purple-400">3. Duplicate Cleanup</div>
+                <div className="font-bold text-xs text-purple-600 dark:text-purple-400">3. Duplicate Merging &amp; Cleanup</div>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
-                  Click the <b>"Duplicates"</b> tab to review and merge identical contacts with 1 click before exporting.
+                  Detects duplicate names or shared numbers and merges them into unified records with 1 click.
                 </p>
               </div>
             </div>
@@ -331,15 +362,15 @@ export const GettingStartedTutorial: React.FC = () => {
         {activeStep === 4 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-sm shrink-0">
                 4
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Step 4: Download Your Upgraded Contact File
+                  Step 4: Review &amp; Download Your Upgraded File
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Choose your preferred format and save to your device.
+                  Inspect the preview and download when you are 100% happy with all changes.
                 </p>
               </div>
             </div>
@@ -347,9 +378,9 @@ export const GettingStartedTutorial: React.FC = () => {
             <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
               <ol className="list-decimal list-inside text-xs sm:text-sm text-slate-700 dark:text-slate-200 space-y-2 leading-relaxed">
                 <li>Toggle whether you want the <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded font-bold">+220</code> country code included in your numbers.</li>
-                <li>Click <b>"Export vCard (.vcf)"</b> to download a file compatible with iPhone, Android, and WhatsApp.</li>
-                <li>Alternatively, click <b>"Export CSV / Excel"</b> if you prefer spreadsheets.</li>
-                <li>The file downloads instantly to your device's <b>Downloads</b> folder.</li>
+                <li>Click <b>"Download Upgraded Contacts (.VCF)"</b> to download a clean vCard file compatible with iPhone, Android, and WhatsApp.</li>
+                <li>Alternatively, click <b>"Download Spreadsheet (.CSV)"</b> for Microsoft Excel or Google Sheets.</li>
+                <li>The file downloads directly to your device's <b>Downloads</b> folder.</li>
               </ol>
             </div>
           </div>
@@ -358,36 +389,74 @@ export const GettingStartedTutorial: React.FC = () => {
         {activeStep === 5 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-sm shrink-0">
                 5
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Step 5: Import Back Into Your Phone or Web Account
+                  Step 5: Delete Old Contacts &amp; Re-Import Upgraded File
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Get your updated 9-digit contacts back into WhatsApp and your phone book.
+                  Follow the anti-duplication rule to ensure a clean, clutter-free address book.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Critical Warning: Delete Before Re-Import */}
+            <div className="p-4 rounded-xl bg-amber-500/15 border-2 border-amber-500/40 flex items-start gap-3 text-xs text-amber-950 dark:text-amber-200">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <div className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1">
+                  ⚠️ Critical Step: Delete All Existing Contacts Before Re-importing!
+                </div>
+                <p className="leading-relaxed">
+                  Because your original export from <b>Step 1</b> is already saved on your device as a safety backup, <b>you must delete your existing contacts from your phone / Google Contacts / iCloud before re-importing</b>.
+                </p>
+                <p className="mt-1.5 leading-relaxed font-semibold">
+                  Why? If you don't delete them first, your phone will merge both old and new lists, causing duplicate entries of:
+                </p>
+                <ul className="list-disc list-inside mt-1 space-y-0.5 font-medium">
+                  <li><b>Non-Gambian numbers</b> (international contacts)</li>
+                  <li><b>Non-Phase 1 contacts</b> (Gamcel &amp; Gamtel landlines)</li>
+                  <li><b>Old 7-digit numbers</b> alongside new 9-digit numbers</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                 <div className="font-bold text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                  <Smartphone className="w-4 h-4" /> Android & Google Contacts Import
+                  <Smartphone className="w-4 h-4" /> Android Method A: Google Contacts or Default Contacts App
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Go to <a href="https://contacts.google.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-semibold">contacts.google.com</a>, click <b>Import</b> on the left menu, and select your downloaded <code className="bg-slate-100 dark:bg-slate-900 px-1">.vcf</code> file. Your phone will sync automatically within seconds!
-                </p>
+                <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
+                  <li>Open the <b>Files</b> or <b>Downloads</b> app on your Android phone.</li>
+                  <li>Tap your downloaded upgraded <code className="bg-slate-100 dark:bg-slate-900 px-1">.vcf</code> file.</li>
+                  <li>Select <b>Google Contacts</b> or the <b>default Contacts app</b> your phone came with to import.</li>
+                  <li>Alternatively, open your Contacts app &rarr; <b>Settings / Fix &amp; manage</b> &rarr; <b>Import from file</b>.</li>
+                </ol>
               </div>
 
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                 <div className="font-bold text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                  <Smartphone className="w-4 h-4" /> iPhone Import Guide
+                  <FolderOpen className="w-4 h-4" /> Android Method B: If Backed Up to Google Contacts
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Open the <b>Files</b> app on your iPhone, tap your downloaded <code className="bg-slate-100 dark:bg-slate-900 px-1">.vcf</code> file, and tap <b>Add All Contacts</b> to instantly merge them into your iPhone address book.
-                </p>
+                <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
+                  <li>If you have backed up your contacts to Google Contacts, go to <a href="https://contacts.google.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-semibold">contacts.google.com</a>.</li>
+                  <li>Select all old contacts and click the <b>Trash / Delete</b> icon (your Step 1 file is your safe backup).</li>
+                  <li>Click <b>Import</b> on the left menu and select your downloaded upgraded <code className="bg-slate-100 dark:bg-slate-900 px-1">.vcf</code> file.</li>
+                  <li>Your phone and WhatsApp will sync with clean 9-digit contacts within seconds!</li>
+                </ol>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="font-bold text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4" /> iPhone &amp; iCloud Re-Import
+                </div>
+                <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
+                  <li>On <a href="https://www.icloud.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-semibold">icloud.com</a> &rarr; Contacts, select all old contacts and delete them.</li>
+                  <li>Open the <b>Files</b> app on your iPhone, tap your downloaded upgraded <code className="bg-slate-100 dark:bg-slate-900 px-1">.vcf</code> file.</li>
+                  <li>Tap <b>Add All Contacts</b> to import your clean 9-digit address book.</li>
+                </ol>
               </div>
             </div>
           </div>

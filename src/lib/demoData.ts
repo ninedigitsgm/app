@@ -1,23 +1,41 @@
-export const SAMPLE_RAW_DATA = `Fatou Jobe, 7123456
-Baboucarr Sallah, 3123456
-Modou Lamin Ceesay, 6889900
-Lamin Touray, 9912345
-Gamtel HQ, 4291224
-Ebrima Ceesay, 7234567
-Awa Cham, 3987654
-Kebba Camara, 6123456
-Muhammed Bah, 9876543
-Gamtel Customer Care, 4391234
-Mariama Gaye, 2345678
-Bakary Sanyang, 5022334
-Isatou Touray, 8566778
-Binta Bojang, 9712345
-Banjul Office, 4492211
-Ousman Barry, +221 77 123 4567
-Aminata Sillah, +44 7911 123456
-John Davis, +1 202 555 0123
-Fatou Jobe, 7123456
-Musa Jatta, 7123456`;
+export const SAMPLE_RAW_DATA = `Fatoumatta Jallow, 7012345
+Momodou Lamin Bah, 3019876
+Alieu Badara Ceesay, 9981234, 9981234, 3311223
+Haddy Sanneh, 6112233
+Pa Ousman Cham, 7889900
+Sainabou Sanyang, 3456789
+Kemo Bojang, 9123456, 9123456
+Bintou Touray, 2123456
+Gamtel Serrekunda Office, 4398877
+Ebrima Kanteh, 6334455, 3114455, 6334455
+Mariama Sonko, 7223344, 7223344, 7223344
+Sulayman Drammeh, 3778899
+Isatou Manneh, 9887766, 7661122
+Dawda Jawara, 7556677
+Awa Ceesay, 6554433
+Omar Faye, 3221100
+Ndey Fatou Gaye, 8001122
+Mustapha Darboe, 9012345
+Gamtel Brikama Branch, 4481234
+Ramatoulie Sey, 7665544
+Abdoulie Njie, 3998877
+Fatou Kinneh, 6998877
+Sheikh Tijan Sambou,
+Jainaba Fatty
+Uncle Landing Sowe,
+Alhagie Saidy, 7332211
+Khadija Camara, +220 3119988
+Lamin Colley, +221 77 654 3210
+David Miller, +1 312 555 0199
+Fatoumatta Jallow, 7012345
+Pa Ousman Cham, 7889900
+Gamtel Serrekunda Office, 4398877
+Yusupha Jatta, 7012345
+Fatou Jallow Boutique, 7012345
+ML Bah Trading, 3019876
+Haddy Sanneh Tailoring, 6112233
+Sey & Sons Logistics, 7665544
+Aunty Mariama Jallow,`;
 
 export const SAMPLE_VCF_DATA = `BEGIN:VCARD
 VERSION:3.0
@@ -35,6 +53,8 @@ BEGIN:VCARD
 VERSION:3.0
 FN:Modou Lamin Ceesay
 TEL;TYPE=CELL:6889900
+TEL;TYPE=HOME:6889900
+TEL;TYPE=WORK:3224455
 END:VCARD
 
 BEGIN:VCARD
@@ -53,6 +73,8 @@ BEGIN:VCARD
 VERSION:3.0
 FN:Ebrima Ceesay
 TEL;TYPE=CELL:7234567
+TEL;TYPE=PREF:7234567
+TEL;TYPE=VOICE:7234567
 END:VCARD
 
 BEGIN:VCARD
@@ -64,6 +86,7 @@ END:VCARD
 BEGIN:VCARD
 VERSION:3.0
 FN:Kebba Camara
+TEL;TYPE=CELL:6123456
 TEL;TYPE=CELL:6123456
 END:VCARD
 
@@ -111,6 +134,23 @@ END:VCARD
 
 BEGIN:VCARD
 VERSION:3.0
+FN:Uncle Landing Sowe
+NOTE:Family elder - No direct mobile
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Aunty Mariama Jallow
+NOTE:Call via WhatsApp
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Sainabou Joof
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
 FN:Ousman Barry
 TEL;TYPE=CELL:+221 77 123 4567
 END:VCARD
@@ -135,7 +175,38 @@ END:VCARD
 
 BEGIN:VCARD
 VERSION:3.0
+FN:Muhammed Bah
+TEL;TYPE=CELL:9876543
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Gamtel HQ
+TEL;TYPE=WORK:4291224
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
 FN:Musa Jatta
 TEL;TYPE=CELL:7123456
 END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Jobe Enterprise
+TEL;TYPE=WORK:7123456
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Papa Sallah (Home)
+TEL;TYPE=HOME:3123456
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Ceesay Workshop
+TEL;TYPE=WORK:6889900
+END:VCARD
 `;
+
