@@ -4,8 +4,9 @@
 export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+      const swUrl = `${import.meta.env.BASE_URL}sw.js`;
       navigator.serviceWorker
-        .register('/sw.js')
+        .register(swUrl)
         .then((registration) => {
           // Check for updates
           registration.onupdatefound = () => {

@@ -68,7 +68,7 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cachedResponse = await caches.match(req);
           if (cachedResponse) return cachedResponse;
-          return caches.match('/index.html');
+          return caches.match('./index.html') || caches.match('./');
         })
     );
     return;
