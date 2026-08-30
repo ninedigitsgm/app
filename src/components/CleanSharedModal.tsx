@@ -127,9 +127,9 @@ export const CleanSharedModal: React.FC<CleanSharedModalProps> = ({
 
         {/* Content Body / Options */}
         <div className="p-4 sm:p-5 overflow-y-auto max-h-[60vh] space-y-3.5 bg-slate-50/40 dark:bg-slate-900/40">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+          <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
             Select Name Merge Option:
-          </label>
+          </span>
 
           <div className="space-y-2.5">
             {options.map((opt) => {

@@ -192,9 +192,9 @@ export const MergeContactsModal: React.FC<MergeContactsModalProps> = ({
           {/* List of Contacts in Merge Group */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                 Contacts in this Conflict ({activeContacts.length}):
-              </label>
+              </span>
               <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 Click &times; to exclude
               </span>
@@ -232,9 +232,9 @@ export const MergeContactsModal: React.FC<MergeContactsModalProps> = ({
 
           {/* Step 1: Choose or Edit Merged Name */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Choose Name for Merged Contact:
-            </label>
+            </span>
 
             <div className="space-y-1.5 text-xs">
               {/* Individual Names */}
@@ -344,9 +344,9 @@ export const MergeContactsModal: React.FC<MergeContactsModalProps> = ({
           {/* Step 2: Phone number choices */}
           {distinctPhones.length > 1 && (
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              <span className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Select Phone Number(s):
-              </label>
+              </span>
               <div className="space-y-1.5 text-xs">
                 {distinctPhones.map((phone, pIdx) => (
                   <label

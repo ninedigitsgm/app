@@ -162,7 +162,7 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
         {/* Input */}
         <div className="flex-1">
-          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+          <label htmlFor="sandboxInput" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
             Input Raw Gambian or International Number:
           </label>
           <input

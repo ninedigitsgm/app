@@ -143,9 +143,9 @@ export const ExactDuplicateWizardModal: React.FC<ExactDuplicateWizardModalProps>
 
           {/* List of Copies */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Select which copy to keep:
-            </label>
+            </span>
             <div className="space-y-2">
               {groupRecords.map((rec, rIdx) => {
                 const isSelected = currentKeepId === rec.id;

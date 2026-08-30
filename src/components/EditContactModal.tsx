@@ -74,10 +74,11 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
         <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           <form onSubmit={handleSave} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="editContactNameInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Contact Name:
               </label>
               <input
+                id="editContactNameInput"
                 type="text"
                 required
                 value={name}
@@ -88,10 +89,11 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="editContactPhoneInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Phone Number(s) (separate multiple by comma):
               </label>
               <input
+                id="editContactPhoneInput"
                 type="text"
                 value={rawPhone}
                 onChange={(e) => setRawPhone(e.target.value)}

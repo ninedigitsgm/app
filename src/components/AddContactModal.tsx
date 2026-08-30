@@ -66,10 +66,11 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
         <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="addContactNameInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Contact Name:
               </label>
               <input
+                id="addContactNameInput"
                 type="text"
                 required
                 autoFocus
@@ -81,10 +82,11 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="addContactPhoneInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Phone Number(s):
               </label>
               <input
+                id="addContactPhoneInput"
                 type="text"
                 required
                 value={phone}

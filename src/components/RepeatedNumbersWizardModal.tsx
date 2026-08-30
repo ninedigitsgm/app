@@ -160,9 +160,9 @@ export const RepeatedNumbersWizardModal: React.FC<RepeatedNumbersWizardModalProp
 
           {/* Numbers Inspection */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Numbers Found Inside This Contact:
-            </label>
+            </span>
             <div className="space-y-2">
               {classifiedParts.map((item, idx) => (
                 <div
