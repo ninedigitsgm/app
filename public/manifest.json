@@ -2,8 +2,8 @@
   "name": "Automatic 9 Digits - Gambia Contacts Upgrader",
   "short_name": "9Digits GM",
   "description": "Official PURA 9-digit Gambian contact conversion tool for Africell, QCell, Gamcel, and Comium numbers. 100% private, fast, and on-device.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
@@ -12,7 +12,7 @@
   "lang": "en",
   "icons": [
     {
-      "src": "/pwa-icon.svg",
+      "src": "./pwa-icon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

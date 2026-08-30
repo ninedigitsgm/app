@@ -157,7 +157,7 @@ export const PwaInstallPrompt: React.FC = () => {
         <div className="fixed bottom-4 right-4 z-[190] max-w-sm w-[calc(100%-2rem)] bg-slate-900/95 dark:bg-slate-950/95 text-white border border-blue-500/30 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-5 duration-300 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 p-0.5 shrink-0 flex items-center justify-center shadow-md">
-              <img src="/pwa-icon.svg" alt="9Digits GM" className="w-full h-full object-contain rounded-[10px]" />
+              <img src={`${import.meta.env.BASE_URL}pwa-icon.svg`} alt="9Digits GM" className="w-full h-full object-contain rounded-[10px]" />
             </div>
             <div className="min-w-0">
               <h4 className="text-xs font-bold text-slate-100 truncate flex items-center gap-1.5">

@@ -183,7 +183,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img
-              src={darkMode ? "/logo-for-darkmode.svg" : "/logo-for-lightmode.svg"}
+              src={darkMode ? `${import.meta.env.BASE_URL}logo-for-darkmode.svg` : `${import.meta.env.BASE_URL}logo-for-lightmode.svg`}
               alt="Auto Contacts Upgrader Logo"
               className="h-10 sm:h-12 w-auto max-w-[180px] sm:max-w-[240px] object-contain transition-transform group-hover:scale-[1.01]"
               referrerPolicy="no-referrer"
@@ -439,7 +439,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="relative w-full flex items-center justify-center lg:justify-end"
               >
                 <img
-                  src="/consolidated-mockups.svg"
+                  src={`${import.meta.env.BASE_URL}consolidated-mockups.svg`}
                   alt="Gambia 9-Digit Upgrade Device Mockups"
                   className="w-full lg:w-[122%] xl:w-[130%] max-w-none h-auto drop-shadow-2xl transition-transform duration-300 lg:-mr-4 xl:-mr-8"
                 />
@@ -921,7 +921,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               title="Go to Home"
             >
               <img
-                src={darkMode ? "/logo-for-darkmode.svg" : "/logo-for-lightmode.svg"}
+                src={darkMode ? `${import.meta.env.BASE_URL}logo-for-darkmode.svg` : `${import.meta.env.BASE_URL}logo-for-lightmode.svg`}
                 alt="Auto Contacts Upgrader Logo"
                 className="h-12 sm:h-14 w-auto object-contain"
                 referrerPolicy="no-referrer"

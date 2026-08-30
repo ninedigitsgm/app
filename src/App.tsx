@@ -1543,7 +1543,7 @@ export default function App() {
                 title="Go to Home"
               >
                 <img
-                  src={darkMode ? "/logo-for-darkmode.svg" : "/logo-for-lightmode.svg"}
+                  src={darkMode ? `${import.meta.env.BASE_URL}logo-for-darkmode.svg` : `${import.meta.env.BASE_URL}logo-for-lightmode.svg`}
                   alt="Auto Contacts Upgrader Logo"
                   className="h-12 sm:h-14 md:h-16 w-auto max-w-[200px] sm:max-w-[280px] object-contain transition-all"
                   referrerPolicy="no-referrer"

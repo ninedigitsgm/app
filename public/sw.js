@@ -2,15 +2,16 @@
 const CACHE_NAME = 'gambia-9digits-v1';
 
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/manifest.json',
-  '/pwa-icon.svg',
-  '/logo-dark.svg',
-  '/logo-light.svg',
-  '/logo-for-lightmode.svg',
-  '/logo-for-darkmode.svg'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './manifest.json',
+  './pwa-icon.svg',
+  './logo-dark.svg',
+  './logo-light.svg',
+  './logo-for-lightmode.svg',
+  './logo-for-darkmode.svg',
+  './consolidated-mockups.svg'
 ];
 
 // Install Event: Pre-cache static shell
