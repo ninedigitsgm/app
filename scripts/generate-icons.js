@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
-const inputSvg = path.resolve('public/pwa-icon.svg');
+const inputSvg = path.resolve('public/favicon.svg');
 const svgBuffer = fs.readFileSync(inputSvg);
 
 const appleSizes = [

@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
   './manifest.webmanifest',
   './manifest.json',
   './pwa-icon.svg',
+  './favicon.svg',
   './apple-touch-icon.png',
   './logo-dark.svg',
   './logo-light.svg',

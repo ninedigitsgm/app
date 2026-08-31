@@ -14,13 +14,13 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./pwa-icon.svg",
+      "src": "./favicon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./pwa-icon.svg",
+      "src": "./favicon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
@@ -38,14 +38,14 @@
       "short_name": "Workspace",
       "description": "Directly jump to the contact upgrade workspace",
       "url": "./#app",
-      "icons": [{ "src": "./pwa-icon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "./favicon.svg", "sizes": "192x192" }]
     },
     {
       "name": "PURA Rules Reference",
       "short_name": "PURA Rules",
       "description": "View official PURA 9-digit prefix migration rules",
       "url": "./#rules",
-      "icons": [{ "src": "./pwa-icon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "./favicon.svg", "sizes": "192x192" }]
     }
   ]
 }
