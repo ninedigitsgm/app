@@ -14,19 +14,37 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./pwa-icon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
+      "src": "./pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "./pwa-icon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    },
-    {
-      "src": "./logo-dark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
@@ -38,14 +56,14 @@
       "short_name": "Workspace",
       "description": "Directly jump to the contact upgrade workspace",
       "url": "./#app",
-      "icons": [{ "src": "./pwa-icon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "PURA Rules Reference",
       "short_name": "PURA Rules",
       "description": "View official PURA 9-digit prefix migration rules",
       "url": "./#rules",
-      "icons": [{ "src": "./pwa-icon.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "./pwa-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

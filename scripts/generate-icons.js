@@ -1,4 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicDir = path.resolve(__dirname, '../public');
+
+// High-fidelity Gambian 9-Digits PWA & iOS App Icon SVG (512x512 with Gambian flag colors & clean typography)
+const masterIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0f172a" />
@@ -62,4 +72,39 @@
           text-anchor="middle" 
           letter-spacing="3">DIGITS GM</text>
   </g>
-</svg>
+</svg>`;
+
+async function generateIcons() {
+  const svgBuffer = Buffer.from(masterIconSvg);
+
+  // Write master SVG
+  fs.writeFileSync(path.join(publicDir, 'pwa-icon.svg'), masterIconSvg, 'utf8');
+
+  // Generate PNG sizes required by iOS Safari, Android PWA, and desktop browsers
+  const sizes = [
+    { name: 'apple-touch-icon.png', size: 180 },
+    { name: 'apple-touch-icon-180x180.png', size: 180 },
+    { name: 'apple-touch-icon-152x152.png', size: 152 },
+    { name: 'apple-touch-icon-120x120.png', size: 120 },
+    { name: 'pwa-192x192.png', size: 192 },
+    { name: 'pwa-512x512.png', size: 512 },
+    { name: 'favicon-32x32.png', size: 32 },
+    { name: 'favicon-16x16.png', size: 16 }
+  ];
+
+  for (const { name, size } of sizes) {
+    const outPath = path.join(publicDir, name);
+    await sharp(svgBuffer)
+      .resize(size, size)
+      .png({ quality: 100, compressionLevel: 9 })
+      .toFile(outPath);
+    console.log(`[ICON] Generated ${name} (${size}x${size})`);
+  }
+
+  console.log('[ICON] All PWA and iOS Apple Touch Icons generated successfully!');
+}
+
+generateIcons().catch(err => {
+  console.error('[ICON] Error generating icons:', err);
+  process.exit(1);
+});
