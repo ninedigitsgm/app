@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Automatic 9 Digits Contacts Upgrader</title>
+    <title>Automatic 9 Digits - Gambia Contacts Upgrader</title>
     <meta name="description" content="Official PURA 9-digit Gambian contact conversion tool for Africell, QCell, Gamcel, and Comium numbers. 100% private and on-device." />
     <meta property="og:title" content="Automatic 9 Digits - Gambia Contacts Upgrader" />
     <meta property="og:description" content="Upgrade all your Gambian contacts to 9 digits automatically. Fast, safe, and accurate." />
@@ -12,9 +12,10 @@
     
     <!-- Security Headers & Content Security Policy -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
     <meta http-equiv="Referrer-Policy" content="no-referrer" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';" />
 
     <!-- PWA Web App Manifest & Mobile Configuration -->
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -22,14 +23,14 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Nine Digits GM" />
+    <meta name="apple-mobile-web-app-title" content="9Digits GM" />
     <link rel="apple-touch-icon" href="./pwa-icon.svg" />
 
     <link rel="icon" href="./pwa-icon.svg" type="image/svg+xml" />
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>
 
