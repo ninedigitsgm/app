@@ -1310,7 +1310,23 @@ export function generateVCF(records: ContactRecord[]): string {
 }
 
 /**
+ * Sanitizes a single CSV cell value to prevent CSV / Formula Injection attacks (CWE-1236).
+ * If a cell begins with =, +, -, @, \t, or \r, it is prefixed with a single quote (') so spreadsheet
+ * tools (Excel, LibreOffice, Google Sheets) treat the cell as literal text rather than an executable formula.
+ */
+export function sanitizeCSVCell(val: string): string {
+  if (!val) return '';
+  const str = String(val);
+  const escapedQuotes = str.replace(/"/g, '""');
+  if (/^[=\+\-@\t\r]/.test(str)) {
+    return `'${escapedQuotes}`;
+  }
+  return escapedQuotes;
+}
+
+/**
  * Generates CSV string for export, preserving all original columns and headers, and updating only the mobile/telephone number.
+ * Fully hardened against CSV / Formula Injection.
  */
 export function generateCSV(records: ContactRecord[]): string {
   const firstWithHeader = records.find(r => r.csvHeaders && r.csvHeaders.length > 0 && r.csvRowValues);
@@ -1333,7 +1349,7 @@ export function generateCSV(records: ContactRecord[]): string {
     });
     const targetIdx = mobileIdx !== -1 ? mobileIdx : (telIdx !== -1 ? telIdx : (phoneIdx !== -1 ? phoneIdx : -1));
 
-    const rows = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',')];
+    const rows = [headers.map(h => `"${sanitizeCSVCell(h)}"`).join(',')];
     records.forEach(r => {
       let rowCols = r.csvRowValues ? [...r.csvRowValues] : [];
       while (rowCols.length < headers.length) {
@@ -1344,17 +1360,17 @@ export function generateCSV(records: ContactRecord[]): string {
       } else if (headers.length > 0) {
         rowCols[rowCols.length - 1] = r.result;
       }
-      const escapedRow = rowCols.map(c => `"${(c || '').replace(/"/g, '""')}"`).join(',');
+      const escapedRow = rowCols.map(c => `"${sanitizeCSVCell(c || '')}"`).join(',');
       rows.push(escapedRow);
     });
     return rows.join('\r\n');
   } else {
     const rows = ['"Contact Name","Mobile"'];
     records.forEach(r => {
-      const escapedName = r.name.replace(/"/g, '""');
-      const escapedMobile = r.result.replace(/"/g, '""');
+      const escapedName = sanitizeCSVCell(r.name);
+      const escapedMobile = sanitizeCSVCell(r.result);
       if (r.extraCsvColumns && r.extraCsvColumns.length > 0) {
-        const escapedExtra = r.extraCsvColumns.map(c => c.replace(/"/g, '""')).join('","');
+        const escapedExtra = r.extraCsvColumns.map(c => sanitizeCSVCell(c)).join('","');
         rows.push(`"${escapedName}","${escapedExtra}","${escapedMobile}"`);
       } else {
         rows.push(`"${escapedName}","${escapedMobile}"`);

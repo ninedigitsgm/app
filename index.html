@@ -10,6 +10,11 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     
+    <!-- Security Headers & Content Security Policy -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self';" />
+
     <!-- PWA Web App Manifest & Mobile Configuration -->
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="theme-color" content="#0284c7" />

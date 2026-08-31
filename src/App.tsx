@@ -23,6 +23,7 @@ import { BackToTop } from './components/BackToTop';
 import { OperatorDistributionChart } from './components/OperatorDistributionChart';
 import { Toast, ToastMessage } from './components/Toast';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { SecurityModal } from './components/SecurityModal';
 import { 
   ContactRecord, 
   FilterOption, 
@@ -73,6 +74,7 @@ export default function App() {
   });
   const [includeCountryCode, setIncludeCountryCode] = useState<boolean>(false);
   const [showReference, setShowReference] = useState<boolean>(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
   interface HistoryState {
     records: ContactRecord[];
     description: string;
@@ -1794,6 +1796,35 @@ export default function App() {
             />
           </div>
         </ScrollReveal>
+
+        {/* Workspace Footer */}
+        <footer className="mt-12 pt-8 pb-12 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-700 dark:text-slate-300">PURA Gambia 9-Digits Contacts Upgrader</span>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
+              {/* Security Verified Badge */}
+              <button
+                type="button"
+                onClick={() => setIsSecurityModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-all cursor-pointer group"
+                title="Click to view Security & Cryptographic Integrity details"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span>Security Verified (SRI)</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              </button>
+
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-xs">
+                <span className="text-sm">🇬🇲</span>
+                <span>Built for The Gambia</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
 
       <BackToTop />
@@ -1957,6 +1988,12 @@ export default function App() {
 
       {/* PWA Install Prompt & Offline Notification */}
       <PwaInstallPrompt />
+
+      {/* Security Verification Modal */}
+      <SecurityModal
+        isOpen={isSecurityModalOpen}
+        onClose={() => setIsSecurityModalOpen(false)}
+      />
     </div>
   );
 }

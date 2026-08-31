@@ -50,6 +50,7 @@ import { PuraRulesGuide } from './PuraRulesGuide';
 import { GettingStartedTutorial } from './GettingStartedTutorial';
 import { ScrollReveal } from './ScrollReveal';
 import { BackToTop } from './BackToTop';
+import { SecurityModal } from './SecurityModal';
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -75,6 +76,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>('how-it-works');
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
 
   // Track active section for navigation
   useEffect(() => {
@@ -928,16 +930,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               />
             </button>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
+            {/* Security Verified Badge */}
+            <button
+              type="button"
+              onClick={() => setIsSecurityModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-all cursor-pointer group"
+              title="Click to view Security & Cryptographic Integrity details"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>Security Verified (SRI)</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </button>
+
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-xs">
               <span className="text-sm">🇬🇲</span>
               <span>Built for The Gambia</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <span>Built in compliance with PURA Gambia National Numbering Plan</span>
+            
+            <span className="hidden md:inline text-slate-400 dark:text-slate-500 text-[11px]">
+              Built in compliance with PURA Gambia National Numbering Plan
+            </span>
           </div>
         </div>
       </footer>
+
+      {/* Security Verification Details Modal */}
+      <SecurityModal
+        isOpen={isSecurityModalOpen}
+        onClose={() => setIsSecurityModalOpen(false)}
+      />
 
       {/* Mobile-only Scroll-to-Top Button near end of page */}
       <BackToTop />

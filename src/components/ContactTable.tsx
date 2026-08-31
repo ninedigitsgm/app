@@ -120,6 +120,10 @@ export const ContactTable: React.FC<ContactTableProps> = ({
   const handleEmptyStateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
