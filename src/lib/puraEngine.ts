@@ -144,24 +144,11 @@ export function decodeQuotedPrintable(str: string): string {
 }
 
 /**
- * Normalizes phone numbers by stripping formatting characters, invisible unicode marks, and Gambian country codes.
+ * Normalizes phone numbers by stripping formatting characters and Gambian country codes.
  */
 export function cleanPhoneNumber(raw: string): string {
   if (!raw) return '';
-  let str = String(raw).trim();
-  
-  // Strip URI scheme prefix (e.g., tel:+2207123456)
-  str = str.replace(/^tel:/i, '');
-  
-  // Strip phone extensions or secondary URI parameters (;ext=123, ;isub=..., etc.)
-  str = str.replace(/;.*$/, '');
-
-  // Strip invisible unicode formatting (zero-width spaces, RTL/LTR marks, non-breaking spaces)
-  str = str.replace(/[\u200B-\u200F\uFEFF\u00A0\u202A-\u202E\u2060]/g, '');
-
-  // Strip all whitespace, parentheses, brackets, dots, slashes, and standard/unicode hyphens
-  let cleaned = str.replace(/[\s\(\)\[\]\{\}\.\/\-\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '');
-
+  let cleaned = String(raw).trim().replace(/[\s\-\(\)\.]/g, '');
   if (cleaned.startsWith('+220')) {
     cleaned = cleaned.substring(4);
   } else if (cleaned.startsWith('00220')) {
@@ -1036,15 +1023,13 @@ export function stripVcardPhotos(vcfText: string): string {
       continue;
     }
 
-    // New property line (strip optional Apple item group prefix like item1.)
+    // New property line
     const upper = line.toUpperCase().trim();
-    const cleanProp = upper.replace(/^[A-Z0-9_-]+\./i, '');
     if (
-      cleanProp.startsWith('PHOTO:') ||
-      cleanProp.startsWith('PHOTO;') ||
-      cleanProp.startsWith('LOGO:') ||
-      cleanProp.startsWith('LOGO;') ||
-      cleanProp.startsWith('X-MS-CARDPICTURE')
+      upper.startsWith('PHOTO:') ||
+      upper.startsWith('PHOTO;') ||
+      upper.startsWith('LOGO:') ||
+      upper.startsWith('LOGO;')
     ) {
       isSkippingPhoto = true;
       continue;
@@ -1058,20 +1043,18 @@ export function stripVcardPhotos(vcfText: string): string {
 }
 
 /**
- * Parses vCard (.vcf) format supporting single/multiple cards, FN, N, ORG fallbacks,
- * Apple item-grouped properties (item1.TEL, item2.TEL), vCard 4.0 URI formats (tel:...),
- * and Quoted-Printable UTF-8 encoding.
+ * Parses vCard (.vcf) format supporting multiple cards, FN, N, TEL types, Quoted-Printable UTF-8.
+ * Automatically strips embedded profile photos before processing.
  */
 export function parseVCF(text: string, includeCountryCode = true): ContactRecord[] {
   const sanitizedText = stripVcardPhotos(text);
   const vcards = sanitizedText.split(/END:VCARD/i);
   const results: ContactRecord[] = [];
 
-  vcards.forEach((v) => {
+  vcards.forEach((v, idx) => {
     if (!v.trim()) return;
     const lines = v.split(/\r?\n/);
     let name = '';
-    let orgName = '';
     const phones: string[] = [];
     const extraLines: string[] = [];
 
@@ -1092,15 +1075,12 @@ export function parseVCF(text: string, includeCountryCode = true): ContactRecord
       }
 
       const upper = line.toUpperCase();
-      // Strip item group prefixes used by iOS/Apple Contacts (e.g., item1.TEL -> TEL)
-      const cleanProp = upper.replace(/^[A-Z0-9_-]+\./i, '');
-
-      if (cleanProp.startsWith('FN:') || cleanProp.startsWith('FN;')) {
+      if (upper.startsWith('FN:') || upper.startsWith('FN;')) {
         const colonIdx = line.indexOf(':');
         if (colonIdx !== -1) {
           name = decodeQuotedPrintable(line.substring(colonIdx + 1));
         }
-      } else if (!name && (cleanProp.startsWith('N:') || cleanProp.startsWith('N;'))) {
+      } else if (!name && (upper.startsWith('N:') || upper.startsWith('N;'))) {
         const colonIdx = line.indexOf(':');
         if (colonIdx !== -1) {
           const rawVal = line.substring(colonIdx + 1);
@@ -1111,57 +1091,28 @@ export function parseVCF(text: string, includeCountryCode = true): ContactRecord
           }
         }
         extraLines.push(line);
-      } else if (cleanProp.startsWith('ORG:') || cleanProp.startsWith('ORG;')) {
+      } else if (upper.startsWith('TEL')) {
         const colonIdx = line.indexOf(':');
         if (colonIdx !== -1) {
-          const rawVal = line.substring(colonIdx + 1);
-          const decoded = decodeQuotedPrintable(rawVal);
-          const orgParts = decoded.split(';').map(s => s.trim()).filter(Boolean);
-          if (orgParts.length > 0) {
-            orgName = orgParts.join(' ');
-          }
-        }
-        extraLines.push(line);
-      } else if (cleanProp.startsWith('TEL:') || cleanProp.startsWith('TEL;')) {
-        const colonIdx = line.indexOf(':');
-        if (colonIdx !== -1) {
-          let rawVal = line.substring(colonIdx + 1).trim();
-          
-          // Decode Quoted-Printable phone values if encoded
-          if (/ENCODING=QUOTED-PRINTABLE/i.test(line)) {
-            rawVal = decodeQuotedPrintable(rawVal);
-          }
-
-          // Strip URI tel: prefix (vCard 4.0 standard)
-          rawVal = rawVal.replace(/^tel:/i, '');
-
-          // Strip secondary parameters (;ext=..., ;isub=..., etc.)
-          const cleanSingleVal = rawVal.replace(/;.*$/, '').trim();
-
-          // Handle multiple comma-separated numbers in a single TEL field
-          cleanSingleVal.split(/[,]/).forEach(p => {
+          const rawVal = line.substring(colonIdx + 1).trim();
+          rawVal.split(/[,]/).forEach(p => {
             const cleaned = p.trim();
             if (cleaned) {
               phones.push(cleaned);
             }
           });
         }
-      } else if (
-        cleanProp.startsWith('BEGIN:VCARD') ||
-        cleanProp.startsWith('VERSION:') ||
-        cleanProp.startsWith('X-ABLABEL:') // Skip old Apple telephone labels from extra lines
-      ) {
-        // Skip vCard structural wrapper lines and phone labels as generateVCF handles them
+      } else if (upper.startsWith('BEGIN:VCARD') || upper.startsWith('VERSION:')) {
+        // Skip vCard structural wrapper lines as generateVCF handles them
       } else {
         extraLines.push(line);
       }
     }
 
-    // Name resolution: FN -> N -> ORG -> Unnamed Contact
-    const finalName = name || orgName || `Unnamed Contact ${results.length + 1}`;
+    const contactName = name || `Unnamed Contact ${results.length + 1}`;
     const combinedPhones = phones.join(', ');
 
-    const record = processFullContact(finalName, combinedPhones, includeCountryCode, results.length);
+    const record = processFullContact(contactName, combinedPhones, includeCountryCode, results.length);
     if (extraLines.length > 0) {
       record.extraVcardLines = extraLines;
     }
@@ -1336,20 +1287,8 @@ export function generateVCF(records: ContactRecord[]): string {
     // Preserve extra vCard lines (Email, Address, Notes, Org, Title, etc.) as is
     if (r.extraVcardLines && r.extraVcardLines.length > 0) {
       r.extraVcardLines.forEach(l => {
-        const upper = l.toUpperCase().trim();
-        const cleanProp = upper.replace(/^[A-Z0-9_-]+\./i, '');
-        if (
-          !cleanProp.startsWith('FN:') &&
-          !cleanProp.startsWith('FN;') &&
-          !cleanProp.startsWith('N:') &&
-          !cleanProp.startsWith('N;') &&
-          !cleanProp.startsWith('TEL:') &&
-          !cleanProp.startsWith('TEL;') &&
-          !cleanProp.startsWith('X-ABLABEL:') &&
-          !cleanProp.startsWith('BEGIN:VCARD') &&
-          !cleanProp.startsWith('END:VCARD') &&
-          !cleanProp.startsWith('VERSION:')
-        ) {
+        const upper = l.toUpperCase();
+        if (!upper.startsWith('FN:') && !upper.startsWith('N:') && !upper.startsWith('TEL')) {
           lines.push(l);
         }
       });
