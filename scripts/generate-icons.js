@@ -10,13 +10,17 @@ const pngOutputs = [
   { name: 'favicon-32x32.png', size: 32 },
   { name: 'favicon-48x48.png', size: 48 },
   { name: 'favicon-96x96.png', size: 96 },
+  { name: 'pwa-64x64.png', size: 64 },
+  { name: 'pwa-128x128.png', size: 128 },
+  { name: 'pwa-192x192.png', size: 192 },
+  { name: 'pwa-256x256.png', size: 256 },
+  { name: 'pwa-384x384.png', size: 384 },
+  { name: 'pwa-512x512.png', size: 512 },
   { name: 'apple-touch-icon.png', size: 180 },
   { name: 'apple-touch-icon-180x180.png', size: 180 },
   { name: 'apple-touch-icon-167x167.png', size: 167 },
   { name: 'apple-touch-icon-152x152.png', size: 152 },
-  { name: 'apple-touch-icon-120x120.png', size: 120 },
-  { name: 'pwa-192x192.png', size: 192 },
-  { name: 'pwa-512x512.png', size: 512 }
+  { name: 'apple-touch-icon-120x120.png', size: 120 }
 ];
 
 async function generate() {
