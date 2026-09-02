@@ -382,93 +382,91 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Main Landmark: Primary Landing Page Content */}
       <main id="main-content">
         {/* Hero Section */}
-      <section className="relative overflow-hidden pt-8 sm:pt-10 lg:pt-14 pb-0 sm:pb-0">
+      <section className="relative overflow-visible pt-1 lg:pt-2 pb-0 sm:pb-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-emerald-500/10 via-blue-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          {/* Gambia Badge */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center mb-4">
-            {/* Left Column */}
-            <div className="lg:col-span-5 space-y-4 text-left">
-              <div className="space-y-2">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-                  Upgrade All Your Contacts to{' '}
-                  <span className="text-emerald-700 dark:text-emerald-400">
-                    9 Digits Automatically For Free
-                  </span>
-                </h1>
-                <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed pt-1 font-normal">
-                  Our smart tool cleans, formats, and upgrades your contacts to the new Gambian 9-digit numbering format in seconds. Accurate, fast, and 100% automatic.
-                </p>
-              </div>
+          {/* Hero Header (Full Width on Large Screens) */}
+          <div className="mb-4 lg:mb-5 text-left space-y-2 lg:space-y-2.5">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+              Upgrade All Your Contacts to{' '}
+              <span className="text-emerald-700 dark:text-emerald-400">
+                9 Digits Automatically For Free
+              </span>
+            </h1>
+            <p className="text-base sm:text-lg lg:text-xl text-slate-700 dark:text-slate-200 leading-relaxed font-normal max-w-4xl lg:max-w-5xl">
+              Our smart tool cleans, formats, and upgrades your contacts to the new Gambian 9-digit numbering format in seconds. Accurate, fast, and 100% automatic.
+            </p>
+          </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 lg:items-start items-center mb-4">
+            {/* Left Column: Checklists & CTAs */}
+            <div className="lg:col-span-5 space-y-5 text-left">
               {/* Checkmark List */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>1st Step is a Safe Backup:</b> Exporting creates an instant safety copy on your device (easy recovery, zero panic)</span>
+                  <span className="leading-relaxed"><b>1st Step is a Safe Backup:</b> Exporting creates an instant safety copy on your device (easy recovery, zero panic)</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>No Direct Phonebook Edits:</b> Operates in a safe staging sandbox where contacts on your phone are never altered directly</span>
+                  <span className="leading-relaxed"><b>No Direct Phonebook Edits:</b> Operates in a safe staging sandbox where contacts on your phone are never altered directly</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Automatic 9-Digit Upgrades:</b> Supports QCell (+83), Comium (+86), Africell (+87)</span>
+                  <span className="leading-relaxed"><b>Automatic 9-Digit Upgrades:</b> Supports QCell (+83), Comium (+86), Africell (+87)</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Already 9 Digits Untouched:</b> Leaves contacts that are already 9 digits untouched</span>
+                  <span className="leading-relaxed"><b>Already 9 Digits Untouched:</b> Leaves contacts that are already 9 digits untouched</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Before &amp; After Previews:</b> Displays all number changes clearly and merges duplicate contacts with 1 click</span>
+                  <span className="leading-relaxed"><b>Before &amp; After Previews:</b> Displays all number changes clearly and merges duplicate contacts with 1 click</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Undo &amp; Redo Protection:</b> Made a mistake? Revert or re-apply edits instantly without restarting the whole process</span>
+                  <span className="leading-relaxed"><b>Undo &amp; Redo Protection:</b> Made a mistake? Revert or re-apply edits instantly without restarting the whole process</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Gamcel, Gamtel &amp; Foreign Protection:</b> Preserves non-Phase 1 contacts and foreign international numbers</span>
+                  <span className="leading-relaxed"><b>Gamcel, Gamtel &amp; Foreign Protection:</b> Preserves non-Phase 1 contacts and foreign international numbers</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Works Online &amp; Offline:</b> 100% on-device PWA privacy, zero server uploads &amp; zero mobile data consumption</span>
+                  <span className="leading-relaxed"><b>Works Online &amp; Offline:</b> 100% on-device PWA privacy, zero server uploads &amp; zero mobile data consumption</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                  <span><b>Universal Device Support:</b> Accessible on any device (smartphones, tablets, and computers)</span>
+                  <span className="leading-relaxed"><b>Universal Device Support:</b> Accessible on any device (smartphones, tablets, and computers)</span>
                 </div>
               </div>
-
-
 
               {/* Main Action CTAs */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -495,13 +493,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Right Column: Multi-Device Responsive Mockup */}
-            <div className="lg:col-span-7 relative flex items-center justify-center lg:justify-end mt-6 sm:mt-8 lg:mt-0 w-full overflow-visible">
+            <div className="lg:col-span-7 relative flex items-start justify-center lg:justify-end mt-6 sm:mt-8 lg:mt-0 w-full overflow-visible">
               {/* Responsive Device Mockups */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative w-full flex items-center justify-center lg:justify-end"
+                className="relative w-full flex items-start justify-center lg:justify-end lg:-mt-4"
               >
                 <picture>
                   <source srcSet={`${import.meta.env.BASE_URL}consolidated-mockups.webp`} type="image/webp" />
@@ -512,7 +510,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     height="868"
                     fetchPriority="high"
                     decoding="async"
-                    className="w-full h-auto max-w-full lg:max-w-[108%] xl:max-w-[115%] drop-shadow-2xl transition-transform duration-300 lg:-mr-4 xl:-mr-8 hover:scale-[1.01]"
+                    className="w-full h-auto max-w-full drop-shadow-2xl transition-transform duration-300 hover:scale-[1.01]"
                   />
                 </picture>
               </motion.div>
