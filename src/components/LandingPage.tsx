@@ -54,6 +54,7 @@ import { ScrollReveal } from './ScrollReveal';
 import { BackToTop } from './BackToTop';
 import { SecurityModal } from './SecurityModal';
 import { DonateModal } from './DonateModal';
+import { LegalModal } from './LegalModal';
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -81,11 +82,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [activeSection, setActiveSection] = useState<string>('how-it-works');
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState<boolean>(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState<boolean>(false);
   const [copiedShare, setCopiedShare] = useState<boolean>(false);
 
   const handleShareApp = () => {
     const shareUrl = window.location.origin;
-    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free: ' + shareUrl;
+    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
     if (navigator.share) {
       navigator.share({
         title: 'Automatic 9-Digits Contacts Upgrader',
@@ -832,22 +835,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                 </ScrollReveal>
 
-                {/* 9. Universal Device & vCard 3.0 Compatibility */}
-                <ScrollReveal delay={400}>
-                  <div className="bg-teal-50/50 dark:bg-teal-950/20 p-5 rounded-2xl border border-teal-100 dark:border-teal-900/30 shadow-xs flex flex-col justify-between hover:border-teal-400 dark:hover:border-teal-600 transition h-full">
+                {/* 10. Security Verified (SRI) */}
+                <ScrollReveal delay={450}>
+                  <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex flex-col justify-between hover:border-emerald-400 dark:hover:border-emerald-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400 flex items-center justify-center mb-3 shadow-xs">
-                        <Smartphone className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 shadow-xs">
+                        <ShieldCheck className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        iOS &amp; Android vCard 3.0
+                        Security Verified (SRI)
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Exports pristine .vcf and .csv formats compatible with Apple iPhone Contacts, Google Contacts, Samsung Galaxy, and WhatsApp.
+                        Cryptographically signed subresource integrity hashes ensure that every script and asset is tamper-proof, verified, and secure.
                       </p>
                     </div>
-                    <div className="mt-3 text-[11px] font-semibold text-teal-600 dark:text-teal-400 flex items-center gap-1">
-                      <Check className="w-3.5 h-3.5" /> Native Address Book Sync
+                    <div className="mt-3 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Cryptographic Integrity
                     </div>
                   </div>
                 </ScrollReveal>
@@ -1069,31 +1072,61 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
-            {/* Security Verified Badge */}
-            <button
-              type="button"
-              onClick={() => setIsSecurityModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-all cursor-pointer group"
-              title="Click to view Security & Cryptographic Integrity details"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>Security Verified (SRI)</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            </button>
-
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-xs">
-              <span className="text-sm">🇬🇲</span>
-              <span>Built for The Gambia</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex-1 flex justify-center">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[linear-gradient(to_right,#CE1126_0%,#CE1126_32%,#FFFFFF_38%,#0C1C8C_44%,#0C1C8C_56%,#FFFFFF_62%,#3A7728_68%,#3A7728_100%)] border border-white/40 dark:border-white/20 text-white font-bold text-xs shadow-md drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+              <span className="drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">🇬🇲 Built with love for Our Homeland</span>
             </div>
-            
-            <span className="hidden md:inline text-slate-400 dark:text-slate-500 text-[11px]">
-              Built in compliance with PURA Gambia National Numbering Plan
-            </span>
+          </div>
+
+          <div className="flex flex-col items-center sm:items-end gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setIsPrivacyModalOpen(true)} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer">Privacy Policy</button>
+              <span>·</span>
+              <button onClick={() => setIsTermsModalOpen(true)} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer">Terms & Conditions</button>
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-slate-600">© Copyright 2026 All Rights Reserved</p>
           </div>
         </div>
       </footer>
+
+      {/* Legal Modals */}
+      <LegalModal
+        title="Privacy Policy"
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+      >
+        <p className="font-bold text-slate-500 text-xs mb-4">Last Updated: September 1, 2026</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">1. No Data Collection</h3>
+        <p>The Automatic 9-Digits Contacts Upgrader is designed to respect your privacy completely. We do not collect, store, share, or transmit any personal data, phone numbers, or contact details.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">2. Local Browser Processing (PWA)</h3>
+        <p>This application is a Progressive Web App (PWA). All contact modifications, processing, and file upgrades happen 100% locally inside your web browser using client-side JavaScript. No contact lists or files are ever sent over the internet to our servers or any third-party servers.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">3. Offline Capabilities and Caching</h3>
+        <p>As a PWA, this application utilizes standard browser storage technologies (like Service Workers and Cache Storage) strictly to allow the application to work offline and load faster. This metadata does not contain personal contact information.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">4. Third-Party Hosting</h3>
+        <p>This website is hosted utilizing GitHub Pages. While the application code itself does not track you, GitHub may automatically collect server access logs (such as your IP address and web browser type) for security, debugging, and operational purposes. You can review the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" className="text-emerald-600 dark:text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a> for details.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">5. Contact Us</h3>
+        <p>If you have questions about this short-term project, you can contact the developer at <a href="mailto:ninedigitsgm@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">ninedigitsgm@gmail.com</a></p>
+      </LegalModal>
+
+      <LegalModal
+        title="Terms and Conditions"
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      >
+        <p className="font-bold text-slate-500 text-xs mb-4">Last Updated: September 1, 2026</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">1. Acceptance of Terms</h3>
+        <p>By accessing and using ninedigits.gm, you agree to be bound by these simple Terms and Conditions. If you do not agree, please do not use the tool.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">2. Purpose of the Tool</h3>
+        <p>This web utility is provided as a free, short-term valuable tool intended to assist individuals in formatting telephone contacts to the standard 9-digit dialing system.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">3. "As-Is" Service & Disclaimer of Warranties</h3>
+        <p>This PWA tool is provided entirely "AS-IS" and "AS-AVAILABLE" without warranties of any kind, either express or implied. While we make every effort to ensure formatting accuracy, we do not guarantee that the tool will work flawlessly or be compatible with every mobile device or address book file format.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">4. Limitation of Liability</h3>
+        <p>Important: You are solely responsible for protecting your data. You are strongly advised to safely store/keep the Exported file in Step one, as its the vCard/CSV file or alternatively Google Contacts / iCloud, if you backed up your contacts to those online storage tools; you can use those methods to recover your contacts if any unforeseen circumstances occur. Extra care only needs to be taken when deleting your contacts in your phone, getting ready to reimport the upgraded vCard/CSV, as you won't be cleaning, editing, merging, deleting contacts directly. So please confirm the Backup/Exported file is still safely kept and available in the location it's saved in. Under no circumstances shall the developers or hosts of this project be held liable for any data loss, corrupted contacts, accidental duplicates, or incorrectly formatted phone numbers resulting from the use of this software.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">5. Intellectual Property and Proprietary Rights</h3>
+        <p>All code, design layouts, custom scripts, text, and visual assets featured on ninedigits.gm are the exclusive intellectual property of the project developers and are protected by local & international copyright laws. While the underlying repository is publicly visible on GitHub solely to satisfy platform hosting requirements, this software is closed-source and proprietary. You are granted a limited right to execute the application within your browser for personal use. You may not copy, redistribute, modify, or host duplicate versions of this code without explicit written permission.</p>
+        <h3 className="font-bold text-slate-900 dark:text-white">6. Short-Term Project Lifecycle</h3>
+        <p>This is a temporary utility project built for the immediate 9-digit number transition phase scheduled for 4th of September 2026, with dual support of both 7 digits and 9 Digits until the grace period ends on November 30, 2026. The developers reserve the right to alter, discontinue, or completely take down the website and domain name at any time without prior notice.</p>
+      </LegalModal>
 
       {/* Security Verification Details Modal */}
       <SecurityModal

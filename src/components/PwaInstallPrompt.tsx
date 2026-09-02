@@ -16,6 +16,8 @@ export const PwaInstallPrompt: React.FC = () => {
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showOfflineToast, setShowOfflineToast] = useState(false);
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -57,11 +59,16 @@ export const PwaInstallPrompt: React.FC = () => {
       setUpdateAvailable(true);
     };
 
+    const handleCheckEvent = () => {
+      handleCheckForUpdates();
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     window.addEventListener('pwa-update-available', handleUpdate);
+    window.addEventListener('pwa-check-updates', handleCheckEvent);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -69,6 +76,7 @@ export const PwaInstallPrompt: React.FC = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('pwa-update-available', handleUpdate);
+      window.removeEventListener('pwa-check-updates', handleCheckEvent);
     };
   }, [isStandalone]);
 
@@ -82,6 +90,39 @@ export const PwaInstallPrompt: React.FC = () => {
       setDeferredPrompt(null);
     } else if (isIos && !isStandalone) {
       setShowIosGuide(true);
+    }
+  };
+
+  const handleCheckForUpdates = () => {
+    setCheckingUpdate(true);
+    setUpdateMessage('Checking for updates...');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (reg) {
+          reg.update().then(() => {
+            setCheckingUpdate(false);
+            if (reg.waiting || reg.installing) {
+              setUpdateAvailable(true);
+              setUpdateMessage('Latest update is available!');
+            } else {
+              setUpdateMessage('This is the latest Update, Check Later!');
+              setTimeout(() => setUpdateMessage(null), 4000);
+            }
+          }).catch(() => {
+            setCheckingUpdate(false);
+            setUpdateMessage('This is the latest Update, Check Later!');
+            setTimeout(() => setUpdateMessage(null), 4000);
+          });
+        } else {
+          setCheckingUpdate(false);
+          setUpdateMessage('This is the latest Update, Check Later!');
+          setTimeout(() => setUpdateMessage(null), 4000);
+        }
+      });
+    } else {
+      setCheckingUpdate(false);
+      setUpdateMessage('This is the latest Update, Check Later!');
+      setTimeout(() => setUpdateMessage(null), 4000);
     }
   };
 
@@ -135,20 +176,43 @@ export const PwaInstallPrompt: React.FC = () => {
         </div>
       )}
 
-      {/* New Version Update Toast */}
-      {updateAvailable && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[300] px-4 py-3 bg-indigo-900/95 text-indigo-100 border border-indigo-500/50 rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-top-4 duration-300">
-          <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin" />
-          <div className="text-xs">
-            <span className="font-bold block">Update Available</span>
-            <span className="opacity-90">A new offline version of 9Digits is ready.</span>
-          </div>
-          <button
-            onClick={handleRefreshApp}
-            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition cursor-pointer shrink-0"
-          >
-            Reload
+      {/* Update Check Status Toast Banner */}
+      {updateMessage && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[300] px-4 py-2.5 bg-slate-900/95 dark:bg-slate-950/95 text-slate-100 border border-indigo-500/50 rounded-2xl shadow-2xl text-xs font-semibold backdrop-blur-md animate-in slide-in-from-top-4 duration-300 flex items-center gap-2.5">
+          <RefreshCw className={`w-4 h-4 text-indigo-400 ${checkingUpdate ? 'animate-spin' : ''}`} />
+          <span>{updateMessage}</span>
+          <button onClick={() => setUpdateMessage(null)} className="ml-2 opacity-70 hover:opacity-100 cursor-pointer">
+            <X className="w-3.5 h-3.5" />
           </button>
+        </div>
+      )}
+
+      {/* New Version Update Urgent Notification Modal Popup */}
+      {updateAvailable && (
+        <div className="fixed inset-0 z-[400] bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-indigo-500/60 rounded-3xl w-full max-w-md p-6 text-white shadow-2xl relative space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shrink-0">
+                <RefreshCw className="w-6 h-6 animate-spin" />
+              </div>
+              <div>
+                <span className="text-xs uppercase font-extrabold tracking-wider text-indigo-400 block">PWA Update Available</span>
+                <h3 className="text-lg font-extrabold text-white">Latest Version Ready</h3>
+              </div>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              A new updated version of 9Digits is ready. Please update now to get the latest features, bug fixes, and security improvements!
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={handleRefreshApp}
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-lg transition cursor-pointer flex items-center justify-center gap-2 animate-pulse"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Update Now</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

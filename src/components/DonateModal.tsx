@@ -50,7 +50,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
 
   const handleShareApp = () => {
     const shareUrl = window.location.origin;
-    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free: ' + shareUrl;
+    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
     if (navigator.share) {
       navigator.share({
         title: 'Automatic 9-Digits Contacts Upgrader',
