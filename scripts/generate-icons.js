@@ -28,10 +28,30 @@ async function generate() {
 
   for (const { name, size } of pngOutputs) {
     const outPath = path.resolve('public', name);
-    const buf = await sharp(svgBuffer)
-      .resize(size, size)
-      .png({ quality: 100 })
-      .toBuffer();
+    let buf;
+    if (size >= 64) {
+      const innerSize = Math.round(size * 0.72);
+      const resizedSvg = await sharp(svgBuffer)
+        .resize(innerSize, innerSize)
+        .toBuffer();
+
+      buf = await sharp({
+        create: {
+          width: size,
+          height: size,
+          channels: 4,
+          background: { r: 15, g: 23, b: 42, alpha: 1 }
+        }
+      })
+        .composite([{ input: resizedSvg, gravity: 'center' }])
+        .png({ quality: 100 })
+        .toBuffer();
+    } else {
+      buf = await sharp(svgBuffer)
+        .resize(size, size)
+        .png({ quality: 100 })
+        .toBuffer();
+    }
     fs.writeFileSync(outPath, buf);
     console.log(`Generated ${name} (${size}x${size})`);
 
