@@ -133,7 +133,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                   Your upgraded contacts file was generated successfully!
                 </p>
                 <p className="mt-0.5 text-emerald-700 dark:text-emerald-300/90 leading-relaxed text-[11px] sm:text-xs">
-                  If this tool saved you hours of manual editing, consider sending a small tip to show appreciation and support future community tools.
+                  If this saved you hours of work, consider sending a small tip to show appreciation.
                 </p>
               </div>
             </div>
@@ -146,7 +146,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
               <span>100% Free &amp; 100% On-Device Privacy Guaranteed</span>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              This Web app, which can be installable as a mobile app on all devices is provided 100% free, zero ads, secure data privacy, zero tracking, and Zero paywalls (No Section on the web app asks for Premium, Codes of any sort from you) so every Gambian, Resident and Businesses can migrate seamlessly. Your Support will be so invaluable if you can, No amount is too small!
+              This Web app, which can be installable as a mobile app on all devices is provided 100% free, zero ads, secure data privacy, zero tracking, and Zero paywalls (No Section on the web app asks for Premium, Codes of any sort from you) so every Gambian, Resident and Businesses can migrate seamlessly. Your Support will be so invaluable.
             </p>
           </div>
 

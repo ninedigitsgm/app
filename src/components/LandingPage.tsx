@@ -42,7 +42,8 @@ import {
   GitCompare,
   History,
   Trash2,
-  Heart
+  Heart,
+  Share2
 } from 'lucide-react';
 import { OperatorLogo } from './OperatorLogo';
 import { LiveSandbox } from './LiveSandbox';
@@ -80,11 +81,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [activeSection, setActiveSection] = useState<string>('how-it-works');
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState<boolean>(false);
+  const [copiedShare, setCopiedShare] = useState<boolean>(false);
+
+  const handleShareApp = () => {
+    const shareUrl = window.location.origin;
+    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free: ' + shareUrl;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Automatic 9-Digits Contacts Upgrader',
+        text: shareText,
+        url: shareUrl,
+      }).catch(() => {
+        navigator.clipboard.writeText(shareUrl);
+        setCopiedShare(true);
+        setTimeout(() => setCopiedShare(false), 2200);
+      });
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2200);
+    }
+  };
 
   // Track active section for navigation
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['how-it-works', 'tutorial', 'features', 'pura-rules', 'live-tester', 'donate', 'faq'];
+      const sections = ['how-it-works', 'tutorial', 'features', 'pura-rules', 'live-tester', 'donate', 'share', 'faq'];
       const scrollPosition = window.scrollY + 140;
 
       for (let i = sections.length - 1; i >= 0; i--) {
@@ -123,6 +145,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     { label: 'PURA Rules', href: '#pura-rules', icon: BookOpen, id: 'pura-rules' },
     { label: 'Live Sandbox', href: '#live-tester', icon: FlaskConical, id: 'live-tester' },
     { label: 'Donate', href: '#donate', icon: Heart, id: 'donate' },
+    { label: 'Share', href: '#share', icon: Share2, id: 'share' },
     { label: 'FAQ', href: '#faq', icon: HelpCircle, id: 'faq' },
   ];
 
@@ -875,11 +898,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
 
                     <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                      Love This Free Community Tool?
+                      Love This Free Gambian Tool?
                     </h2>
 
                     <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
-                      This project was built independently with care for the Gambian people to make the PURA 9-digit transition seamless, 100% private, and effortless. If this saved you hours of work, consider sending a small tip to support hosting and future updates!
+                      This project was built independently with care for the Gambian people to make the PURA 9-digit transition seamless, 100% private, and effortless. If this saved you hours of work, consider sending a small tip to show appreciation.
                     </p>
 
                     <div className="pt-1 flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -909,6 +932,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </button>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400">
                       100% optional, always free
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Share Section - "Share This Much-Needed Tool" */}
+          <ScrollReveal>
+            <div id="share" className="mb-16 scroll-mt-24 sm:scroll-mt-28 max-w-4xl mx-auto">
+              <div className="bg-gradient-to-br from-blue-50/85 via-white to-teal-50/70 dark:from-slate-800/90 dark:via-slate-900/90 dark:to-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                  <div className="space-y-2.5 text-center md:text-left">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>Spread the Word</span>
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                      Share This Much-Needed Tool
+                    </h2>
+
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+                      Share this much-needed tool with friends, family, and colleagues across The Gambia! Help every one get access to this tool to upgrade their phonebook safely, effortlessly, and with 100% privacy.
+                    </p>
+                  </div>
+
+                  <div className="shrink-0 flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleShareApp}
+                      className="px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-teal-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-blue-500/25 flex items-center gap-2 transition cursor-pointer active:scale-95"
+                    >
+                      <Share2 className="w-4 h-4 text-white" />
+                      <span>{copiedShare ? 'Link Copied!' : 'Share App Now'}</span>
+                    </button>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {copiedShare ? 'Link copied to clipboard!' : 'Instant share via Whatsapp, Facebook or your favourite apps'}
                     </span>
                   </div>
                 </div>

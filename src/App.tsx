@@ -49,7 +49,7 @@ import {
   getCanonicalPhoneKey
 } from './lib/puraEngine';
 import { SAMPLE_RAW_DATA } from './lib/demoData';
-import { ArrowLeft, Home, Sparkles, Moon, Sun, Smartphone, ShieldCheck, CopyCheck, GitMerge, Trash2, Heart } from 'lucide-react';
+import { ArrowLeft, Home, Sparkles, Moon, Sun, Smartphone, ShieldCheck, CopyCheck, GitMerge, Trash2, Heart, Share2, Menu, X } from 'lucide-react';
 
 export default function App() {
   // Page view routing: 'landing' or 'app'
@@ -77,6 +77,7 @@ export default function App() {
   const [showReference, setShowReference] = useState<boolean>(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
   const [isDonateOpen, setIsDonateOpen] = useState<boolean>(false);
+  const [appMobileMenuOpen, setAppMobileMenuOpen] = useState<boolean>(false);
   const [donateTriggerSource, setDonateTriggerSource] = useState<'download' | 'navbar' | 'section'>('navbar');
   interface HistoryState {
     records: ContactRecord[];
@@ -1575,27 +1576,65 @@ export default function App() {
               </span>
             )}
 
-            <button
-              type="button"
-              onClick={handleLoadSampleContacts}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition cursor-pointer shrink-0"
-              title="Load demo Gambian contacts"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span className="inline">Load Sample</span>
-            </button>
+            <div className="hidden sm:flex items-center gap-1.5 sm:gap-2.5">
+              <button
+                type="button"
+                onClick={handleLoadSampleContacts}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                title="Load demo Gambian contacts"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span className="inline">Load Sample</span>
+              </button>
 
+              <button
+                type="button"
+                onClick={() => {
+                  setDonateTriggerSource('navbar');
+                  setIsDonateOpen(true);
+                }}
+                className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-200 dark:border-rose-800/80 flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                title="Support & show appreciation to the creator"
+              >
+                <Heart className="w-3.5 h-3.5 fill-rose-500/30 text-rose-600 dark:text-rose-400" />
+                <span className="inline">Donate</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const shareUrl = window.location.origin;
+                  const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free: ' + shareUrl;
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Automatic 9-Digits Contacts Upgrader',
+                      text: shareText,
+                      url: shareUrl,
+                    }).catch(() => {
+                      navigator.clipboard.writeText(shareUrl);
+                      alert('Share link copied to clipboard!');
+                    });
+                  } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert('Share link copied to clipboard!');
+                  }
+                }}
+                className="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 flex items-center gap-1.5 transition cursor-pointer shrink-0"
+                title="Share this app with friends and colleagues"
+              >
+                <Share2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span className="inline">Share</span>
+              </button>
+            </div>
+
+            {/* Mobile Hamburger Toggle Button */}
             <button
               type="button"
-              onClick={() => {
-                setDonateTriggerSource('navbar');
-                setIsDonateOpen(true);
-              }}
-              className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-200 dark:border-rose-800/80 flex items-center gap-1.5 transition cursor-pointer shrink-0"
-              title="Support & show appreciation to the creator"
+              onClick={() => setAppMobileMenuOpen(!appMobileMenuOpen)}
+              className="sm:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+              aria-label={appMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              <Heart className="w-3.5 h-3.5 fill-rose-500/30 text-rose-600 dark:text-rose-400" />
-              <span className="inline">Donate</span>
+              {appMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
             <button
@@ -1609,6 +1648,62 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown for App Workspace */}
+        {appMobileMenuOpen && (
+          <div className="sm:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl px-4 pt-3 pb-5 space-y-2 shadow-xl">
+            <button
+              type="button"
+              onClick={() => {
+                setAppMobileMenuOpen(false);
+                handleLoadSampleContacts();
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-300 dark:border-slate-700 flex items-center gap-2.5 transition cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>Load Sample Contacts</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAppMobileMenuOpen(false);
+                setDonateTriggerSource('navbar');
+                setIsDonateOpen(true);
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-bold text-xs border border-rose-200 dark:border-rose-800 flex items-center gap-2.5 transition cursor-pointer"
+            >
+              <Heart className="w-4 h-4 fill-rose-500/30 text-rose-600 dark:text-rose-400" />
+              <span>Donate / Support Creator</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAppMobileMenuOpen(false);
+                const shareUrl = window.location.origin;
+                const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free: ' + shareUrl;
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Automatic 9-Digits Contacts Upgrader',
+                    text: shareText,
+                    url: shareUrl,
+                  }).catch(() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert('Share link copied to clipboard!');
+                  });
+                } else {
+                  navigator.clipboard.writeText(shareUrl);
+                  alert('Share link copied to clipboard!');
+                }
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold text-xs border border-blue-200 dark:border-blue-800 flex items-center gap-2.5 transition cursor-pointer"
+            >
+              <Share2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>Share App</span>
+            </button>
+          </div>
+        )}
 
         {/* Decorative Strip - Gambia Flag Gradient (Red - White - Blue - White - Green) */}
         <div
