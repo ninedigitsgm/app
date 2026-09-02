@@ -295,6 +295,95 @@ export const ContactTable: React.FC<ContactTableProps> = ({
     );
   };
 
+  const renderAlready9DigitsPill = (record: ContactRecord) => {
+    if (!record) return null;
+
+    let phoneItems = record.phoneNumbers;
+    if (!phoneItems || phoneItems.length === 0) {
+      const rawParts = (record.raw || record.result || '')
+        .split(/[,;/|\n]|\s+and\s+|\s+&\s+/i)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (rawParts.length > 0) {
+        phoneItems = rawParts.map((p) => processSingleNumber(p, true));
+      }
+    }
+
+    // Filter items that are already 9-digit Gambian GSM numbers in valid prefix range
+    const already9Items = (phoneItems || []).filter(
+      (p) =>
+        p.status === 'already' &&
+        p.cleaned?.length === 9 &&
+        ['QCell', 'Comium', 'Africell'].includes(p.operator)
+    );
+
+    if (already9Items.length === 0) {
+      if (
+        record.status === 'already' &&
+        ['QCell', 'Comium', 'Africell'].includes(record.operator) &&
+        record.result?.replace(/\D/g, '').length === 9
+      ) {
+        already9Items.push({
+          cleaned: record.result.replace(/\D/g, ''),
+          result: record.result,
+          status: 'already',
+          label: 'Already 9 Digits',
+          operator: record.operator,
+          originalRaw: record.raw,
+        });
+      } else {
+        return null;
+      }
+    }
+
+    interface GroupedAlready9 {
+      operator: OperatorName;
+      count: number;
+      bg: string;
+    }
+
+    const map = new Map<OperatorName, GroupedAlready9>();
+    already9Items.forEach((p) => {
+      const op = p.operator;
+      let bg = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700';
+      if (op === 'QCell') {
+        bg = 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+      } else if (op === 'Comium') {
+        bg = 'bg-red-100 dark:bg-red-950/80 text-[#EB222A] dark:text-red-300 border-red-300 dark:border-red-800';
+      } else if (op === 'Africell') {
+        bg = 'bg-[#9D207E]/15 dark:bg-[#9D207E]/30 text-[#9D207E] dark:text-[#F3B3EB] border-[#9D207E]/30 dark:border-[#9D207E]/50';
+      }
+
+      if (!map.has(op)) {
+        map.set(op, { operator: op, count: 1, bg });
+      } else {
+        map.get(op)!.count += 1;
+      }
+    });
+
+    const groups = Array.from(map.values());
+
+    return (
+      <div className="flex flex-wrap items-center gap-1 mt-1">
+        {groups.map((g, idx) => (
+          <span
+            key={`already-9-${g.operator}-${idx}`}
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold border ${g.bg} whitespace-nowrap shadow-2xs`}
+            title={`${g.operator} number is already 9 valid digits in correct GSM prefix range`}
+          >
+            <OperatorLogo operator={g.operator} size="xs" />
+            <span>Already 9 Digits</span>
+            {g.count > 1 && (
+              <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-black/10 dark:bg-white/20 ml-0.5 tracking-tight">
+                x{g.count}
+              </span>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   const selectedRecords = (allRecords || records).filter((r) => selectedIds.has(r.id));
   const selectedRepeatedRecords = selectedRecords.filter(
     (r) => r.hasRepeatedNumbers || (repeatedDuplicateIds && repeatedDuplicateIds.has(r.originalIndex))
@@ -605,7 +694,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".vcf,.vcard,.csv,.txt"
+                    accept=".vcf,.vcard,.csv"
                     onChange={handleEmptyStateFileChange}
                     className="hidden"
                     id="emptyStateFileInput"
@@ -798,11 +887,14 @@ export const ContactTable: React.FC<ContactTableProps> = ({
 
                       {/* Upgraded Result */}
                       <td className="p-3 font-mono text-xs font-bold text-slate-900 dark:text-emerald-400">
-                        <div className="flex items-center gap-2">
-                          <span>{highlightText(r.result, searchQuery)}</span>
-                          {r.status === 'ok' && (
-                            <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                          )}
+                        <div className="flex flex-col items-start gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span>{highlightText(r.result, searchQuery)}</span>
+                            {r.status === 'ok' && (
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            )}
+                          </div>
+                          {renderAlready9DigitsPill(r)}
                         </div>
                       </td>
 

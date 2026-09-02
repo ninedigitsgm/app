@@ -1,5 +1,5 @@
 {
-  "name": " Gambia 9-Digit Contacts Upgrader",
+  "name": "Automatic 9-Digits Contacts Upgrader",
   "description": "PURA Numbering Migration tool for upgrading Gambian contacts to 9-digit format with operator prefixing, deduplication, and VCF/CSV support.",
   "requestFramePermissions": [],
   "majorCapabilities": [

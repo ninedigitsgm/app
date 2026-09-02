@@ -163,7 +163,7 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
         {/* Input */}
         <div className="flex-1">
           <label htmlFor="sandboxInput" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-            Input Raw Gambian or International Number:
+            Input a Number:
           </label>
           <input
             id="sandboxInput"

@@ -113,7 +113,7 @@ export const ImportSection: React.FC<ImportSectionProps> = ({
               1. Import Contacts File
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Upload your exported Apple/Android <b>.vcf</b> (vCard) or spreadsheet <b>.csv</b> file
+              Upload your exported Apple/Android <b>.vcf</b> (vCard) or <b>.csv</b> file
             </p>
           </div>
         </div>
@@ -169,7 +169,7 @@ export const ImportSection: React.FC<ImportSectionProps> = ({
           ref={fileInputRef}
           type="file"
           id="fileInput"
-          accept=".vcf,.csv,text/vcard,text/csv,text/plain"
+          accept=".vcf,.vcard,.csv,text/vcard,text/csv"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -180,7 +180,7 @@ export const ImportSection: React.FC<ImportSectionProps> = ({
           Click to choose your contacts file or drag and drop here
         </div>
         <div className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
-          Supports <b>.VCF</b> (vCard 2.1 / 3.0 / 4.0 from iPhone & Android) and <b>.CSV</b> (Excel & Google Contacts)
+          Supports <b>.VCF</b> (vCard 2.1 / 3.0 / 4.0 from iPhone & Android) and <b>.CSV</b>
         </div>
       </div>
 

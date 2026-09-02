@@ -105,8 +105,11 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
         <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {totalLoadedContacts === 0 ? (
           <div className="p-6 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-center space-y-2 my-4">
+            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-1">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
             <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
-              ⚠️ Please load contacts first!
+              Please load contacts first!
             </p>
             <p className="text-xs text-amber-700/80 dark:text-amber-400">
               Import a .vcf/.csv file or paste contacts in the boxes above to run duplicate analysis.
@@ -114,8 +117,11 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({
           </div>
         ) : totalDuplicates === 0 ? (
           <div className="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 text-center space-y-2 my-4">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-1">
+              <Sparkles className="w-5 h-5" />
+            </div>
             <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">
-              ✨ Clean Dataset! No duplicates or repeated numbers found
+              Clean Dataset! No duplicates or repeated numbers found
             </p>
             <p className="text-xs text-emerald-700/80 dark:text-emerald-400">
               Every contact record in memory has a unique name, distinct phone numbers, and no repeated internal digits.

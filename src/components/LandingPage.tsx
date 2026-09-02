@@ -41,7 +41,8 @@ import {
   Eye,
   GitCompare,
   History,
-  Trash2
+  Trash2,
+  Heart
 } from 'lucide-react';
 import { OperatorLogo } from './OperatorLogo';
 import { LiveSandbox } from './LiveSandbox';
@@ -51,6 +52,7 @@ import { GettingStartedTutorial } from './GettingStartedTutorial';
 import { ScrollReveal } from './ScrollReveal';
 import { BackToTop } from './BackToTop';
 import { SecurityModal } from './SecurityModal';
+import { DonateModal } from './DonateModal';
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -77,19 +79,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>('how-it-works');
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
+  const [isDonateModalOpen, setIsDonateModalOpen] = useState<boolean>(false);
 
   // Track active section for navigation
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['how-it-works', 'tutorial', 'features', 'pura-rules', 'live-tester', 'faq'];
-      const scrollPosition = window.scrollY + 120;
+      const sections = ['how-it-works', 'tutorial', 'features', 'pura-rules', 'live-tester', 'donate', 'faq'];
+      const scrollPosition = window.scrollY + 140;
 
-      for (const sectionId of sections) {
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const sectionId = sections[i];
         const el = document.getElementById(sectionId);
         if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
+          const rect = el.getBoundingClientRect();
+          const absoluteTop = rect.top + window.scrollY;
+          if (scrollPosition >= absoluteTop) {
             setActiveSection(sectionId);
             break;
           }
@@ -118,23 +122,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     { label: 'Features', href: '#features', icon: Sparkles, id: 'features' },
     { label: 'PURA Rules', href: '#pura-rules', icon: BookOpen, id: 'pura-rules' },
     { label: 'Live Sandbox', href: '#live-tester', icon: FlaskConical, id: 'live-tester' },
+    { label: 'Donate', href: '#donate', icon: Heart, id: 'donate' },
     { label: 'FAQ', href: '#faq', icon: HelpCircle, id: 'faq' },
   ];
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
-    setMobileMenuOpen(false);
     const targetId = href.replace('#', '');
-    const element = document.getElementById(targetId);
-    if (element) {
-      const headerOffset = 90;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-      setActiveSection(targetId);
+    setActiveSection(targetId);
+
+    const performScroll = () => {
+      const element = document.getElementById(targetId);
+      if (element) {
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.getBoundingClientRect().height : 60;
+        const flagBarHeight = 6;
+        const extraPadding = 16;
+        const totalOffset = headerHeight + flagBarHeight + extraPadding;
+
+        const elementRect = element.getBoundingClientRect();
+        const targetScrollY = elementRect.top + window.scrollY - totalOffset;
+
+        window.scrollTo({
+          top: Math.max(0, targetScrollY),
+          behavior: 'smooth'
+        });
+      }
+    };
+
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+      // Wait for React to collapse the mobile menu drawer so measurements reflect true document flow
+      setTimeout(performScroll, 50);
+    } else {
+      performScroll();
     }
   };
 
@@ -161,7 +182,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     },
     {
       q: "What file formats can I upload and export?",
-      a: "You can import .vcf (vCard from iPhone/Android/Google Contacts), CSV files, or Excel (.xlsx) files. You can export back to native .VCF format or clean CSV/Excel spreadsheets."
+      a: "You can import .vcf (vCard from iPhone/Android/Google Contacts) or .csv (Comma Separated Values) files. You can export back to native .VCF format or clean .CSV format."
     }
   ];
 
@@ -368,7 +389,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span><b>Visual Diffs &amp; Duplicate Merging:</b> Displays all changes clearly and merges identical or shared numbers with 1 click</span>
+                  <span><b>Already 9 Digits Untouched:</b> Leaves contacts that are already 9 digits untouched</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                  <span><b>Before &amp; After Previews:</b> Displays all number changes clearly and merges duplicate contacts with 1 click</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -389,13 +417,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span><b>Review, Export &amp; Clean Re-Import:</b> Download upgraded .vcf/.csv with guidance to delete old contacts to prevent duplication</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
                   <span><b>Works Online &amp; Offline:</b> 100% on-device PWA privacy, zero server uploads &amp; zero mobile data consumption</span>
                 </div>
 
@@ -403,7 +424,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
-                  <span>Accessible on any device (smartphones, tablets, and computers)</span>
+                  <span><b>Universal Device Support:</b> Accessible on any device (smartphones, tablets, and computers)</span>
                 </div>
               </div>
 
@@ -450,7 +471,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* 3 Simple Steps */}
-          <div id="how-it-works" className="mb-14 scroll-mt-20">
+          <div id="how-it-works" className="mb-14 scroll-mt-24 sm:scroll-mt-28">
             <div className="text-center mb-8">
               <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                 HOW IT WORKS
@@ -480,8 +501,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     Export your contacts (.vcf or .csv). <b>This file is your safety backup</b>, so you can restore anytime. No panic, complete peace of mind!
                   </p>
                 </div>
-                <div className="mt-3 px-2.5 py-1 rounded-full bg-red-100/80 dark:bg-red-900/40 text-[11px] font-bold text-red-700 dark:text-red-300">
-                  🛡️ Safe &amp; Reversible Backup
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-red-100/80 dark:bg-red-900/40 text-[11px] font-bold text-red-700 dark:text-red-300 inline-flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                  <span>Safe &amp; Reversible Backup</span>
                 </div>
               </div>
 
@@ -501,8 +523,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     Operates in a safe staging area (doesn't modify your phonebook directly). View all before/after changes, merge duplicates, and use <b>Undo &amp; Redo</b> if you make a mistake without restarting.
                   </p>
                 </div>
-                <div className="mt-3 px-2.5 py-1 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-[11px] font-bold text-blue-700 dark:text-blue-300">
-                  ↩️ Undo/Redo &amp; Visual Diffs
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-blue-100/80 dark:bg-blue-900/40 text-[11px] font-bold text-blue-700 dark:text-blue-300 inline-flex items-center gap-1.5">
+                  <Undo2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>Undo/Redo &amp; Live Previews</span>
                 </div>
               </div>
 
@@ -522,8 +545,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     Download your clean 9-digit file. <b>Pro-Tip:</b> Delete old contacts on your phone before re-importing to prevent duplicate Non-Gambian, Gamcel/Gamtel, or old 7-digit numbers!
                   </p>
                 </div>
-                <div className="mt-3 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
-                  ✨ Zero Duplicate Clutter
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>Zero Duplicate Clutter</span>
                 </div>
               </div>
             </div>
@@ -604,14 +628,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Getting Started Tutorial Guide */}
           <ScrollReveal>
-            <div id="tutorial" className="mb-16 scroll-mt-20">
+            <div id="tutorial" className="mb-16 scroll-mt-24 sm:scroll-mt-28">
               <GettingStartedTutorial />
             </div>
           </ScrollReveal>
 
           {/* Key Features Section */}
           <ScrollReveal>
-            <div id="features" className="mb-16 scroll-mt-20">
+            <div id="features" className="mb-16 scroll-mt-24 sm:scroll-mt-28">
               <div className="text-center mb-8">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   PLATFORM ADVANTAGES
@@ -693,7 +717,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         <Eye className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
-                        Safe Sandbox &amp; Visual Diffs
+                        Safe Sandbox &amp; Live Previews
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                         Doesn't modify your phonebook directly. Imports into a safe staging area where all prefix transformations and changes are displayed transparently.
@@ -810,14 +834,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* PURA Rules Guide Section */}
           <ScrollReveal>
-            <div id="pura-rules" className="mb-16 scroll-mt-20">
+            <div id="pura-rules" className="mb-16 scroll-mt-24 sm:scroll-mt-28">
               <PuraRulesGuide />
             </div>
           </ScrollReveal>
 
           {/* Interactive Live Sandbox Section */}
           <ScrollReveal>
-            <div id="live-tester" className="mb-16 scroll-mt-20 space-y-6">
+            <div id="live-tester" className="mb-16 scroll-mt-24 sm:scroll-mt-28 space-y-6">
               <div className="text-center mb-6">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   INSTANT TESTER & SANDBOX
@@ -839,9 +863,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </ScrollReveal>
 
+          {/* Donate / Support the Creator Section */}
+          <ScrollReveal>
+            <div id="donate" className="mb-16 scroll-mt-24 sm:scroll-mt-28 max-w-4xl mx-auto">
+              <div className="bg-gradient-to-br from-rose-50/80 via-white to-amber-50/60 dark:from-slate-800/90 dark:via-slate-900/90 dark:to-rose-950/30 border border-rose-200/80 dark:border-rose-900/50 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                  <div className="space-y-2.5 text-center md:text-left">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-200 dark:border-rose-800">
+                      <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+                      <span>Support &amp; Show Appreciation</span>
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                      Love This Free Community Tool?
+                    </h2>
+
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+                      This project was built independently with care for the Gambian people to make the PURA 9-digit transition seamless, 100% private, and effortless. If this saved you hours of work, consider sending a small tip to support hosting and future updates!
+                    </p>
+
+                    <div className="pt-1 flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <span className="w-2 h-2 rounded-full bg-[#1DA1F2]" />
+                        <span>Wave: <b>+220 310 1010</b></span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span>QMoney / Afrimoney</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <Heart className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Card / PayPal</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex flex-col items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsDonateModalOpen(true)}
+                      className="px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-rose-500/25 flex items-center gap-2 transition cursor-pointer active:scale-95"
+                    >
+                      <Heart className="w-4 h-4 fill-white" />
+                      <span>Donate / Support Creator</span>
+                    </button>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      100% optional, always free
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
           {/* FAQ Accordion */}
           <ScrollReveal>
-            <div id="faq" className="mb-16 scroll-mt-20 max-w-3xl mx-auto">
+            <div id="faq" className="mb-16 scroll-mt-24 sm:scroll-mt-28 max-w-3xl mx-auto">
               <div className="text-center mb-8">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   GOT QUESTIONS?
@@ -961,6 +1038,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <SecurityModal
         isOpen={isSecurityModalOpen}
         onClose={() => setIsSecurityModalOpen(false)}
+      />
+
+      {/* Donate / Support Modal */}
+      <DonateModal
+        isOpen={isDonateModalOpen}
+        onClose={() => setIsDonateModalOpen(false)}
+        triggerSource="section"
       />
 
       {/* Mobile-only Scroll-to-Top Button near end of page */}

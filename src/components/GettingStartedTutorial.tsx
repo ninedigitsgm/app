@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Smartphone, 
   Laptop, 
@@ -16,6 +16,8 @@ import {
   RefreshCw, 
   FileText,
   RotateCcw,
+  Undo2,
+  Redo2,
   Trash2,
   AlertTriangle,
   Lock,
@@ -25,6 +27,25 @@ import {
 export const GettingStartedTutorial: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'android' | 'iphone' | 'tablet' | 'desktop'>('android');
   const [activeStep, setActiveStep] = useState<number>(1);
+  const stepBoxRef = useRef<HTMLDivElement>(null);
+
+  const goToStep = (stepNumber: number) => {
+    setActiveStep(stepNumber);
+    setTimeout(() => {
+      if (stepBoxRef.current) {
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.getBoundingClientRect().height : 60;
+        const flagBarHeight = 6;
+        const offset = headerHeight + flagBarHeight + 16;
+        const rect = stepBoxRef.current.getBoundingClientRect();
+        const targetScrollY = rect.top + window.scrollY - offset;
+        window.scrollTo({
+          top: Math.max(0, targetScrollY),
+          behavior: 'smooth'
+        });
+      }
+    }, 10);
+  };
 
   const steps = [
     {
@@ -142,7 +163,7 @@ export const GettingStartedTutorial: React.FC = () => {
           <button
             key={s.num}
             type="button"
-            onClick={() => setActiveStep(s.num)}
+            onClick={() => goToStep(s.num)}
             className={`p-3 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
               activeStep === s.num
                 ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-xs ring-1 ring-emerald-500/30'
@@ -166,7 +187,7 @@ export const GettingStartedTutorial: React.FC = () => {
       </div>
 
       {/* Detailed Step Content Box */}
-      <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
+      <div ref={stepBoxRef} className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-h-[380px]">
         {activeStep === 1 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
@@ -214,8 +235,8 @@ export const GettingStartedTutorial: React.FC = () => {
                     <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
                       <li>If you have backed up your contacts to Google Contacts, open any web browser and go to <a href="https://contacts.google.com" target="_blank" rel="noreferrer" className="text-emerald-600 underline font-semibold">contacts.google.com</a>.</li>
                       <li>Sign in with your Google account.</li>
-                      <li>Click <b>Export</b> on the left navigation menu.</li>
-                      <li>Choose <b>vCard (for iOS contacts / standard vCard)</b> or <b>Google CSV</b>, then click <b>Export</b>.</li>
+                      <li>Click <span className="inline-flex items-center gap-1 font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/80 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600"><Upload className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> Export</span> on the left navigation menu.</li>
+                      <li>Choose <b>Google CSV</b> or <b>vCard for Android or iOS</b>, then click <span className="inline-flex items-center gap-1 font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/80 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600"><Upload className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> Export</span>.</li>
                     </ol>
                   </div>
                 </>
@@ -299,10 +320,9 @@ export const GettingStartedTutorial: React.FC = () => {
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-              <ol className="list-decimal list-inside text-xs sm:text-sm text-slate-700 dark:text-slate-200 space-y-2 leading-relaxed">
+              <ol className="list-decimal list-inside text-xs sm:text-sm text-slate-700 dark:text-slate-200 space-y-2.5 leading-relaxed">
                 <li>Click the <b>"Upload &amp; Upgrade Contacts"</b> button at the top of the page.</li>
                 <li>Drag and drop your exported <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-emerald-600">.vcf</code> or <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-emerald-600">.csv</code> file into the upload box (or click to browse your files).</li>
-                <li>Alternatively, you can copy and paste raw contact text directly into the batch box.</li>
                 <li>Our tool instantly parses every contact on your device with 100% on-device speed.</li>
               </ol>
             </div>
@@ -320,7 +340,7 @@ export const GettingStartedTutorial: React.FC = () => {
                   Step 3: Review Changes, Merge Duplicates &amp; Use Undo/Redo
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Inspect before-and-after visual diffs, merge duplicate records, and undo mistakes freely.
+                  Inspect before-and-after number previews, merge duplicate records, and undo mistakes freely.
                 </p>
               </div>
             </div>
@@ -330,7 +350,7 @@ export const GettingStartedTutorial: React.FC = () => {
               <RotateCcw className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold">Undo &amp; Redo Protection: </span>
-                Made a mistaken edit or deleted a contact accidentally? Simply click the <b>Undo (↩️)</b> or <b>Redo (↪️)</b> buttons in the toolbar. You never have to restart the whole process from scratch!
+                Made a mistaken edit or deleted a contact accidentally? Simply click the <span className="inline-flex items-center gap-1 font-bold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 shadow-2xs"><Undo2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Undo</span> or <span className="inline-flex items-center gap-1 font-bold text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 shadow-2xs"><Redo2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Redo</span> buttons in the toolbar. You never have to restart the whole process from scratch!
               </div>
             </div>
 
@@ -379,7 +399,7 @@ export const GettingStartedTutorial: React.FC = () => {
               <ol className="list-decimal list-inside text-xs sm:text-sm text-slate-700 dark:text-slate-200 space-y-2 leading-relaxed">
                 <li>Toggle whether you want the <code className="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded font-bold">+220</code> country code included in your numbers.</li>
                 <li>Click <b>"Download Upgraded Contacts (.VCF)"</b> to download a clean vCard file compatible with iPhone, Android, and WhatsApp.</li>
-                <li>Alternatively, click <b>"Download Spreadsheet (.CSV)"</b> for Microsoft Excel or Google Sheets.</li>
+                <li>Alternatively, click <b>"Download Contacts (.CSV)"</b> for clean CSV format.</li>
                 <li>The file downloads directly to your device's <b>Downloads</b> folder.</li>
               </ol>
             </div>
@@ -406,8 +426,9 @@ export const GettingStartedTutorial: React.FC = () => {
             <div className="p-4 rounded-xl bg-amber-500/15 border-2 border-amber-500/40 flex items-start gap-3 text-xs text-amber-950 dark:text-amber-200">
               <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <div className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1">
-                  ⚠️ Critical Step: Delete All Existing Contacts Before Re-importing!
+                <div className="font-bold text-sm text-amber-900 dark:text-amber-300 mb-1 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span>Critical Step: Delete All Existing Contacts Before Re-importing!</span>
                 </div>
                 <p className="leading-relaxed">
                   Because your original export from <b>Step 1</b> is already saved on your device as a safety backup, <b>you must delete your existing contacts from your phone / Google Contacts / iCloud before re-importing</b>.
@@ -463,33 +484,35 @@ export const GettingStartedTutorial: React.FC = () => {
         )}
 
         {/* Navigation buttons between steps */}
-        <div className="flex items-center justify-between pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 pt-6 mt-6 border-t border-slate-200 dark:border-slate-800">
           <button
             type="button"
             disabled={activeStep === 1}
-            onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+            onClick={() => goToStep(Math.max(1, activeStep - 1))}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition shrink-0 ${
               activeStep === 1
                 ? 'opacity-40 cursor-not-allowed bg-slate-200 dark:bg-slate-800 text-slate-400'
                 : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-200 cursor-pointer'
             }`}
           >
-            Previous Step
+            Previous
           </button>
 
-          <span className="text-xs font-semibold text-slate-400">Step {activeStep} of 5</span>
+          <span className="text-xs font-semibold text-slate-400 text-center whitespace-nowrap px-2">
+            Step {activeStep} of 5
+          </span>
 
           <button
             type="button"
             disabled={activeStep === 5}
-            onClick={() => setActiveStep(Math.min(5, activeStep + 1))}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+            onClick={() => goToStep(Math.min(5, activeStep + 1))}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shrink-0 ${
               activeStep === 5
                 ? 'opacity-40 cursor-not-allowed bg-emerald-600 text-white'
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
             }`}
           >
-            <span>Next Step</span>
+            <span>Next</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

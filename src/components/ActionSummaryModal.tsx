@@ -13,6 +13,7 @@ import {
   ArrowLeftRight
 } from 'lucide-react';
 import { ActionSummaryData } from '../types';
+import { OperatorLogo } from './OperatorLogo';
 
 interface ActionSummaryModalProps {
   isOpen?: boolean;
@@ -213,10 +214,26 @@ export const ActionSummaryModal: React.FC<ActionSummaryModalProps> = ({
                           )}
                         </td>
                         <td className="py-2.5 px-3 font-mono font-bold text-slate-800 dark:text-emerald-400 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <span>{contact.upgradedPhone}</span>
-                            {contact.status === 'ok' && (
-                              <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
+                          <div className="flex flex-col items-start gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <span>{contact.upgradedPhone}</span>
+                              {contact.status === 'ok' && (
+                                <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
+                              )}
+                            </div>
+                            {contact.status === 'already' && ['QCell', 'Comium', 'Africell'].includes(contact.operator) && (
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  contact.operator === 'QCell'
+                                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                                    : contact.operator === 'Comium'
+                                    ? 'bg-red-100 dark:bg-red-950/80 text-[#EB222A] dark:text-red-300 border-red-300 dark:border-red-800'
+                                    : 'bg-[#9D207E]/15 dark:bg-[#9D207E]/30 text-[#9D207E] dark:text-[#F3B3EB] border-[#9D207E]/30 dark:border-[#9D207E]/50'
+                                } whitespace-nowrap shadow-2xs`}
+                              >
+                                <OperatorLogo operator={contact.operator} size="xs" />
+                                <span>Already 9 Digits</span>
+                              </span>
                             )}
                           </div>
                         </td>

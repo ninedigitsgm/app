@@ -24,6 +24,7 @@ import { OperatorDistributionChart } from './components/OperatorDistributionChar
 import { Toast, ToastMessage } from './components/Toast';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { SecurityModal } from './components/SecurityModal';
+import { DonateModal } from './components/DonateModal';
 import { 
   ContactRecord, 
   FilterOption, 
@@ -48,7 +49,7 @@ import {
   getCanonicalPhoneKey
 } from './lib/puraEngine';
 import { SAMPLE_RAW_DATA } from './lib/demoData';
-import { ArrowLeft, Home, Sparkles, Moon, Sun, Smartphone, ShieldCheck, CopyCheck, GitMerge, Trash2 } from 'lucide-react';
+import { ArrowLeft, Home, Sparkles, Moon, Sun, Smartphone, ShieldCheck, CopyCheck, GitMerge, Trash2, Heart } from 'lucide-react';
 
 export default function App() {
   // Page view routing: 'landing' or 'app'
@@ -75,6 +76,8 @@ export default function App() {
   const [includeCountryCode, setIncludeCountryCode] = useState<boolean>(false);
   const [showReference, setShowReference] = useState<boolean>(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
+  const [isDonateOpen, setIsDonateOpen] = useState<boolean>(false);
+  const [donateTriggerSource, setDonateTriggerSource] = useState<'download' | 'navbar' | 'section'>('navbar');
   interface HistoryState {
     records: ContactRecord[];
     description: string;
@@ -1458,20 +1461,30 @@ export default function App() {
           const vcf = generateVCF(records);
           triggerDownload(vcf, 'GM_PURA_Upgraded_Contacts.vcf', 'text/vcard');
           addToast(`Success: ${records.length} contacts exported in VCF format`, 'success');
+          // Pop up appreciation modal after download
+          setTimeout(() => {
+            setDonateTriggerSource('download');
+            setIsDonateOpen(true);
+          }, 900);
         }
       );
     } else {
       executeInstructionWithProgress(
-        'Generate & Download CSV Spreadsheet',
+        'Generate & Download CSV File',
         [
-          'Formatting spreadsheet columns and UTF-8 characters...',
+          'Formatting CSV columns and UTF-8 characters...',
           'Structuring Gambian operator categorization...',
-          'CSV spreadsheet downloaded successfully!'
+          'CSV file downloaded successfully!'
         ],
         () => {
           const csv = generateCSV(records);
           triggerDownload(csv, 'GM_PURA_Upgraded_Contacts.csv', 'text/csv');
           addToast(`Success: ${records.length} contacts exported in CSV format`, 'success');
+          // Pop up appreciation modal after download
+          setTimeout(() => {
+            setDonateTriggerSource('download');
+            setIsDonateOpen(true);
+          }, 900);
         }
       );
     }
@@ -1570,6 +1583,19 @@ export default function App() {
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               <span className="inline">Load Sample</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setDonateTriggerSource('navbar');
+                setIsDonateOpen(true);
+              }}
+              className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-200 dark:border-rose-800/80 flex items-center gap-1.5 transition cursor-pointer shrink-0"
+              title="Support & show appreciation to the creator"
+            >
+              <Heart className="w-3.5 h-3.5 fill-rose-500/30 text-rose-600 dark:text-rose-400" />
+              <span className="inline">Donate</span>
             </button>
 
             <button
@@ -1798,10 +1824,22 @@ export default function App() {
         </ScrollReveal>
 
         {/* Workspace Footer */}
-        <footer className="mt-12 pt-8 pb-12 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">PURA Gambia 9-Digits Contacts Upgrader</span>
+        <footer className="mt-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 text-center text-xs text-slate-500 dark:text-slate-400 -mx-4 sm:-mx-6 md:-mx-8 px-4 sm:px-6 md:px-8">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={navigateToLanding}
+                className="cursor-pointer transition-transform hover:scale-[1.02]"
+                title="Go to Home"
+              >
+                <img
+                  src={darkMode ? `${import.meta.env.BASE_URL}logo-for-darkmode.svg` : `${import.meta.env.BASE_URL}logo-for-lightmode.svg`}
+                  alt="Auto Contacts Upgrader Logo"
+                  className="h-12 sm:h-14 w-auto object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
@@ -1809,7 +1847,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsSecurityModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-all cursor-pointer group"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-all cursor-pointer group"
                 title="Click to view Security & Cryptographic Integrity details"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
@@ -1822,6 +1860,10 @@ export default function App() {
                 <span>Built for The Gambia</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </div>
+
+              <span className="hidden md:inline text-slate-400 dark:text-slate-500 text-[11px]">
+                Built in compliance with PURA Gambia National Numbering Plan
+              </span>
             </div>
           </div>
         </footer>
@@ -1993,6 +2035,13 @@ export default function App() {
       <SecurityModal
         isOpen={isSecurityModalOpen}
         onClose={() => setIsSecurityModalOpen(false)}
+      />
+
+      {/* Donate / Support Creator Modal */}
+      <DonateModal
+        isOpen={isDonateOpen}
+        onClose={() => setIsDonateOpen(false)}
+        triggerSource={donateTriggerSource}
       />
     </div>
   );
