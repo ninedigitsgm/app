@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleReference,
 }) => {
   return (
-    <header className="bg-gradient-to-r from-blue-950 via-teal-950 to-emerald-950 text-white rounded-2xl p-5 sm:p-6 shadow-md mb-6 relative overflow-hidden border border-slate-700/50">
+    <div role="region" aria-label="Workspace Status Banner" className="bg-gradient-to-r from-blue-950 via-teal-950 to-emerald-950 text-white rounded-2xl p-5 sm:p-6 shadow-md mb-6 relative overflow-hidden border border-slate-700/50">
       {/* Subtle ambient gradient glows */}
       <div className="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 

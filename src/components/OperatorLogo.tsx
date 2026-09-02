@@ -6,32 +6,45 @@ export interface OperatorLogoProps {
   className?: string;
 }
 
-// User-provided direct URLs with robust vector SVG fallback
-const OPERATOR_LOGOS: Record<string, { url: string; fallbackBg: string; textColor: string }> = {
+// Local SVG assets in public/ with robust vector fallback
+const OPERATOR_LOGOS: Record<
+  string,
+  { url: string; fallbackBg: string; textColor: string; name: string; containerBg: string }
+> = {
   africell: {
-    url: 'https://upload.wikimedia.org/wikipedia/commons/c/c9/AfricellLogo.png',
+    url: `${import.meta.env.BASE_URL}africell.svg`,
     fallbackBg: 'bg-[#9D207E]',
     textColor: 'text-white',
+    name: 'Africell',
+    containerBg: 'bg-white p-[1px] shadow-2xs',
   },
   qcell: {
-    url: 'https://qcell.gm/wp-content/uploads/2022/02/QCELL-logo-White.svg',
+    url: `${import.meta.env.BASE_URL}qcell.svg`,
     fallbackBg: 'bg-[#f47c20]',
     textColor: 'text-white',
+    name: 'QCell',
+    containerBg: 'bg-[#f47c20] p-[1.5px]',
   },
   gamcel: {
-    url: 'https://gamcel.gm/wp-content/uploads/2025/03/Gamcel-1.png',
+    url: `${import.meta.env.BASE_URL}gamcel.svg`,
     fallbackBg: 'bg-emerald-600',
     textColor: 'text-white',
+    name: 'Gamcel',
+    containerBg: 'bg-white p-[1px] shadow-2xs',
   },
   gamtel: {
-    url: 'https://gamtel.gm/wp-content/uploads/2025/03/gam.png',
+    url: `${import.meta.env.BASE_URL}gamtel.svg`,
     fallbackBg: 'bg-sky-600',
     textColor: 'text-white',
+    name: 'Gamtel',
+    containerBg: 'bg-white p-[1px] shadow-2xs',
   },
   comium: {
-    url: 'https://comium.gm/assets/img/logo-rd.svg',
+    url: `${import.meta.env.BASE_URL}comium.svg`,
     fallbackBg: 'bg-[#EB222A]',
     textColor: 'text-white',
+    name: 'Comium',
+    containerBg: 'bg-white p-[1px] shadow-2xs',
   },
 };
 
@@ -60,30 +73,19 @@ export const OperatorLogo: React.FC<OperatorLogoProps> = ({
 
   // If image loads successfully, render the actual brand logo image
   if (!imgError) {
-    const isQCell = matchedKey === 'qcell';
-    const isAfricell = matchedKey === 'africell';
-    const isGamcel = matchedKey === 'gamcel';
-    const isGamtel = matchedKey === 'gamtel';
-
     return (
       <span
-        className={`inline-flex items-center justify-center shrink-0 rounded overflow-hidden ${
-          isQCell
-            ? 'bg-[#f47c20] p-[1.5px]'
-            : isAfricell
-            ? 'bg-white p-[1px] shadow-2xs'
-            : isGamcel
-            ? 'bg-white p-[1px] shadow-2xs'
-            : isGamtel
-            ? 'bg-white p-[1px] shadow-2xs'
-            : 'bg-white p-[1px]'
-        } ${sizeClasses} ${className}`}
-        title={`${operator} logo`}
+        className={`inline-flex items-center justify-center shrink-0 rounded overflow-hidden ${config.containerBg} ${sizeClasses} ${className}`}
+        title={`${config.name} logo`}
       >
         <img
           src={config.url}
-          alt={`${operator} logo`}
+          alt={`${config.name} logo`}
           referrerPolicy="no-referrer"
+          loading="lazy"
+          decoding="async"
+          width="24"
+          height="24"
           className="w-full h-full object-contain"
           onError={() => setImgError(true)}
         />

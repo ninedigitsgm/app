@@ -50,14 +50,14 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
               <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Add New Contact
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 Create a new contact entry with automatic PURA formatting
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,13 +99,13 @@ export const AddContactModal: React.FC<AddContactModalProps> = ({
             {/* Live Preview */}
             {phone.trim() && (
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 space-y-2">
-                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-blue-500" />
                   Live Result Preview
                 </div>
                 {previews.map((p, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-500 dark:text-slate-400">{p.originalRaw}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{p.originalRaw}</span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
                       {p.result || 'Invalid'}
                     </span>

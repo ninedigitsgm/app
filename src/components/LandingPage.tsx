@@ -46,15 +46,17 @@ import {
   Share2
 } from 'lucide-react';
 import { OperatorLogo } from './OperatorLogo';
-import { LiveSandbox } from './LiveSandbox';
-import { BatchRawTester } from './BatchRawTester';
-import { PuraRulesGuide } from './PuraRulesGuide';
-import { GettingStartedTutorial } from './GettingStartedTutorial';
 import { ScrollReveal } from './ScrollReveal';
 import { BackToTop } from './BackToTop';
-import { SecurityModal } from './SecurityModal';
-import { DonateModal } from './DonateModal';
-import { LegalModal } from './LegalModal';
+
+// Code-split heavy below-the-fold components and modals for high mobile performance
+const LiveSandbox = React.lazy(() => import('./LiveSandbox').then(m => ({ default: m.LiveSandbox })));
+const BatchRawTester = React.lazy(() => import('./BatchRawTester').then(m => ({ default: m.BatchRawTester })));
+const PuraRulesGuide = React.lazy(() => import('./PuraRulesGuide').then(m => ({ default: m.PuraRulesGuide })));
+const GettingStartedTutorial = React.lazy(() => import('./GettingStartedTutorial').then(m => ({ default: m.GettingStartedTutorial })));
+const SecurityModal = React.lazy(() => import('./SecurityModal').then(m => ({ default: m.SecurityModal })));
+const DonateModal = React.lazy(() => import('./DonateModal').then(m => ({ default: m.DonateModal })));
+const LegalModal = React.lazy(() => import('./LegalModal').then(m => ({ default: m.LegalModal })));
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -214,6 +216,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* Skip to Main Content Link for Keyboard and Screen Reader Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:rounded-xl focus:shadow-lg focus:outline-none text-xs font-bold transition"
+      >
+        Skip to main content
+      </a>
+
       {/* Gambia Flag Accent Top Bar */}
       <div className="h-1 sm:h-1.5 flex w-full sticky top-0 z-50">
         <div className="flex-[6] bg-[#CE1126]" />
@@ -234,6 +244,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <img
               src={darkMode ? `${import.meta.env.BASE_URL}logo-for-darkmode.svg` : `${import.meta.env.BASE_URL}logo-for-lightmode.svg`}
               alt="Auto Contacts Upgrader Logo"
+              width="240"
+              height="48"
               className="h-10 sm:h-12 w-auto max-w-[180px] sm:max-w-[240px] object-contain transition-transform group-hover:scale-[1.01]"
               referrerPolicy="no-referrer"
             />
@@ -251,11 +263,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   onClick={(e) => handleNavClick(e, item.href)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs font-bold border border-slate-200/60 dark:border-slate-700/60'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
+                      ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold border border-slate-200/60 dark:border-slate-700/60'
+                      : 'text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/50'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400'}`} />
                   <span>{item.label}</span>
                 </a>
               );
@@ -367,8 +379,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         aria-hidden="true"
       />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-8 sm:pt-10 lg:pt-2 pb-0 sm:pb-0">
+      {/* Main Landmark: Primary Landing Page Content */}
+      <main id="main-content">
+        {/* Hero Section */}
+      <section className="relative overflow-hidden pt-8 sm:pt-10 lg:pt-14 pb-0 sm:pb-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-emerald-500/10 via-blue-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -379,80 +393,82 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="space-y-2">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
                   Upgrade All Your Contacts to{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-300">
-                    9 Digits Automatically
+                  <span className="text-emerald-700 dark:text-emerald-400">
+                    9 Digits Automatically For Free
                   </span>
                 </h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed pt-1">
+                <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed pt-1 font-normal">
                   Our smart tool cleans, formats, and upgrades your contacts to the new Gambian 9-digit numbering format in seconds. Accurate, fast, and 100% automatic.
                 </p>
               </div>
 
               {/* Checkmark List */}
               <div className="space-y-1.5 pt-1">
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>1st Step is a Safe Backup:</b> Exporting creates an instant safety copy on your device (easy recovery, zero panic)</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>No Direct Phonebook Edits:</b> Operates in a safe staging sandbox where contacts on your phone are never altered directly</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Automatic 9-Digit Upgrades:</b> Supports QCell (+83), Comium (+86), Africell (+87)</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Already 9 Digits Untouched:</b> Leaves contacts that are already 9 digits untouched</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Before &amp; After Previews:</b> Displays all number changes clearly and merges duplicate contacts with 1 click</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Undo &amp; Redo Protection:</b> Made a mistake? Revert or re-apply edits instantly without restarting the whole process</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Gamcel, Gamtel &amp; Foreign Protection:</b> Preserves non-Phase 1 contacts and foreign international numbers</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Works Online &amp; Offline:</b> 100% on-device PWA privacy, zero server uploads &amp; zero mobile data consumption</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3 h-3 stroke-[3]" />
                   </div>
                   <span><b>Universal Device Support:</b> Accessible on any device (smartphones, tablets, and computers)</span>
                 </div>
               </div>
+
+
 
               {/* Main Action CTAs */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -487,11 +503,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="relative w-full flex items-center justify-center lg:justify-end"
               >
-                <img
-                  src={`${import.meta.env.BASE_URL}consolidated-mockups.svg`}
-                  alt="Gambia 9-Digit Upgrade Device Mockups"
-                  className="w-full lg:w-[122%] xl:w-[130%] max-w-none h-auto drop-shadow-2xl transition-transform duration-300 lg:-mr-4 xl:-mr-8"
-                />
+                <picture>
+                  <source srcSet={`${import.meta.env.BASE_URL}consolidated-mockups.webp`} type="image/webp" />
+                  <img
+                    src={`${import.meta.env.BASE_URL}consolidated-mockups.png`}
+                    alt="Gambia 9-Digit Upgrade Device Mockups"
+                    width="1200"
+                    height="868"
+                    fetchPriority="high"
+                    decoding="async"
+                    className="w-full h-auto max-w-full lg:max-w-[108%] xl:max-w-[115%] drop-shadow-2xl transition-transform duration-300 lg:-mr-4 xl:-mr-8 hover:scale-[1.01]"
+                  />
+                </picture>
               </motion.div>
             </div>
           </div>
@@ -499,13 +522,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* 3 Simple Steps */}
           <div id="how-it-works" className="mb-14 scroll-mt-24 sm:scroll-mt-28">
             <div className="text-center mb-8">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                 HOW IT WORKS
               </span>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-                Upgrade Safely in <span className="text-emerald-600 dark:text-emerald-400">3 Simple Steps</span>
+                Upgrade Safely in <span className="text-emerald-700 dark:text-emerald-300">3 Simple Steps</span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto mt-1.5">
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 max-w-xl mx-auto mt-1.5">
                 Safe on-device process with automatic phonebook backup, undo/redo controls, and clean re-importing.
               </p>
             </div>
@@ -523,7 +546,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
                     1. Export from Phone (Instant Backup)
                   </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
                     Export your contacts (.vcf or .csv). <b>This file is your safety backup</b>, so you can restore anytime. No panic, complete peace of mind!
                   </p>
                 </div>
@@ -545,7 +568,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
                     2. Import, Clean &amp; Undo/Redo
                   </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
                     Operates in a safe staging area (doesn't modify your phonebook directly). View all before/after changes, merge duplicates, and use <b>Undo &amp; Redo</b> if you make a mistake without restarting.
                   </p>
                 </div>
@@ -561,18 +584,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center mb-3 shadow-sm shadow-emerald-500/20 mx-auto">
                     3
                   </div>
-                  <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 shadow-xs mx-auto">
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mb-3 shadow-xs mx-auto">
                     <Download className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
                     3. Export &amp; Clean Re-Import
                   </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
                     Download your clean 9-digit file. <b>Pro-Tip:</b> Delete old contacts on your phone before re-importing to prevent duplicate Non-Gambian, Gamcel/Gamtel, or old 7-digit numbers!
                   </p>
                 </div>
-                <div className="mt-3 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 inline-flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <div className="mt-3 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-[11px] font-bold text-emerald-800 dark:text-emerald-200 inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" />
                   <span>Zero Duplicate Clutter</span>
                 </div>
               </div>
@@ -591,7 +614,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       Important
                     </span>
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-700 dark:text-slate-200 mt-1 leading-relaxed">
                     Since your exported file from Step 1 is already saved safely on your device as a backup, always delete your existing contacts on your phone before re-importing the upgraded file. This ensures you avoid duplicates of <b>Non-Gambian numbers</b>, <b>Gamcel &amp; Gamtel numbers</b>, and <b>old 7-digit entries</b>.
                   </p>
                 </div>
@@ -655,7 +678,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* Getting Started Tutorial Guide */}
           <ScrollReveal>
             <div id="tutorial" className="mb-16 scroll-mt-24 sm:scroll-mt-28">
-              <GettingStartedTutorial />
+              <React.Suspense fallback={<div className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse flex items-center justify-center text-xs text-slate-400">Loading guide...</div>}>
+                <GettingStartedTutorial />
+              </React.Suspense>
             </div>
           </ScrollReveal>
 
@@ -663,13 +688,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <ScrollReveal>
             <div id="features" className="mb-16 scroll-mt-24 sm:scroll-mt-28">
               <div className="text-center mb-8">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                   PLATFORM ADVANTAGES
                 </span>
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
                   Engineered Specifically for Gambian Phonebooks
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto mt-2">
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 max-w-xl mx-auto mt-2">
                   Everything you need to upgrade safely with full operator compatibility, intelligent deduplication, and zero data leakage.
                 </p>
               </div>
@@ -679,17 +704,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <ScrollReveal delay={0}>
                   <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex flex-col justify-between hover:border-emerald-400 dark:hover:border-emerald-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 shadow-xs">
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mb-3 shadow-xs">
                         <Lock className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
                         100% Client-Side Privacy
                       </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
                         Your address book never leaves your phone or computer. All processing runs entirely inside local browser memory with zero server uploads.
                       </p>
                     </div>
-                    <div className="mt-3 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <div className="mt-3 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" /> Zero Server Uploads
                     </div>
                   </div>
@@ -839,17 +864,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <ScrollReveal delay={450}>
                   <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex flex-col justify-between hover:border-emerald-400 dark:hover:border-emerald-600 transition h-full">
                     <div>
-                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3 shadow-xs">
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mb-3 shadow-xs">
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
                         Security Verified (SRI)
                       </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
                         Cryptographically signed subresource integrity hashes ensure that every script and asset is tamper-proof, verified, and secure.
                       </p>
                     </div>
-                    <div className="mt-3 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <div className="mt-3 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" /> Cryptographic Integrity
                     </div>
                   </div>
@@ -861,7 +886,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {/* PURA Rules Guide Section */}
           <ScrollReveal>
             <div id="pura-rules" className="mb-16 scroll-mt-24 sm:scroll-mt-28">
-              <PuraRulesGuide />
+              <React.Suspense fallback={<div className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse flex items-center justify-center text-xs text-slate-500">Loading PURA rules...</div>}>
+                <PuraRulesGuide />
+              </React.Suspense>
             </div>
           </ScrollReveal>
 
@@ -869,23 +896,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <ScrollReveal>
             <div id="live-tester" className="mb-16 scroll-mt-24 sm:scroll-mt-28 space-y-6">
               <div className="text-center mb-6">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                   INSTANT TESTER & SANDBOX
                 </span>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
                   Test any Gambian Number Right Now
                 </h2>
               </div>
-              <LiveSandbox />
-              <BatchRawTester
-                onProcessRawAndLaunch={(rawText) => {
-                  if (onProcessRaw) {
-                    onProcessRaw(rawText);
-                  } else {
-                    onLaunchApp();
-                  }
-                }}
-              />
+              <React.Suspense fallback={<div className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse flex items-center justify-center text-xs text-slate-400">Loading tester...</div>}>
+                <LiveSandbox />
+                <BatchRawTester
+                  onProcessRawAndLaunch={(rawText) => {
+                    if (onProcessRaw) {
+                      onProcessRaw(rawText);
+                    } else {
+                      onLaunchApp();
+                    }
+                  }}
+                />
+              </React.Suspense>
             </div>
           </ScrollReveal>
 
@@ -933,7 +962,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <Heart className="w-4 h-4 fill-white" />
                       <span>Donate / Support Creator</span>
                     </button>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
                       100% optional, always free
                     </span>
                   </div>
@@ -948,7 +977,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="bg-gradient-to-br from-blue-50/85 via-white to-teal-50/70 dark:from-slate-800/90 dark:via-slate-900/90 dark:to-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
                   <div className="space-y-2.5 text-center md:text-left">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-200 text-xs font-bold border border-blue-200 dark:border-blue-800">
                       <Share2 className="w-3.5 h-3.5" />
                       <span>Spread the Word</span>
                     </div>
@@ -957,7 +986,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       Share This Much-Needed Tool
                     </h2>
 
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 max-w-xl leading-relaxed">
                       Share this much-needed tool with friends, family, and colleagues across The Gambia! Help every one get access to this tool to upgrade their phonebook safely, effortlessly, and with 100% privacy.
                     </p>
                   </div>
@@ -971,7 +1000,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <Share2 className="w-4 h-4 text-white" />
                       <span>{copiedShare ? 'Link Copied!' : 'Share App Now'}</span>
                     </button>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
                       {copiedShare ? 'Link copied to clipboard!' : 'Instant share via Whatsapp, Facebook or your favourite apps'}
                     </span>
                   </div>
@@ -984,7 +1013,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <ScrollReveal>
             <div id="faq" className="mb-16 scroll-mt-24 sm:scroll-mt-28 max-w-3xl mx-auto">
               <div className="text-center mb-8">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                   GOT QUESTIONS?
                 </span>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
@@ -1004,10 +1033,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       className="w-full p-4 text-left font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
                     >
                       <span>{faq.q}</span>
-                      <ChevronRight className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${activeFaq === idx ? 'rotate-90 text-emerald-600' : ''}`} />
+                      <ChevronRight className={`w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 transition-transform ${activeFaq === idx ? 'rotate-90 text-emerald-700 dark:text-emerald-300' : ''}`} />
                     </button>
                     {activeFaq === idx && (
-                      <div className="px-4 pb-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-3">
+                      <div className="px-4 pb-4 text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-3">
                         {faq.a}
                       </div>
                     )}
@@ -1046,6 +1075,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </ScrollReveal>
         </div>
       </section>
+      </main>
 
       {/* Decorative Strip - Gambia Flag Gradient (Red - White - Blue - White - Green) */}
       <div
@@ -1054,7 +1084,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       />
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 text-center text-xs text-slate-500 dark:text-slate-400">
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-8 text-center text-xs text-slate-700 dark:text-slate-300">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
@@ -1066,6 +1096,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <img
                 src={darkMode ? `${import.meta.env.BASE_URL}logo-for-darkmode.svg` : `${import.meta.env.BASE_URL}logo-for-lightmode.svg`}
                 alt="Auto Contacts Upgrader Logo"
+                width="240"
+                height="56"
+                loading="lazy"
+                decoding="async"
                 className="h-12 sm:h-14 w-auto object-contain"
                 referrerPolicy="no-referrer"
               />
@@ -1078,68 +1112,84 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col items-center sm:items-end gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col items-center sm:items-end gap-2 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
             <div className="flex items-center gap-2">
-              <button onClick={() => setIsPrivacyModalOpen(true)} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer">Privacy Policy</button>
-              <span>·</span>
-              <button onClick={() => setIsTermsModalOpen(true)} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer">Terms & Conditions</button>
+              <button onClick={() => setIsPrivacyModalOpen(true)} className="text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition cursor-pointer font-medium">Privacy Policy</button>
+              <span className="text-slate-400 dark:text-slate-500">·</span>
+              <button onClick={() => setIsTermsModalOpen(true)} className="text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition cursor-pointer font-medium">Terms & Conditions</button>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-600">© Copyright 2026 All Rights Reserved</p>
+            <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">© Copyright 2026 All Rights Reserved</p>
           </div>
         </div>
       </footer>
 
-      {/* Legal Modals */}
-      <LegalModal
-        title="Privacy Policy"
-        isOpen={isPrivacyModalOpen}
-        onClose={() => setIsPrivacyModalOpen(false)}
-      >
-        <p className="font-bold text-slate-500 text-xs mb-4">Last Updated: September 1, 2026</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">1. No Data Collection</h3>
-        <p>The Automatic 9-Digits Contacts Upgrader is designed to respect your privacy completely. We do not collect, store, share, or transmit any personal data, phone numbers, or contact details.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">2. Local Browser Processing (PWA)</h3>
-        <p>This application is a Progressive Web App (PWA). All contact modifications, processing, and file upgrades happen 100% locally inside your web browser using client-side JavaScript. No contact lists or files are ever sent over the internet to our servers or any third-party servers.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">3. Offline Capabilities and Caching</h3>
-        <p>As a PWA, this application utilizes standard browser storage technologies (like Service Workers and Cache Storage) strictly to allow the application to work offline and load faster. This metadata does not contain personal contact information.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">4. Third-Party Hosting</h3>
-        <p>This website is hosted utilizing GitHub Pages. While the application code itself does not track you, GitHub may automatically collect server access logs (such as your IP address and web browser type) for security, debugging, and operational purposes. You can review the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" className="text-emerald-600 dark:text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a> for details.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">5. Contact Us</h3>
-        <p>If you have questions about this short-term project, you can contact the developer at <a href="mailto:ninedigitsgm@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">ninedigitsgm@gmail.com</a></p>
-      </LegalModal>
+      {/* Legal Modals (Deferred) */}
+      {isPrivacyModalOpen && (
+        <React.Suspense fallback={null}>
+          <LegalModal
+            title="Privacy Policy"
+            isOpen={isPrivacyModalOpen}
+            onClose={() => setIsPrivacyModalOpen(false)}
+          >
+            <p className="font-bold text-slate-700 dark:text-slate-300 text-xs mb-4">Last Updated: September 1, 2026</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">1. No Data Collection</h3>
+            <p>The Automatic 9-Digits Contacts Upgrader is designed to respect your privacy completely. We do not collect, store, share, or transmit any personal data, phone numbers, or contact details.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">2. Local Browser Processing (PWA)</h3>
+            <p>This application is a Progressive Web App (PWA). All contact modifications, processing, and file upgrades happen 100% locally inside your web browser using client-side JavaScript. No contact lists or files are ever sent over the internet to our servers or any third-party servers.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">3. Offline Capabilities and Caching</h3>
+            <p>As a PWA, this application utilizes standard browser storage technologies (like Service Workers and Cache Storage) strictly to allow the application to work offline and load faster. This metadata does not contain personal contact information.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">4. Third-Party Hosting</h3>
+            <p>This website is hosted utilizing GitHub Pages. While the application code itself does not track you, GitHub may automatically collect server access logs (such as your IP address and web browser type) for security, debugging, and operational purposes. You can review the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" className="text-emerald-700 dark:text-emerald-300 hover:underline" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a> for details.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">5. Contact Us</h3>
+            <p>If you have questions about this short-term project, you can contact the developer at <a href="mailto:ninedigitsgm@gmail.com" className="text-emerald-700 dark:text-emerald-300 hover:underline">ninedigitsgm@gmail.com</a></p>
+          </LegalModal>
+        </React.Suspense>
+      )}
 
-      <LegalModal
-        title="Terms and Conditions"
-        isOpen={isTermsModalOpen}
-        onClose={() => setIsTermsModalOpen(false)}
-      >
-        <p className="font-bold text-slate-500 text-xs mb-4">Last Updated: September 1, 2026</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">1. Acceptance of Terms</h3>
-        <p>By accessing and using ninedigits.gm, you agree to be bound by these simple Terms and Conditions. If you do not agree, please do not use the tool.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">2. Purpose of the Tool</h3>
-        <p>This web utility is provided as a free, short-term valuable tool intended to assist individuals in formatting telephone contacts to the standard 9-digit dialing system.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">3. "As-Is" Service & Disclaimer of Warranties</h3>
-        <p>This PWA tool is provided entirely "AS-IS" and "AS-AVAILABLE" without warranties of any kind, either express or implied. While we make every effort to ensure formatting accuracy, we do not guarantee that the tool will work flawlessly or be compatible with every mobile device or address book file format.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">4. Limitation of Liability</h3>
-        <p>Important: You are solely responsible for protecting your data. You are strongly advised to safely store/keep the Exported file in Step one, as its the vCard/CSV file or alternatively Google Contacts / iCloud, if you backed up your contacts to those online storage tools; you can use those methods to recover your contacts if any unforeseen circumstances occur. Extra care only needs to be taken when deleting your contacts in your phone, getting ready to reimport the upgraded vCard/CSV, as you won't be cleaning, editing, merging, deleting contacts directly. So please confirm the Backup/Exported file is still safely kept and available in the location it's saved in. Under no circumstances shall the developers or hosts of this project be held liable for any data loss, corrupted contacts, accidental duplicates, or incorrectly formatted phone numbers resulting from the use of this software.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">5. Intellectual Property and Proprietary Rights</h3>
-        <p>All code, design layouts, custom scripts, text, and visual assets featured on ninedigits.gm are the exclusive intellectual property of the project developers and are protected by local & international copyright laws. While the underlying repository is publicly visible on GitHub solely to satisfy platform hosting requirements, this software is closed-source and proprietary. You are granted a limited right to execute the application within your browser for personal use. You may not copy, redistribute, modify, or host duplicate versions of this code without explicit written permission.</p>
-        <h3 className="font-bold text-slate-900 dark:text-white">6. Short-Term Project Lifecycle</h3>
-        <p>This is a temporary utility project built for the immediate 9-digit number transition phase scheduled for 4th of September 2026, with dual support of both 7 digits and 9 Digits until the grace period ends on November 30, 2026. The developers reserve the right to alter, discontinue, or completely take down the website and domain name at any time without prior notice.</p>
-      </LegalModal>
+      {isTermsModalOpen && (
+        <React.Suspense fallback={null}>
+          <LegalModal
+            title="Terms and Conditions"
+            isOpen={isTermsModalOpen}
+            onClose={() => setIsTermsModalOpen(false)}
+          >
+            <p className="font-bold text-slate-700 dark:text-slate-300 text-xs mb-4">Last Updated: September 1, 2026</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">1. Acceptance of Terms</h3>
+            <p>By accessing and using ninedigits.gm, you agree to be bound by these simple Terms and Conditions. If you do not agree, please do not use the tool.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">2. Purpose of the Tool</h3>
+            <p>This web utility is provided as a free, short-term valuable tool intended to assist individuals in formatting telephone contacts to the standard 9-digit dialing system.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">3. "As-Is" Service & Disclaimer of Warranties</h3>
+            <p>This PWA tool is provided entirely "AS-IS" and "AS-AVAILABLE" without warranties of any kind, either express or implied. While we make every effort to ensure formatting accuracy, we do not guarantee that the tool will work flawlessly or be compatible with every mobile device or address book file format.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">4. Limitation of Liability</h3>
+            <p>Important: You are solely responsible for protecting your data. You are strongly advised to safely store/keep the Exported file in Step one, as its the vCard/CSV file or alternatively Google Contacts / iCloud, if you backed up your contacts to those online storage tools; you can use those methods to recover your contacts if any unforeseen circumstances occur. Extra care only needs to be taken when deleting your contacts in your phone, getting ready to reimport the upgraded vCard/CSV, as you won't be cleaning, editing, merging, deleting contacts directly. So please confirm the Backup/Exported file is still safely kept and available in the location it's saved in. Under no circumstances shall the developers or hosts of this project be held liable for any data loss, corrupted contacts, accidental duplicates, or incorrectly formatted phone numbers resulting from the use of this software.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">5. Intellectual Property and Proprietary Rights</h3>
+            <p>All code, design layouts, custom scripts, text, and visual assets featured on ninedigits.gm are the exclusive intellectual property of the project developers and are protected by local & international copyright laws. While the underlying repository is publicly visible on GitHub solely to satisfy platform hosting requirements, this software is closed-source and proprietary. You are granted a limited right to execute the application within your browser for personal use. You may not copy, redistribute, modify, or host duplicate versions of this code without explicit written permission.</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">6. Short-Term Project Lifecycle</h3>
+            <p>This is a temporary utility project built for the immediate 9-digit number transition phase scheduled for 4th of September 2026, with dual support of both 7 digits and 9 Digits until the grace period ends on November 30, 2026. The developers reserve the right to alter, discontinue, or completely take down the website and domain name at any time without prior notice.</p>
+          </LegalModal>
+        </React.Suspense>
+      )}
 
       {/* Security Verification Details Modal */}
-      <SecurityModal
-        isOpen={isSecurityModalOpen}
-        onClose={() => setIsSecurityModalOpen(false)}
-      />
+      {isSecurityModalOpen && (
+        <React.Suspense fallback={null}>
+          <SecurityModal
+            isOpen={isSecurityModalOpen}
+            onClose={() => setIsSecurityModalOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
       {/* Donate / Support Modal */}
-      <DonateModal
-        isOpen={isDonateModalOpen}
-        onClose={() => setIsDonateModalOpen(false)}
-        triggerSource="section"
-      />
+      {isDonateModalOpen && (
+        <React.Suspense fallback={null}>
+          <DonateModal
+            isOpen={isDonateModalOpen}
+            onClose={() => setIsDonateModalOpen(false)}
+            triggerSource="section"
+          />
+        </React.Suspense>
+      )}
 
       {/* Mobile-only Scroll-to-Top Button near end of page */}
       <BackToTop />

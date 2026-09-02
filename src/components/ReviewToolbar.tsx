@@ -60,7 +60,7 @@ const FILTER_ITEMS: FilterItem[] = [
   {
     value: 'all',
     label: 'All Networks & Statuses',
-    icon: <Layers className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />,
+    icon: <Layers className="w-4 h-4 text-slate-600 dark:text-slate-300 shrink-0" />,
     category: 'general',
   },
   {
@@ -333,32 +333,32 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
       {/* Stat Badges Row */}
       <div id="statsRow" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-1.5 sm:p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
-          <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Total Loaded</span>
+          <span className="text-[10px] sm:text-xs text-slate-700 dark:text-slate-300 font-semibold">Total Loaded</span>
           <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
             <span id="statTotal">{totalCount}</span>
-            <span className="text-[10px] sm:text-xs font-normal text-slate-400 ml-1.5 whitespace-nowrap">
+            <span className="text-[10px] sm:text-xs font-normal text-slate-600 dark:text-slate-300 ml-1.5 whitespace-nowrap">
               (Showing: <span id="statShowing">{showingCount}</span>)
             </span>
           </div>
         </div>
 
         <div className="p-1.5 sm:p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/60 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
-          <span className="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-tight">Upgraded (+83/+86/+87)</span>
-          <div id="statUpgraded" className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+          <span className="text-[10px] sm:text-xs text-emerald-800 dark:text-emerald-300 font-bold leading-tight">Upgraded (+83/+86/+87)</span>
+          <div id="statUpgraded" className="text-lg sm:text-xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-0.5">
             {upgradedCount}
           </div>
         </div>
 
         <div className="p-1.5 sm:p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
-          <span className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-medium leading-tight">Deferred / Review</span>
-          <div id="statReview" className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
+          <span className="text-[10px] sm:text-xs text-amber-800 dark:text-amber-300 font-bold leading-tight">Deferred / Review</span>
+          <div id="statReview" className="text-lg sm:text-xl font-extrabold text-amber-700 dark:text-amber-300 mt-0.5">
             {reviewCount}
           </div>
         </div>
 
         <div className="p-1.5 sm:p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 shadow-xs flex flex-col justify-between min-h-[60px] sm:min-h-[82px]">
-          <span className="text-[10px] sm:text-xs text-blue-700 dark:text-blue-400 font-medium leading-tight">Selected for Action</span>
-          <div className="text-lg sm:text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
+          <span className="text-[10px] sm:text-xs text-blue-800 dark:text-blue-300 font-bold leading-tight">Selected for Action</span>
+          <div className="text-lg sm:text-xl font-extrabold text-blue-700 dark:text-blue-300 mt-0.5">
             {selectedCount}
           </div>
         </div>
@@ -383,7 +383,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
               {currentSortItem.icon}
               <span className="whitespace-normal break-words leading-tight">{currentSortItem.label}</span>
             </div>
-            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-200 shrink-0 ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isSortDropdownOpen && (
@@ -463,7 +463,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                 </span>
               )}
               <ChevronDown
-                className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                className={`w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 transition-transform duration-200 ${
                   isFilterDropdownOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -508,7 +508,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
 
               {/* GSM Operator Networks with Logos */}
               <div className="py-1">
-                <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-slate-600 dark:text-slate-300 uppercase">
                   Operators & Networks
                 </div>
                 {FILTER_ITEMS.filter((item) => item.category === 'gsm').map((item) => {
@@ -540,7 +540,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
 
               {/* Duplicates */}
               <div className="py-1">
-                <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-slate-600 dark:text-slate-300 uppercase">
                   Duplicates Analysis
                 </div>
                 {FILTER_ITEMS.filter((item) => item.category === 'duplicates').map((item) => {
@@ -603,7 +603,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
               onClick={() => setIsUndoDropdownOpen(!isUndoDropdownOpen)}
               className={`px-1.5 h-full flex items-center justify-center border-r border-slate-200 dark:border-slate-700 transition ${
                 canUndo && undoSnapshots.length > 0
-                  ? 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer'
+                  ? 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer'
                   : 'text-slate-300 dark:text-slate-600 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40'
               }`}
               title="Undo snapshots dropdown"
@@ -614,7 +614,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
             {/* UNDO DROPDOWN LIST */}
             {isUndoDropdownOpen && undoSnapshots.length > 0 && (
               <div className="absolute top-[42px] left-0 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">
                   Undo to past actions (max 10)
                 </div>
                 <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
@@ -628,10 +628,10 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                           onUndoToSnapshot(reverseIdx);
                           setIsUndoDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between gap-2 font-medium cursor-pointer"
+                        className="w-full text-left px-3 py-2.5 text-xs text-slate-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300 transition flex items-center justify-between gap-2 font-medium cursor-pointer"
                       >
                         <span className="truncate pr-1">{undoSnapshots[reverseIdx].description}</span>
-                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 shrink-0 uppercase whitespace-nowrap">
+                        <span className="text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400 shrink-0 uppercase whitespace-nowrap">
                           -{sIdx + 1} Step{sIdx > 0 ? 's' : ''}
                         </span>
                       </button>
@@ -667,7 +667,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
               onClick={() => setIsRedoDropdownOpen(!isRedoDropdownOpen)}
               className={`px-1.5 h-full flex items-center justify-center transition rounded-r-xl ${
                 canRedo && redoSnapshots.length > 0
-                  ? 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer'
+                  ? 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer'
                   : 'text-slate-300 dark:text-slate-600 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40'
               }`}
               title="Redo snapshots dropdown"
@@ -678,7 +678,7 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
             {/* REDO DROPDOWN LIST */}
             {isRedoDropdownOpen && redoSnapshots.length > 0 && (
               <div className="absolute top-[42px] -left-16 sm:left-0 z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-500 tracking-wider uppercase">
+                <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 tracking-wider uppercase">
                   Redo next actions (max 10)
                 </div>
                 <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
@@ -692,10 +692,10 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
                           onRedoToSnapshot(reverseIdx);
                           setIsRedoDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 transition flex items-center justify-between gap-2 font-medium cursor-pointer"
+                        className="w-full text-left px-3 py-2.5 text-xs text-slate-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300 transition flex items-center justify-between gap-2 font-medium cursor-pointer"
                       >
                         <span className="truncate pr-1">{redoSnapshots[reverseIdx].description}</span>
-                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 shrink-0 uppercase whitespace-nowrap">
+                        <span className="text-[9px] font-mono font-bold text-slate-500 dark:text-slate-400 shrink-0 uppercase whitespace-nowrap">
                           +{sIdx + 1} Step{sIdx > 0 ? 's' : ''}
                         </span>
                       </button>
@@ -722,20 +722,20 @@ export const ReviewToolbar: React.FC<ReviewToolbarProps> = ({
       {/* Search Bar immediately above contacts table */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full">
         <div className="relative flex-1 min-w-0">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="searchInput"
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by contact name, original number, or upgraded digits..."
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs truncate"
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs truncate placeholder:text-slate-500 dark:placeholder:text-slate-400"
           />
           {searchQuery && (
             <button
               id="clearSearch"
               onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
               title="Clear search"
             >
               <X className="w-4 h-4" />

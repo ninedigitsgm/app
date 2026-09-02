@@ -30,7 +30,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({ isOpen, onClose })
               <h3 id="security-modal-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 Security & Data Integrity Verified
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
                 W3C Subresource Integrity (SRI) & Private Client Architecture
               </p>
             </div>
@@ -38,7 +38,7 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({ isOpen, onClose })
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             aria-label="Close Security Modal"
           >
             <X className="w-5 h-5" />
@@ -46,14 +46,14 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* Modal Body */}
-        <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1 text-xs text-slate-600 dark:text-slate-300">
+        <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1 text-xs text-slate-700 dark:text-slate-200">
           {/* Card 1: SRI Hashes */}
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-              <FileCode className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <FileCode className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
               <span>Cryptographic Subresource Integrity (SRI)</span>
             </div>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
               Every production JavaScript script and CSS stylesheet is fingerprinted with cryptographic SHA-384 integrity hashes during build. Your web browser strictly verifies these checksums before executing code, preventing transit tampering or proxy injections.
             </p>
           </div>
@@ -61,10 +61,10 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({ isOpen, onClose })
           {/* Card 2: 100% Client-Side Private Processing */}
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-              <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Cpu className="w-4 h-4 text-blue-700 dark:text-blue-300" />
               <span>100% Local In-Memory Processing</span>
             </div>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
               Your contact files (VCF / CSV) are parsed, analyzed, upgraded, and exported entirely within your browser memory. No contact names, numbers, or personal notes are ever transmitted across the network or stored on any remote server.
             </p>
           </div>
@@ -72,10 +72,10 @@ export const SecurityModal: React.FC<SecurityModalProps> = ({ isOpen, onClose })
           {/* Card 3: Injection & Leak Defenses */}
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-              <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <Lock className="w-4 h-4 text-purple-700 dark:text-purple-300" />
               <span>Spreadsheet Injection & Content Security Defenses</span>
             </div>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
               Exported CSVs are automatically sanitized against CSV Formula Injection (CWE-1236). Active Content Security Policy (CSP) headers block unauthorized external scripts and inline evaluations.
             </p>
           </div>

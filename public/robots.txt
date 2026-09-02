@@ -3,4 +3,4 @@ Allow: /
 Disallow: /dist/
 Disallow: /node_modules/
 
-Sitemap: https://ninedigitsgm.github.io/
+Sitemap: https://ninedigits.gm/sitemap.xml

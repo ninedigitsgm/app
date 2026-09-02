@@ -582,7 +582,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
 
             <button
               onClick={() => onToggleSelectAll(false)}
-              className="px-2.5 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium transition cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium transition cursor-pointer"
             >
               Clear
             </button>
@@ -660,7 +660,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                   <p className="font-bold text-base text-slate-800 dark:text-slate-100">
                     No matching contacts found
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     No contacts in your {totalLoaded} loaded records match the active search or network filter.
                   </p>
                 </div>
@@ -685,7 +685,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                   <p className="font-bold text-base text-slate-800 dark:text-slate-100">
                     No contacts loaded yet
                   </p>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
                     Upload your exported <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-[11px]">.vcf</code> or <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 font-mono text-[11px]">.csv</code> file, paste raw contacts, or load our pre-built test dataset.
                   </p>
                 </div>
@@ -740,7 +740,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                       className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                   </th>
-                  <th className="p-3 w-12 text-slate-500 font-medium">#</th>
+                  <th className="p-3 w-12 text-slate-700 dark:text-slate-300 font-semibold">#</th>
                   <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Contact Name</th>
                   <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Original Number</th>
                   <th className="p-3 font-semibold text-slate-800 dark:text-slate-200">Upgraded Result</th>
@@ -818,7 +818,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                       </td>
 
                       {/* Row Index */}
-                      <td className="p-3 text-xs text-slate-400 font-mono">
+                      <td className="p-3 text-xs text-slate-600 dark:text-slate-400 font-mono">
                         {index + 1}
                       </td>
 
@@ -881,8 +881,8 @@ export const ContactTable: React.FC<ContactTableProps> = ({
                       </td>
 
                       {/* Original Raw */}
-                      <td className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">
-                        {r.raw ? highlightText(r.raw, searchQuery) : <span className="text-slate-300 italic">None</span>}
+                      <td className="p-3 font-mono text-xs text-slate-700 dark:text-slate-300">
+                        {r.raw ? highlightText(r.raw, searchQuery) : <span className="text-slate-400 dark:text-slate-500 italic">None</span>}
                       </td>
 
                       {/* Upgraded Result */}
@@ -969,7 +969,7 @@ export const ContactTable: React.FC<ContactTableProps> = ({
       {records.length > 0 && !isLoading && (
         <div
           id="azSidebar"
-          className="w-7 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col items-center justify-between py-2 select-none text-[10px] font-bold text-slate-500 dark:text-slate-400"
+          className="w-7 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col items-center justify-between py-2 select-none text-[10px] font-bold text-slate-700 dark:text-slate-300"
         >
           <button
             onClick={() => handleLetterJump('#')}

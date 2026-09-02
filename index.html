@@ -10,13 +10,16 @@
     <meta property="og:image" content="./pwa-512x512.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="canonical" href="https://ninedigits.gm/" />
+
+    <!-- Performance Preloads -->
+    <link rel="preload" as="image" href="./consolidated-mockups.webp" type="image/webp" fetchpriority="high" />
     
     <!-- Security Headers & Content Security Policy -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="no-referrer" />
     <meta http-equiv="Referrer-Policy" content="no-referrer" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
 
     <!-- PWA Web App Manifest & Mobile Configuration -->
     <link rel="manifest" href="./manifest.webmanifest" />

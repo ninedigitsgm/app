@@ -1,5 +1,5 @@
 // 9Digits GM - PURA Gambia Contacts Upgrader Service Worker
-const CACHE_NAME = 'gambia-9digits-v1';
+const CACHE_NAME = 'gambia-9digits-v3';
 
 const STATIC_ASSETS = [
   './',
@@ -28,7 +28,13 @@ const STATIC_ASSETS = [
   './logo-light.svg',
   './logo-for-lightmode.svg',
   './logo-for-darkmode.svg',
-  './consolidated-mockups.svg'
+  './consolidated-mockups.webp',
+  './consolidated-mockups.png',
+  './africell.svg',
+  './qcell.svg',
+  './gamcel.svg',
+  './gamtel.svg',
+  './comium.svg'
 ];
 
 // Install Event: Pre-cache static shell

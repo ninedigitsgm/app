@@ -104,7 +104,7 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
             <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
               Live Sandbox & Quick Test
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               Type any phone number to test real-time PURA Phase 1 conversion
             </p>
           </div>
@@ -162,7 +162,7 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
         {/* Input */}
         <div className="flex-1">
-          <label htmlFor="sandboxInput" className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+          <label htmlFor="sandboxInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">
             Input a Number:
           </label>
           <input
@@ -175,13 +175,13 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
           />
         </div>
 
-        <div className="hidden md:flex items-center text-slate-400 pt-5">
+        <div className="hidden md:flex items-center text-slate-500 dark:text-slate-400 pt-5">
           <ArrowRight className="w-5 h-5" />
         </div>
 
         {/* Output */}
         <div className="flex-[1.4] p-3 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 flex items-center justify-between flex-wrap gap-1">
+          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between flex-wrap gap-1">
             <span>Transformed Result:</span>
             {badgeGroups.length > 0 && (
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -209,7 +209,7 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
               className="text-base sm:text-lg font-bold font-mono text-slate-900 dark:text-emerald-400 break-all"
             >
               {combinedResult || (
-                <span className="text-slate-400 dark:text-slate-500 font-normal text-xs sm:text-sm italic">
+                <span className="text-slate-500 dark:text-slate-400 font-normal text-xs sm:text-sm italic">
                   Enter a number above or click an operator quick-test
                 </span>
               )}

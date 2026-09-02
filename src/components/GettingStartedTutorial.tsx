@@ -172,15 +172,15 @@ export const GettingStartedTutorial: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                activeStep === s.num ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                activeStep === s.num ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}>
                 {s.num}
               </span>
-              <span className="text-[10px] font-semibold text-slate-400">Step {s.num} of 5</span>
+              <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400">Step {s.num} of 5</span>
             </div>
             <div>
               <div className="font-bold text-xs sm:text-sm line-clamp-1">{s.title.split(': ')[1]}</div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">{s.subtitle}</div>
+              <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">{s.subtitle}</div>
             </div>
           </button>
         ))}
@@ -198,7 +198,7 @@ export const GettingStartedTutorial: React.FC = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Step 1: Exporting Your Contacts ({activeTab === 'android' ? 'Android Phone' : activeTab === 'iphone' ? 'iPhone' : activeTab === 'tablet' ? 'Tablet' : 'Desktop / Laptop'})
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   Exporting saves a permanent copy to your device, acting as an instant safety backup.
                 </p>
               </div>
@@ -304,7 +304,7 @@ export const GettingStartedTutorial: React.FC = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Step 2: Upload to Safe Staging Sandbox
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   Non-destructive staging area: contacts on your phone are NEVER changed directly.
                 </p>
               </div>
@@ -339,7 +339,7 @@ export const GettingStartedTutorial: React.FC = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Step 3: Review Changes, Merge Duplicates &amp; Use Undo/Redo
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   Inspect before-and-after number previews, merge duplicate records, and undo mistakes freely.
                 </p>
               </div>
@@ -389,7 +389,7 @@ export const GettingStartedTutorial: React.FC = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Step 4: Review &amp; Download Your Upgraded File
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   Inspect the preview and download when you are 100% happy with all changes.
                 </p>
               </div>
@@ -416,7 +416,7 @@ export const GettingStartedTutorial: React.FC = () => {
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   Step 5: Delete Old Contacts &amp; Re-Import Upgraded File
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   Follow the anti-duplication rule to ensure a clean, clutter-free address book.
                 </p>
               </div>
@@ -498,7 +498,7 @@ export const GettingStartedTutorial: React.FC = () => {
             Previous
           </button>
 
-          <span className="text-xs font-semibold text-slate-400 text-center whitespace-nowrap px-2">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 text-center whitespace-nowrap px-2">
             Step {activeStep} of 5
           </span>
 

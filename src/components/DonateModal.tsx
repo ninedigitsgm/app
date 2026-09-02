@@ -106,7 +106,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
               >
                 {triggerSource === 'download' ? 'Export Done! Support Creator' : 'Support & Show Appreciation'}
               </h2>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+              <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">
                 Built with care for The Gambia's PURA 9-Digit Numbering Transition.
               </p>
             </div>
@@ -115,7 +115,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
+            className="p-1.5 rounded-xl text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -169,7 +169,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                   <span className="font-black text-[11px] sm:text-xs text-[#1DA1F2] dark:text-blue-400">Wave</span>
                   {selectedMethod === 'wave' && <Check className="w-3.5 h-3.5 text-blue-600" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Gambia Mobile</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-300 truncate">Gambia Mobile</span>
               </button>
 
               <button
@@ -185,7 +185,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                   <span className="font-black text-[11px] sm:text-xs text-emerald-600 dark:text-emerald-400">QMoney / Afri</span>
                   {selectedMethod === 'mobile_money' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">GSM Wallets</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-300 truncate">GSM Wallets</span>
               </button>
 
               <button
@@ -201,7 +201,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                   <span className="font-black text-[11px] sm:text-xs text-amber-600 dark:text-amber-400">Card / PayPal</span>
                   {selectedMethod === 'online' && <Check className="w-3.5 h-3.5 text-amber-600" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">International</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-300 truncate">International</span>
               </button>
 
               <button
@@ -217,7 +217,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                   <span className="font-black text-[11px] sm:text-xs text-purple-600 dark:text-purple-400">Bank / APS</span>
                   {selectedMethod === 'bank' && <Check className="w-3.5 h-3.5 text-purple-600" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Direct Transfer</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-300 truncate">Direct Transfer</span>
               </button>
             </div>
           </div>
@@ -238,7 +238,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
 
                 <div className="flex items-center justify-between p-2.5 sm:p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 gap-2">
                   <div className="min-w-0">
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">
+                    <div className="text-[10px] text-slate-600 dark:text-slate-300 font-semibold uppercase">
                       Wave Transfer Number
                     </div>
                     <div className="font-mono text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
@@ -263,7 +263,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
                     )}
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
                   Open the Wave app on your phone: Send Money: Paste number <strong className="text-slate-700 dark:text-slate-300">+220 310 1010</strong>.
                 </p>
               </div>
@@ -418,7 +418,7 @@ export const DonateModal: React.FC<DonateModalProps> = ({
 
         {/* Sticky/Fixed Footer Actions inside Card */}
         <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-white dark:bg-slate-900 shrink-0">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+          <span className="text-[11px] text-slate-600 dark:text-slate-300 truncate">
             Thank you for supporting Gambian creators!
           </span>
           <button

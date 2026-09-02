@@ -74,8 +74,8 @@ export const OperatorDistributionChart: React.FC<Props> = ({ data }) => {
                   <span className="font-semibold text-slate-700 dark:text-slate-200">{entry.name}</span>
                 </div>
                 <div className="flex items-center gap-2 font-mono">
-                  <span className="text-slate-500 dark:text-slate-400">{entry.value}</span>
-                  <span className="text-slate-400 dark:text-slate-500 text-[10px]">({pct}%)</span>
+                  <span className="text-slate-700 dark:text-slate-300">{entry.value}</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-[10px]">({pct}%)</span>
                 </div>
               </div>
             );

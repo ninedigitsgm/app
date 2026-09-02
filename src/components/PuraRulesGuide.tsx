@@ -11,7 +11,7 @@ export const PuraRulesGuide: React.FC = () => {
           1. PURA Migration Rules & Operator Guide
         </h2>
       </div>
-      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 mb-4 leading-relaxed">
         Standard 7-digit mobile numbers expand to 9 digits with assigned operator prefixes.
         Gamcel mobile and Gamtel fixed landlines remain unchanged in Phase 1:
       </p>
