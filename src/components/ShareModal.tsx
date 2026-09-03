@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import QRCode from 'qrcode';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Share2, 
@@ -7,8 +6,6 @@ import {
   Check, 
   QrCode, 
   Download, 
-  MessageCircle, 
-  ExternalLink,
   Sparkles,
   Smartphone
 } from 'lucide-react';
@@ -21,9 +18,8 @@ interface ShareModalProps {
 
 export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [qrImgSrc, setQrImgSrc] = useState<string>('/QR CODE.png');
   const [activeTab, setActiveTab] = useState<'quick' | 'qr'>('quick');
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const shareUrl = getCanonicalShareUrl();
   const shareTitle = SHARE_TITLE;
@@ -31,24 +27,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      // Generate QR Code data URL
-      QRCode.toDataURL(shareUrl, {
-        width: 320,
-        margin: 2,
-        color: {
-          dark: '#0f172a',
-          light: '#ffffff'
-        },
-        errorCorrectionLevel: 'H'
-      })
-        .then((url: string) => {
-          setQrDataUrl(url);
-        })
-        .catch((err: unknown) => {
-          console.error('Failed to generate QR code', err);
-        });
+      setQrImgSrc('/QR CODE.png');
     }
-  }, [isOpen, shareUrl]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -84,9 +65,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleDownloadQr = () => {
-    if (!qrDataUrl) return;
     const link = document.createElement('a');
-    link.href = qrDataUrl;
+    link.href = qrImgSrc;
     link.download = 'gambia-9digit-upgrader-qr.png';
     document.body.appendChild(link);
     link.click();
@@ -188,27 +168,43 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition-colors"
+                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition-colors group"
                 >
-                  <MessageCircle className="w-5 h-5 mb-1 text-emerald-600 dark:text-emerald-400" />
+                  <div className="w-6 h-6 flex items-center justify-center mb-1.5">
+                    <img 
+                      src="/WhatsApp-Logo.wine.svg" 
+                      alt="WhatsApp" 
+                      className="w-6 h-6 object-contain transition-transform group-hover:scale-110" 
+                    />
+                  </div>
                   <span>WhatsApp</span>
                 </a>
                 <a
                   href={facebookUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 hover:bg-blue-100/80 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-semibold transition-colors"
+                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 hover:bg-blue-100/80 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-semibold transition-colors group"
                 >
-                  <ExternalLink className="w-5 h-5 mb-1 text-blue-600 dark:text-blue-400" />
+                  <div className="w-6 h-6 flex items-center justify-center mb-1.5">
+                    <svg className="w-6 h-6 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="#1877F2">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </div>
                   <span>Facebook</span>
                 </a>
                 <a
                   href={twitterUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-sky-50 hover:bg-sky-100/80 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 border border-sky-200 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 text-xs font-semibold transition-colors"
+                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition-colors group"
                 >
-                  <ExternalLink className="w-5 h-5 mb-1 text-sky-600 dark:text-sky-400" />
+                  <div className="w-6 h-6 flex items-center justify-center mb-1.5">
+                    <img 
+                      src="/Twitter-X--Streamline-Bootstrap.svg" 
+                      alt="X / Twitter" 
+                      className="w-5.5 h-5.5 object-contain dark:invert transition-transform group-hover:scale-110" 
+                    />
+                  </div>
                   <span>X / Twitter</span>
                 </a>
               </div>
@@ -253,22 +249,17 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
             <div className="flex flex-col items-center text-center space-y-3">
               {/* QR Code Canvas / Image Display */}
               <div className="p-4 bg-white rounded-2xl border-2 border-slate-200 dark:border-slate-700 shadow-sm relative group">
-                {qrDataUrl ? (
-                  <img
-                    src={qrDataUrl}
-                    alt="QR Code for Gambia 9-Digits Contacts Upgrader"
-                    className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-lg"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center text-slate-400 text-xs">
-                    Generating QR Code...
-                  </div>
-                )}
-                {/* Center Badge Icon */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1.5 rounded-full shadow-md border border-slate-200">
-                  <span className="text-xl" role="img" aria-label="Gambia flag">🇬🇲</span>
-                </div>
+                <img
+                  src={qrImgSrc}
+                  alt="QR Code for Gambia 9-Digits Contacts Upgrader"
+                  className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded-lg"
+                  referrerPolicy="no-referrer"
+                  onError={() => {
+                    if (qrImgSrc !== '/qr-code.png') {
+                      setQrImgSrc('/qr-code.png');
+                    }
+                  }}
+                />
               </div>
 
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
