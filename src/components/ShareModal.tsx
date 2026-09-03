@@ -12,6 +12,7 @@ import {
   Sparkles,
   Smartphone
 } from 'lucide-react';
+import { getCanonicalShareUrl, SHARE_TITLE, SHARE_DESCRIPTION, executeShare } from '../utils/shareUtils';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -24,9 +25,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'quick' | 'qr'>('quick');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gambia-contacts.app';
-  const shareTitle = 'Automatic 9-Digits Contacts Upgrader - The Gambia';
-  const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
+  const shareUrl = getCanonicalShareUrl();
+  const shareTitle = SHARE_TITLE;
+  const shareText = SHARE_DESCRIPTION;
 
   useEffect(() => {
     if (isOpen) {
@@ -75,18 +76,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch {
-        // User cancelled or share failed
-      }
-    } else {
-      handleCopyLink();
+    const result = await executeShare();
+    if (result.copied) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
     }
   };
 
@@ -100,7 +93,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose }) => {
     document.body.removeChild(link);
   };
 
-  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ': ' + shareUrl)}`;
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ':\n' + shareUrl)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
 

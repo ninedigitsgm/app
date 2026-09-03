@@ -25,6 +25,7 @@ import { OperatorDistributionChart } from './OperatorDistributionChart';
 import { SecurityModal } from './SecurityModal';
 import { DonateModal } from './DonateModal';
 import { LegalModal } from './LegalModal';
+import { ShareModal } from './ShareModal';
 
 import { 
   ContactRecord, 
@@ -73,6 +74,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({
   const [showReference, setShowReference] = useState<boolean>(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState<boolean>(false);
   const [isDonateOpen, setIsDonateOpen] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState<boolean>(false);
   const [appMobileMenuOpen, setAppMobileMenuOpen] = useState<boolean>(false);
@@ -1440,56 +1442,26 @@ export const Workspace: React.FC<WorkspaceProps> = ({
     setIsExportPreviewOpen(true);
   };
 
-  const handleExportCSV = () => {
-    if (records.length === 0) {
-      addToast('No contacts available to export', 'warn');
-      return;
-    }
-    setExportFormat('CSV');
-    setIsExportPreviewOpen(true);
-  };
-
   const handleConfirmExport = () => {
     setIsExportPreviewOpen(false);
-    if (exportFormat === 'VCF') {
-      executeInstructionWithProgress(
-        'Generate & Download VCF Contact Book',
-        [
-          'Compiling vCard 3.0 standard specifications...',
-          'Formatting PURA 9-digit numbers and prefixes...',
-          'VCF contact book downloaded successfully!'
-        ],
-        () => {
-          const vcf = generateVCF(records);
-          triggerDownload(vcf, 'GM_PURA_Upgraded_Contacts.vcf', 'text/vcard');
-          addToast(`Success: ${records.length} contacts exported in VCF format`, 'success');
-          // Pop up appreciation modal after download
-          setTimeout(() => {
-            setDonateTriggerSource('download');
-            setIsDonateOpen(true);
-          }, 900);
-        }
-      );
-    } else {
-      executeInstructionWithProgress(
-        'Generate & Download CSV File',
-        [
-          'Formatting CSV columns and UTF-8 characters...',
-          'Structuring Gambian operator categorization...',
-          'CSV file downloaded successfully!'
-        ],
-        () => {
-          const csv = generateCSV(records);
-          triggerDownload(csv, 'GM_PURA_Upgraded_Contacts.csv', 'text/csv');
-          addToast(`Success: ${records.length} contacts exported in CSV format`, 'success');
-          // Pop up appreciation modal after download
-          setTimeout(() => {
-            setDonateTriggerSource('download');
-            setIsDonateOpen(true);
-          }, 900);
-        }
-      );
-    }
+    executeInstructionWithProgress(
+      'Generate & Download VCF Contact Book',
+      [
+        'Compiling vCard 3.0 standard specifications...',
+        'Formatting PURA 9-digit numbers and prefixes...',
+        'VCF contact book downloaded successfully!'
+      ],
+      () => {
+        const vcf = generateVCF(records);
+        triggerDownload(vcf, 'GM_PURA_Upgraded_Contacts.vcf', 'text/vcard');
+        addToast(`Success: ${records.length} contacts exported in VCF format`, 'success');
+        // Pop up appreciation modal after download
+        setTimeout(() => {
+          setDonateTriggerSource('download');
+          setIsDonateOpen(true);
+        }, 900);
+      }
+    );
   };
 
   // Stats calculation
@@ -1587,23 +1559,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({
 
               <button
                 type="button"
-                onClick={() => {
-                  const shareUrl = window.location.origin;
-                  const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
-                  if (navigator.share) {
-                    navigator.share({
-                      title: 'Automatic 9-Digits Contacts Upgrader',
-                      text: shareText,
-                      url: shareUrl,
-                    }).catch(() => {
-                      navigator.clipboard.writeText(shareUrl);
-                      alert('Share link copied to clipboard!');
-                    });
-                  } else {
-                    navigator.clipboard.writeText(shareUrl);
-                    alert('Share link copied to clipboard!');
-                  }
-                }}
+                onClick={() => setIsShareModalOpen(true)}
                 className="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 flex items-center gap-1.5 transition cursor-pointer shrink-0"
                 title="Share this app with friends and colleagues"
               >
@@ -1686,21 +1642,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({
               type="button"
               onClick={() => {
                 setAppMobileMenuOpen(false);
-                const shareUrl = window.location.origin;
-                const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
-                if (navigator.share) {
-                  navigator.share({
-                    title: 'Automatic 9-Digits Contacts Upgrader',
-                    text: shareText,
-                    url: shareUrl,
-                  }).catch(() => {
-                    navigator.clipboard.writeText(shareUrl);
-                    alert('Share link copied to clipboard!');
-                  });
-                } else {
-                  navigator.clipboard.writeText(shareUrl);
-                  alert('Share link copied to clipboard!');
-                }
+                setIsShareModalOpen(true);
               }}
               className="w-full py-2.5 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold text-xs border border-blue-200 dark:border-blue-800 flex items-center gap-2.5 transition cursor-pointer"
             >
@@ -1945,7 +1887,6 @@ export const Workspace: React.FC<WorkspaceProps> = ({
               selectedCount={selectedIds.size}
               totalCount={totalCount}
               onExportVCF={handleExportVCF}
-              onExportCSV={handleExportCSV}
             />
           </div>
         </ScrollReveal>
@@ -2235,6 +2176,14 @@ export const Workspace: React.FC<WorkspaceProps> = ({
             isOpen={isDonateOpen}
             onClose={() => setIsDonateOpen(false)}
             triggerSource={donateTriggerSource}
+          />
+        )}
+
+        {/* Share Application Modal */}
+        {isShareModalOpen && (
+          <ShareModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
           />
         )}
       </React.Suspense>

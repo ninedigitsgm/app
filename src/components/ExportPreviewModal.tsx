@@ -10,7 +10,8 @@ import {
   Download, 
   Info, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Smartphone
 } from 'lucide-react';
 import { ContactRecord } from '../types';
 import { generateCSV, generateVCF } from '../lib/puraEngine';
@@ -35,6 +36,15 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'raw'>('table');
   const [copied, setCopied] = useState(false);
+
+  // Detect iOS/iPhone/iPad for tailored download tips
+  const isIOS = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    return /iPad|iPhone|iPod/.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1);
+  }, []);
 
   // Generate full raw output for accurate line counts and raw preview
   const rawContent = useMemo(() => {
@@ -240,6 +250,24 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* iPhone / Safari Direct Download Tip */}
+        {isIOS && (
+          <div className="px-3.5 sm:px-4 py-3 bg-blue-50 dark:bg-blue-950/40 border-t border-blue-200 dark:border-blue-800/50 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200 shrink-0">
+            <Smartphone className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
+                iPhone / iPad User Tip:
+              </span>
+              <p className="leading-relaxed">
+                Safari will ask: <strong>"ninedigits.gm is trying to download a contact card. Do you want to allow this?"</strong>.
+              </p>
+              <p className="leading-relaxed font-medium">
+                Please tap <strong className="text-blue-700 dark:text-blue-300 font-extrabold">"Allow"</strong>. This is a built-in iOS safety feature. Tapping "Allow" will save the contact book and let you add your upgraded 9-digit contacts to your phone address book instantly in just 1 tap.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Anti-Duplication & Backup Reminder */}
         <div className="px-3.5 sm:px-4 py-2.5 bg-amber-50 dark:bg-amber-950/30 border-t border-b border-amber-200 dark:border-amber-800/50 flex items-start gap-2 text-[11px] text-amber-900 dark:text-amber-200 shrink-0">

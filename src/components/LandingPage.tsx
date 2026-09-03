@@ -56,6 +56,7 @@ import { GettingStartedTutorial } from './GettingStartedTutorial';
 import { SecurityModal } from './SecurityModal';
 import { DonateModal } from './DonateModal';
 import { LegalModal } from './LegalModal';
+import { ShareModal } from './ShareModal';
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -85,26 +86,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [isDonateModalOpen, setIsDonateModalOpen] = useState<boolean>(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState<boolean>(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState<boolean>(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [copiedShare, setCopiedShare] = useState<boolean>(false);
 
   const handleShareApp = () => {
-    const shareUrl = window.location.origin;
-    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
-    if (navigator.share) {
-      navigator.share({
-        title: 'Automatic 9-Digits Contacts Upgrader',
-        text: shareText,
-        url: shareUrl,
-      }).catch(() => {
-        navigator.clipboard.writeText(shareUrl);
-        setCopiedShare(true);
-        setTimeout(() => setCopiedShare(false), 2200);
-      });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      setCopiedShare(true);
-      setTimeout(() => setCopiedShare(false), 2200);
-    }
+    setIsShareModalOpen(true);
   };
 
   // Track active section for navigation
@@ -1277,6 +1263,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             triggerSource="section"
           />
         </React.Suspense>
+      )}
+
+      {/* Share Modal */}
+      {isShareModalOpen && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+        />
       )}
 
       {/* Mobile-only Scroll-to-Top Button near end of page */}

@@ -11,6 +11,7 @@ import {
   Building2,
   Wallet
 } from 'lucide-react';
+import { executeShare } from '../utils/shareUtils';
 
 interface DonateModalProps {
   isOpen: boolean;
@@ -47,21 +48,9 @@ export const DonateModal: React.FC<DonateModalProps> = ({
     }, 2200);
   };
 
-  const handleShareApp = () => {
-    const shareUrl = window.location.origin;
-    const shareText = 'Upgrade all Gambian 7-digit contacts to 9-digits safely and for free';
-    if (navigator.share) {
-      navigator.share({
-        title: 'Automatic 9-Digits Contacts Upgrader',
-        text: shareText,
-        url: shareUrl,
-      }).catch(() => {
-        navigator.clipboard.writeText(shareUrl);
-        setCopiedShare(true);
-        setTimeout(() => setCopiedShare(false), 2200);
-      });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
+  const handleShareApp = async () => {
+    const result = await executeShare();
+    if (result.copied) {
       setCopiedShare(true);
       setTimeout(() => setCopiedShare(false), 2200);
     }
