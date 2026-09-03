@@ -1384,36 +1384,13 @@ export function generateCSV(records: ContactRecord[]): string {
  * Triggers file download in browser.
  */
 export function triggerDownload(content: string, filename: string, mimeType: string): void {
-  // If VCF export, route through backend download proxy to bypass iOS Safari's native interception and force a Direct Download
-  if (filename.endsWith('.vcf')) {
-    try {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '/api/download-vcf';
-      form.style.display = 'none';
+  // If VCF export, use 'application/octet-stream' directly in the client-side Blob
+  // to prevent iOS/macOS Safari from intercepting the vCard and showing a single-contact preview.
+  // This triggers a standard browser download dialog directly to their Files app,
+  // while keeping the app 100% offline-first and private!
+  const effectiveMimeType = filename.endsWith('.vcf') ? 'application/octet-stream' : mimeType;
 
-      const contentInput = document.createElement('input');
-      contentInput.type = 'hidden';
-      contentInput.name = 'content';
-      contentInput.value = content;
-      form.appendChild(contentInput);
-
-      const filenameInput = document.createElement('input');
-      filenameInput.type = 'hidden';
-      filenameInput.name = 'filename';
-      filenameInput.value = filename;
-      form.appendChild(filenameInput);
-
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      return;
-    } catch (e) {
-      console.warn('Backend download failed, falling back to client-side blob download', e);
-    }
-  }
-
-  const blob = new Blob([content], { type: `${mimeType};charset=utf-8;` });
+  const blob = new Blob([content], { type: `${effectiveMimeType};charset=utf-8;` });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

@@ -260,7 +260,7 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
                 iPhone / iPad Direct Download Guide:
               </span>
               <p className="leading-relaxed">
-                We've configured the server to force download your <strong>GM_PURA_Upgraded_Contacts.vcf</strong> contact book directly to your device's <strong>Downloads</strong> folder. This ensures all contacts are preserved perfectly.
+                We've optimized the download process to force download your <strong>GM_PURA_Upgraded_Contacts.vcf</strong> contact book directly to your device's <strong>Downloads</strong> folder. This ensures all contacts are preserved perfectly.
               </p>
               <div className="pl-2 border-l-2 border-blue-300 dark:border-blue-700 space-y-1 text-[11px] text-blue-850 dark:text-blue-300">
                 <p>
