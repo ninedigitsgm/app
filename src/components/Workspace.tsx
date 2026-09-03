@@ -19,6 +19,7 @@ import { ExactDuplicateWizardModal } from './ExactDuplicateWizardModal';
 import { RepeatedNumbersWizardModal } from './RepeatedNumbersWizardModal';
 import { MissingPhoneWizardModal } from './MissingPhoneWizardModal';
 import { ExportPreviewModal } from './ExportPreviewModal';
+import { IOSGuideModal } from './IOSGuideModal';
 import { ActionSummaryModal } from './ActionSummaryModal';
 import { CleanSharedModal } from './CleanSharedModal';
 import { OperatorDistributionChart } from './OperatorDistributionChart';
@@ -230,6 +231,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({
 
   // Export Preview state
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false);
+  const [isIOSInstructionOpen, setIsIOSInstructionOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'CSV' | 'VCF'>('CSV');
 
   // Clean Shared Modal state
@@ -1432,6 +1434,15 @@ export const Workspace: React.FC<WorkspaceProps> = ({
     }
   };
 
+  // Detect iOS
+  const isIOS = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+    return /iPad|iPhone|iPod/.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1);
+  }, []);
+
   // Export handlers
   const handleExportVCF = () => {
     if (records.length === 0) {
@@ -1439,7 +1450,11 @@ export const Workspace: React.FC<WorkspaceProps> = ({
       return;
     }
     setExportFormat('VCF');
-    setIsExportPreviewOpen(true);
+    if (isIOS) {
+      setIsIOSInstructionOpen(true);
+    } else {
+      setIsExportPreviewOpen(true);
+    }
   };
 
   const handleConfirmExport = () => {
@@ -2122,6 +2137,18 @@ export const Workspace: React.FC<WorkspaceProps> = ({
             onClose={() => setIsAddModalOpen(false)}
             onAdd={handleAddContact}
             includeCountryCode={includeCountryCode}
+          />
+        )}
+
+        {/* iOS Saving Instruction Modal */}
+        {isIOSInstructionOpen && (
+          <IOSGuideModal
+            isOpen={isIOSInstructionOpen}
+            onClose={() => setIsIOSInstructionOpen(false)}
+            onProceed={() => {
+              setIsIOSInstructionOpen(false);
+              setIsExportPreviewOpen(true);
+            }}
           />
         )}
 

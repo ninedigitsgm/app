@@ -10,8 +10,7 @@ import {
   Download, 
   Info, 
   Sparkles,
-  ChevronRight,
-  Smartphone
+  ChevronRight
 } from 'lucide-react';
 import { ContactRecord } from '../types';
 import { generateCSV, generateVCF } from '../lib/puraEngine';
@@ -250,38 +249,6 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
             </div>
           )}
         </div>
-
-        {/* iPhone / Safari Direct Download Tip */}
-        {isIOS && (
-          <div className="px-3.5 sm:px-4 py-3 bg-blue-50 dark:bg-blue-950/40 border-t border-blue-200 dark:border-blue-800/50 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200 shrink-0">
-            <Smartphone className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-            <div className="space-y-1.5 w-full">
-              <span className="font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
-                iPhone / iPad Safe Saving Guide:
-              </span>
-              <p className="leading-relaxed">
-                When you tap download, iOS Safari will open a preview screen. To save your full upgraded contact list, follow these quick steps:
-              </p>
-              <div className="pl-2 border-l-2 border-blue-300 dark:border-blue-700 space-y-1.5 text-[11px] text-blue-850 dark:text-blue-300">
-                <p>
-                  <strong>1. Open Share Menu:</strong> Click the <strong>Share</strong> button (the square icon with an arrow pointing up at the bottom of your Safari screen) or tap <strong>"More..."</strong>.
-                </p>
-                <p>
-                  <strong>2. Choose Save to Files:</strong> Scroll down the list of options and select <strong>"Save to Files"</strong>.
-                </p>
-                <p>
-                  <strong>3. Save locally to your Phone:</strong> Under the <strong>Locations</strong> section, tap on <strong>"On My iPhone"</strong>, then tap <strong>"Save"</strong> at the top right corner.
-                </p>
-                <p>
-                  <strong>4. Import:</strong> Open the built-in <strong>Files</strong> app on your iPhone, navigate to <strong>On My iPhone</strong>, and tap the <strong>GM_PURA_Upgraded_Contacts.vcf</strong> file to instantly add all your upgraded 9-digit contacts!
-                </p>
-                <p className="text-[10px] text-blue-700/80 dark:text-blue-400/80">
-                  <em>Note: Saving locally to "On My iPhone" completely bypasses any iCloud storage limits.</em>
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Anti-Duplication & Backup Reminder */}
         <div className="px-3.5 sm:px-4 py-2.5 bg-amber-50 dark:bg-amber-950/30 border-t border-b border-amber-200 dark:border-amber-800/50 flex items-start gap-2 text-[11px] text-amber-900 dark:text-amber-200 shrink-0">
