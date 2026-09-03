@@ -255,22 +255,28 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
         {isIOS && (
           <div className="px-3.5 sm:px-4 py-3 bg-blue-50 dark:bg-blue-950/40 border-t border-blue-200 dark:border-blue-800/50 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200 shrink-0">
             <Smartphone className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 w-full">
               <span className="font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
-                iPhone / iPad Direct Download Guide:
+                iPhone / iPad Safe Saving Guide:
               </span>
               <p className="leading-relaxed">
-                We've optimized the download process to force download your <strong>GM_PURA_Upgraded_Contacts.vcf</strong> contact book directly to your device's <strong>Downloads</strong> folder. This ensures all contacts are preserved perfectly.
+                When you tap download, iOS Safari will open a preview screen. To save your full upgraded contact list, follow these quick steps:
               </p>
-              <div className="pl-2 border-l-2 border-blue-300 dark:border-blue-700 space-y-1 text-[11px] text-blue-850 dark:text-blue-300">
+              <div className="pl-2 border-l-2 border-blue-300 dark:border-blue-700 space-y-1.5 text-[11px] text-blue-850 dark:text-blue-300">
                 <p>
-                  <strong>1. Download:</strong> When Safari asks: <em>"Do you want to download..."</em>, tap <strong>"Download"</strong>.
+                  <strong>1. Open Share Menu:</strong> Click the <strong>Share</strong> button (the square icon with an arrow pointing up at the bottom of your Safari screen) or tap <strong>"More..."</strong>.
                 </p>
                 <p>
-                  <strong>2. Open & Import:</strong> Open the built-in <strong>Files</strong> app on your iPhone, go to your <strong>Downloads</strong> folder, and tap the <strong>GM_PURA_Upgraded_Contacts.vcf</strong> file to import all your upgraded 9-digit contacts in 1 tap!
+                  <strong>2. Choose Save to Files:</strong> Scroll down the list of options and select <strong>"Save to Files"</strong>.
+                </p>
+                <p>
+                  <strong>3. Save locally to your Phone:</strong> Under the <strong>Locations</strong> section, tap on <strong>"On My iPhone"</strong>, then tap <strong>"Save"</strong> at the top right corner.
+                </p>
+                <p>
+                  <strong>4. Import:</strong> Open the built-in <strong>Files</strong> app on your iPhone, navigate to <strong>On My iPhone</strong>, and tap the <strong>GM_PURA_Upgraded_Contacts.vcf</strong> file to instantly add all your upgraded 9-digit contacts!
                 </p>
                 <p className="text-[10px] text-blue-700/80 dark:text-blue-400/80">
-                  <em>Note: This completely bypasses iCloud space limits and saves all contacts at once.</em>
+                  <em>Note: Saving locally to "On My iPhone" completely bypasses any iCloud storage limits.</em>
                 </p>
               </div>
             </div>
