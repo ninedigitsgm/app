@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "node scripts/generate-icons.js && vite build && node scripts/generate-sri.js && node scripts/generate-pwa-cache.js",
+    "dev": "tsx server.ts",
+    "build": "node scripts/generate-icons.js && vite build && node scripts/generate-sri.js && node scripts/generate-pwa-cache.js && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "start": "node dist/server.cjs",
     "build:icons": "node scripts/generate-icons.js",
     "build:sri": "node scripts/generate-sri.js",
     "build:pwa": "node scripts/generate-pwa-cache.js",

@@ -255,16 +255,24 @@ export const ExportPreviewModal: React.FC<ExportPreviewModalProps> = ({
         {isIOS && (
           <div className="px-3.5 sm:px-4 py-3 bg-blue-50 dark:bg-blue-950/40 border-t border-blue-200 dark:border-blue-800/50 flex items-start gap-2.5 text-xs text-blue-900 dark:text-blue-200 shrink-0">
             <Smartphone className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <span className="font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
-                iPhone / iPad User Tip:
+                iPhone / iPad Direct Download Guide:
               </span>
               <p className="leading-relaxed">
-                Safari will ask: <strong>"ninedigits.gm is trying to download a contact card. Do you want to allow this?"</strong>.
+                We've configured the server to force download your <strong>GM_PURA_Upgraded_Contacts.vcf</strong> contact book directly to your device's <strong>Downloads</strong> folder. This ensures all contacts are preserved perfectly.
               </p>
-              <p className="leading-relaxed font-medium">
-                Please tap <strong className="text-blue-700 dark:text-blue-300 font-extrabold">"Allow"</strong>. This is a built-in iOS safety feature. Tapping "Allow" will save the contact book and let you add your upgraded 9-digit contacts to your phone address book instantly in just 1 tap.
-              </p>
+              <div className="pl-2 border-l-2 border-blue-300 dark:border-blue-700 space-y-1 text-[11px] text-blue-850 dark:text-blue-300">
+                <p>
+                  <strong>1. Download:</strong> When Safari asks: <em>"Do you want to download..."</em>, tap <strong>"Download"</strong>.
+                </p>
+                <p>
+                  <strong>2. Open & Import:</strong> Open the built-in <strong>Files</strong> app on your iPhone, go to your <strong>Downloads</strong> folder, and tap the <strong>GM_PURA_Upgraded_Contacts.vcf</strong> file to import all your upgraded 9-digit contacts in 1 tap!
+                </p>
+                <p className="text-[10px] text-blue-700/80 dark:text-blue-400/80">
+                  <em>Note: This completely bypasses iCloud space limits and saves all contacts at once.</em>
+                </p>
+              </div>
             </div>
           </div>
         )}
