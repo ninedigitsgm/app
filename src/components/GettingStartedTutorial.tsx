@@ -258,11 +258,15 @@ export const GettingStartedTutorial: React.FC = () => {
 
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                     <div className="font-bold text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                      <FolderOpen className="w-4 h-4" /> Method B: Direct Sharing from Contacts App
+                      <FolderOpen className="w-4 h-4" /> Method B: Direct Export from iPhone Contacts App
                     </div>
                     <ol className="list-decimal list-inside text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
-                      <li>Open the <b>Contacts</b> app on iPhone.</li>
-                      <li>Tap and hold a contact list or share contacts to Files app as vCard.</li>
+                      <li>Open your <b>Contacts</b> app on your iPhone.</li>
+                      <li>Tap the <b>&lt; Lists</b> button at the top to open the Lists section.</li>
+                      <li>Long press (touch and hold) on <b>All Contacts</b>.</li>
+                      <li>Tap <b>Export</b>.</li>
+                      <li>Choose the fields you want to export, and tap the <b>check mark icon</b> at the top.</li>
+                      <li>Tap <b>Save to Files</b>, and finally click on the <b>Save</b> button.</li>
                     </ol>
                   </div>
                 </>
@@ -358,7 +362,7 @@ export const GettingStartedTutorial: React.FC = () => {
               <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
                 <div className="font-bold text-xs text-emerald-600 dark:text-emerald-400">1. QCell (+83), Comium (+86), Africell (+87)</div>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
-                  All upgraded numbers are clearly displayed side-by-side with original prefixes highlighted in bright green.
+                  All upgraded numbers are clearly displayed side-by-side with the original 7 digit number.
                 </p>
               </div>
 

@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Search,
   Lock,
+  Gift,
   Flame,
   Globe2,
   ShieldAlert,
@@ -48,15 +49,13 @@ import {
 import { OperatorLogo } from './OperatorLogo';
 import { ScrollReveal } from './ScrollReveal';
 import { BackToTop } from './BackToTop';
-
-// Code-split heavy below-the-fold components and modals for high mobile performance
-const LiveSandbox = React.lazy(() => import('./LiveSandbox').then(m => ({ default: m.LiveSandbox })));
-const BatchRawTester = React.lazy(() => import('./BatchRawTester').then(m => ({ default: m.BatchRawTester })));
-const PuraRulesGuide = React.lazy(() => import('./PuraRulesGuide').then(m => ({ default: m.PuraRulesGuide })));
-const GettingStartedTutorial = React.lazy(() => import('./GettingStartedTutorial').then(m => ({ default: m.GettingStartedTutorial })));
-const SecurityModal = React.lazy(() => import('./SecurityModal').then(m => ({ default: m.SecurityModal })));
-const DonateModal = React.lazy(() => import('./DonateModal').then(m => ({ default: m.DonateModal })));
-const LegalModal = React.lazy(() => import('./LegalModal').then(m => ({ default: m.LegalModal })));
+import { LiveSandbox } from './LiveSandbox';
+import { BatchRawTester } from './BatchRawTester';
+import { PuraRulesGuide } from './PuraRulesGuide';
+import { GettingStartedTutorial } from './GettingStartedTutorial';
+import { SecurityModal } from './SecurityModal';
+import { DonateModal } from './DonateModal';
+import { LegalModal } from './LegalModal';
 
 interface LandingPageProps {
   onLaunchApp: () => void;
@@ -197,12 +196,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const faqs = [
     {
-      q: "Why is The Gambia migrating from 7-digit to 9-digit numbers?",
-      a: "The Public Utilities Regulatory Authority (PURA) of The Gambia has mandated a new national numbering plan to expand telecommunication capacity and support growing mobile subscriber demand across all networks (Africell, QCell, Gamcel, and Comium)."
+      q: "Do I need to pay to use this tool?",
+      a: "No, this tool is 100% free to use. There are no hidden fees, subscriptions, or paywalls for any feature. However, you can donate/tip to show support and appreciation towards this valuable and time-saving tool. A tool like this shouldn't be hidden behind a paywall."
     },
     {
-      q: "Which prefix digits are added to each Gambian network?",
-      a: "QCell (3/5) adds 83 (e.g. 3XXXXXX -> +220 833XXXXXX), Comium (6) adds 86 (e.g. 6XXXXXX -> +220 866XXXXXX), and Africell (7/2/40/41/45) adds 87 (e.g. 7XXXXXX -> +220 877XXXXXX). Gamcel (9) and Gamtel landlines remain 7-digit in Phase 1."
+      q: "Is it Compulsory to Donate/Tip the Developer?",
+      a: "No, it's completely optional. It's just solicited to show appreciation and encourage the developer further to solve our problems and contribute towards National Development."
+    },
+    {
+      q: "Will I be asked for OTPs or codes via SMS/WhatsApp?",
+      a: "Strictly no. You do not need any OTPs (One Time Passwords), verification codes, or login codes to use this app. It operates entirely on your device and requires no account."
+    },
+    {
+      q: "Do I need to buy or change my physical SIM card?",
+      a: "No, you do not need to change your physical SIM card. This tool simply updates the saved phone numbers in your phonebook to the new 9-digit format so that your calls and messages continue to work."
+    },
+    {
+      q: "Where exactly is the new prefix added to the number?",
+      a: "The prefix is added right after the country code (+220) and before your old 7-digit number. For example, QCell adds '83' (e.g. 3XXXXXX becomes 83 3XXXXXX), Africell adds '87', and Comium adds '86'."
+    },
+    {
+      q: "Is there a deadline to update my contacts?",
+      a: "Yes, PURA has set a transition period. The Nine Digits launches on the 4th of September, 2026, and there will be dual support (both 7 and 9 digits) until the 30th of November, 2026. From the 1st of December 2026, only the new 9-digit format will work for the three GSM operators (Africell, Comium, and QCell). We recommend updating your contacts early to avoid disruptions."
+    },
+    {
+      q: "Would my Data bundles, Credit, SMS Bundles, or Money in my Mobile Wallet disappear after the upgrade?",
+      a: "No, absolutely not! Rest assured that everything stays exactly the same: your credit, data, and mobile wallet funds are perfectly safe. The only thing changing is your mobile number, which just gets a specific prefix added to it. You simply need to update the individual contacts in your phonebook. The good news? This valuable tool saves you the headache, stress, time, and pressure by doing it automatically for free! It is especially helpful for those with thousands of contacts, offering options to clean your contact lists, get rid of all duplicates, merge those that need merging, and many more. Explore!"
+    },
+    {
+      q: "Why is The Gambia migrating from 7-digit to 9-digit numbers?",
+      a: "The Public Utilities Regulatory Authority (PURA) of The Gambia has mandated a new national numbering plan to expand telecommunication capacity and support growing mobile subscriber demand across all networks (Africell, QCell, Gamcel, and Comium)."
     },
     {
       q: "Is my contact data uploaded to any remote server?",
@@ -408,6 +431,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
+                  <span className="leading-relaxed"><b>100% Free:</b> No need to pay to access any section of the web app, no OTPs (One Time Password) sent via WhatsApp/SMS etc. Strictly no codes of any sort required.</span>
+                </div>
+
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <span className="leading-relaxed"><b>Try Before You Commit:</b> Experiment with sample Demo Data to understand how it works before updating your actual contact list.</span>
+                </div>
+
+                <div className="flex items-start gap-3 text-base text-slate-800 dark:text-slate-100">
+                  <div className="w-5 h-5 mt-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/70 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
                   <span className="leading-relaxed"><b>1st Step is a Safe Backup:</b> Exporting creates an instant safety copy on your device (easy recovery, zero panic)</span>
                 </div>
 
@@ -586,15 +623,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <Download className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-1">
-                    3. Export &amp; Clean Re-Import
+                    3. Export &amp; Re-Import
                   </h3>
                   <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
-                    Download your clean 9-digit file. <b>Pro-Tip:</b> Delete old contacts on your phone before re-importing to prevent duplicate Non-Gambian, Gamcel/Gamtel, or old 7-digit numbers!
+                    Download your upgraded 9-digit file and re-import it directly into your phone or contacts account.
                   </p>
                 </div>
                 <div className="mt-3 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-900/40 text-[11px] font-bold text-emerald-800 dark:text-emerald-200 inline-flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" />
-                  <span>Zero Duplicate Clutter</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-300" />
+                  <span>Upgraded 9-Digit Re-Import</span>
                 </div>
               </div>
             </div>
@@ -698,8 +735,48 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* 1. 100% Client-Side Privacy */}
+                {/* 1. 100% Free & No OTPs */}
                 <ScrollReveal delay={0}>
+                  <div className="bg-amber-50/50 dark:bg-amber-950/20 p-5 rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-xs flex flex-col justify-between hover:border-amber-400 dark:hover:border-amber-600 transition h-full">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3 shadow-xs">
+                        <Gift className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
+                        100% Free &amp; No OTPs
+                      </h3>
+                      <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+                        No need to pay to access any section of the web app, no OTPs (One Time Password) sent via WhatsApp/SMS etc. Strictly no codes of any sort required.
+                      </p>
+                    </div>
+                    <div className="mt-3 text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> No Hidden Fees or Codes
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* 2. Try Before You Commit */}
+                <ScrollReveal delay={50}>
+                  <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 shadow-xs flex flex-col justify-between hover:border-indigo-400 dark:hover:border-indigo-600 transition h-full">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 shadow-xs">
+                        <FlaskConical className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mb-1.5">
+                        Try Before You Commit
+                      </h3>
+                      <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+                        Experiment with sample Demo Data to understand how the upgrader works safely before uploading and updating your actual contact list.
+                      </p>
+                    </div>
+                    <div className="mt-3 text-[11px] font-semibold text-indigo-800 dark:text-indigo-300 flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Interactive Testing Environment
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* 3. 100% Client-Side Privacy */}
+                <ScrollReveal delay={50}>
                   <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex flex-col justify-between hover:border-emerald-400 dark:hover:border-emerald-600 transition h-full">
                     <div>
                       <div className="w-10 h-10 rounded-xl bg-white/90 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mb-3 shadow-xs">
@@ -935,19 +1012,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       This project was built independently with care for the Gambian people to make the PURA 9-digit transition seamless, 100% private, and effortless. If this saved you hours of work, consider sending a small tip to show appreciation.
                     </p>
 
-                    <div className="pt-1 flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <span className="w-2 h-2 rounded-full bg-[#1DA1F2]" />
-                        <span>Wave: <b>+220 310 1010</b></span>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <Smartphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <span>QMoney / Afrimoney</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <Heart className="w-3.5 h-3.5 text-rose-500" />
-                        <span>Card / PayPal</span>
-                      </span>
+                    <div className="pt-1 flex flex-col gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
+                        <span className="inline-flex items-center gap-1.5 max-w-full flex-wrap bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <span className="w-2 h-2 rounded-full bg-[#1DA1F2] shrink-0" />
+                          <span className="break-words">Wave: <b>7-Dig (3857626 / 2439204)</b> or <b>9-Dig (833857626 / 872439204)</b></span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 max-w-full flex-wrap bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <span className="w-2 h-2 rounded-full bg-[#f47c20] shrink-0" />
+                          <span className="break-words">QMoney: <b>7-Dig (3857626)</b> or <b>9-Dig (833857626)</b></span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 max-w-full flex-wrap bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <span className="w-2 h-2 rounded-full bg-[#9D207E] shrink-0" />
+                          <span className="break-words">Afrimoney: <b>7-Dig (2439204)</b> or <b>9-Dig (872439204)</b></span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 max-w-full flex-wrap bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <span className="w-2 h-2 rounded-full bg-[#151680] shrink-0" />
+                          <span className="break-words">APS: <b>7-Dig (2439204)</b> or <b>9-Dig (872439204)</b></span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 max-w-full flex-wrap bg-white/80 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <span className="w-2 h-2 rounded-full bg-[#74bf51] shrink-0" />
+                          <span className="break-words">AGIB: <b>201020212482185</b></span>
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 text-center md:text-left leading-relaxed mt-1">
+                        ⚠️ Please use whichever format (7-digit or 9-digit) your mobile wallet or agent supports during this transition phase.
+                      </p>
                     </div>
                   </div>
 

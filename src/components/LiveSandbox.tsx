@@ -5,12 +5,12 @@ import { OperatorLogo } from './OperatorLogo';
 import { ContactStatus, OperatorName } from '../types';
 
 interface LiveSandboxProps {
-  includeCountryCode: boolean;
+  includeCountryCode?: boolean;
   onAddContact?: (name: string, phone: string) => void;
 }
 
 export const LiveSandbox: React.FC<LiveSandboxProps> = ({
-  includeCountryCode,
+  includeCountryCode = false,
 }) => {
   const [inputVal, setInputVal] = useState('');
   const [copied, setCopied] = useState(false);
@@ -232,3 +232,5 @@ export const LiveSandbox: React.FC<LiveSandboxProps> = ({
     </div>
   );
 };
+
+export default LiveSandbox;

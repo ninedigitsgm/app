@@ -155,19 +155,13 @@ export const PwaInstallPrompt: React.FC = () => {
             <>
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <Wifi className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-white">Working Online</span>
-                <span className="text-emerald-300/80 text-[11px] hidden sm:inline">• Connected & Ready</span>
-              </div>
+              <span className="font-bold text-white">Working Online</span>
             </>
           ) : (
             <>
               <div className="w-2 h-2 rounded-full bg-amber-400" />
               <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-white">Working Offline</span>
-                <span className="text-amber-300/80 text-[11px] hidden sm:inline">• 100% on-device & zero data usage</span>
-              </div>
+              <span className="font-bold text-white">Working Offline</span>
             </>
           )}
           <button onClick={() => setShowOfflineToast(false)} className="ml-1 opacity-70 hover:opacity-100 cursor-pointer p-0.5" aria-label="Close notification">
@@ -201,7 +195,7 @@ export const PwaInstallPrompt: React.FC = () => {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              A new updated version of 9Digits is ready. Please update now to get the latest features, bug fixes, and security improvements!
+              A new updated version of Nine Digits GM is ready. Please update now to get the latest features, bug fixes, and security improvements!
             </p>
             <div className="flex items-center gap-3 pt-2">
               <button
@@ -221,11 +215,11 @@ export const PwaInstallPrompt: React.FC = () => {
         <div className="fixed bottom-4 right-4 z-[190] max-w-sm w-[calc(100%-2rem)] bg-slate-900/95 dark:bg-slate-950/95 text-white border border-blue-500/30 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md animate-in slide-in-from-bottom-5 duration-300 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-500 p-0.5 shrink-0 flex items-center justify-center shadow-md">
-              <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="9Digits GM" className="w-full h-full object-contain rounded-[10px]" />
+              <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="Nine Digits GM" className="w-full h-full object-contain rounded-[10px]" />
             </div>
             <div className="min-w-0">
               <h4 className="text-xs font-bold text-slate-100 truncate flex items-center gap-1.5">
-                <span>Install 9Digits App</span>
+                <span>Install Nine Digits GM</span>
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">PWA</span>
               </h4>
               <p className="text-[11px] text-slate-300 truncate">

@@ -19,7 +19,7 @@
     <!-- Security Headers & Content Security Policy -->
     <meta name="referrer" content="no-referrer" />
     <meta http-equiv="Referrer-Policy" content="no-referrer" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://upload.wikimedia.org https://qcell.gm https://gamcel.gm https://gamtel.gm https://comium.gm; connect-src 'self' ws: wss:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
 
     <!-- PWA Web App Manifest & Mobile Configuration -->
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -27,7 +27,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content=" Nine Digits GM" />
+    <meta name="apple-mobile-web-app-title" content="Nine Digits GM" />
     <!-- Favicon & PWA Icons (SVG, Transparent PNG, and ICO) -->
     <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=2" />
     <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48x48.png?v=2" />

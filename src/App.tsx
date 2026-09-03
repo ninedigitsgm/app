@@ -1,11 +1,8 @@
 import React, { Suspense, useCallback, useEffect, useState } from 'react';
 import { LandingPage } from './components/LandingPage';
+import { Workspace } from './components/Workspace';
 import { Toast, ToastMessage } from './components/Toast';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
-import { Sparkles } from 'lucide-react';
-
-// Dynamically code-split the entire heavy Contact Upgrader Workspace so the landing page bundle is minimal
-const Workspace = React.lazy(() => import('./components/Workspace').then(m => ({ default: m.Workspace })));
 
 export default function App() {
   // Page view routing: 'landing' or 'app'
@@ -80,19 +77,6 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Idle prefetching: quietly load Workspace code in the background when browser is idle
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleId = (window as any).requestIdleCallback(
-        () => {
-          import('./components/Workspace');
-        },
-        { timeout: 3500 }
-      );
-      return () => (window as any).cancelIdleCallback(idleId);
-    }
-  }, []);
-
   const navigateToApp = () => {
     setCurrentView('app');
     window.location.hash = '#app';
@@ -105,10 +89,10 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (currentView === 'landing') {
-    return (
-      <>
-        <Toast toasts={toasts} />
+  return (
+    <>
+      <Toast toasts={toasts} />
+      {currentView === 'landing' ? (
         <LandingPage
           onLaunchApp={navigateToApp}
           onTryDemo={() => {
@@ -125,35 +109,23 @@ export default function App() {
           upgradedCount={stats.upgraded}
           deferredCount={stats.deferred}
         />
-        <PwaInstallPrompt />
-      </>
-    );
-  }
-
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 flex items-center justify-center animate-pulse mb-4">
-            <Sparkles className="w-6 h-6 animate-spin" style={{ animationDuration: '3s' }} />
-          </div>
-          <h2 className="text-base font-bold text-slate-800 dark:text-slate-200">
-            Opening Gambia PURA Workspace...
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Loading secure local formatting engine and contact review tools
-          </p>
-        </div>
-      }
-    >
-      <Workspace
-        darkMode={darkMode}
-        onToggleTheme={() => setDarkMode(!darkMode)}
-        onNavigateHome={navigateToLanding}
-        initialAction={pendingAction}
-        onClearInitialAction={() => setPendingAction(null)}
-        onStatsChange={handleStatsChange}
-      />
-    </Suspense>
+      ) : (
+        <Suspense
+          fallback={
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900" />
+          }
+        >
+          <Workspace
+            darkMode={darkMode}
+            onToggleTheme={() => setDarkMode(!darkMode)}
+            onNavigateHome={navigateToLanding}
+            initialAction={pendingAction}
+            onClearInitialAction={() => setPendingAction(null)}
+            onStatsChange={handleStatsChange}
+          />
+        </Suspense>
+      )}
+      <PwaInstallPrompt />
+    </>
   );
 }

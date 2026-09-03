@@ -8,25 +8,23 @@ import { InstructionProgressBar } from './InstructionProgressBar';
 import { ScrollReveal } from './ScrollReveal';
 import { BackToTop } from './BackToTop';
 import { Toast, ToastMessage } from './Toast';
-import { PwaInstallPrompt } from './PwaInstallPrompt';
 
-// Dynamic code-splitting for modals, heavy guides, and charts to optimize bundle size and TBT
-const PuraRulesGuide = React.lazy(() => import('./PuraRulesGuide').then(m => ({ default: m.PuraRulesGuide })));
-const LiveSandbox = React.lazy(() => import('./LiveSandbox').then(m => ({ default: m.LiveSandbox })));
-const DuplicateModal = React.lazy(() => import('./DuplicateModal').then(m => ({ default: m.DuplicateModal })));
-const EditContactModal = React.lazy(() => import('./EditContactModal').then(m => ({ default: m.EditContactModal })));
-const AddContactModal = React.lazy(() => import('./AddContactModal').then(m => ({ default: m.AddContactModal })));
-const MergeContactsModal = React.lazy(() => import('./MergeContactsModal').then(m => ({ default: m.MergeContactsModal })));
-const ExactDuplicateWizardModal = React.lazy(() => import('./ExactDuplicateWizardModal').then(m => ({ default: m.ExactDuplicateWizardModal })));
-const RepeatedNumbersWizardModal = React.lazy(() => import('./RepeatedNumbersWizardModal').then(m => ({ default: m.RepeatedNumbersWizardModal })));
-const MissingPhoneWizardModal = React.lazy(() => import('./MissingPhoneWizardModal').then(m => ({ default: m.MissingPhoneWizardModal })));
-const ExportPreviewModal = React.lazy(() => import('./ExportPreviewModal').then(m => ({ default: m.ExportPreviewModal })));
-const ActionSummaryModal = React.lazy(() => import('./ActionSummaryModal').then(m => ({ default: m.ActionSummaryModal })));
-const CleanSharedModal = React.lazy(() => import('./CleanSharedModal').then(m => ({ default: m.CleanSharedModal })));
-const OperatorDistributionChart = React.lazy(() => import('./OperatorDistributionChart').then(m => ({ default: m.OperatorDistributionChart })));
-const SecurityModal = React.lazy(() => import('./SecurityModal').then(m => ({ default: m.SecurityModal })));
-const DonateModal = React.lazy(() => import('./DonateModal').then(m => ({ default: m.DonateModal })));
-const LegalModal = React.lazy(() => import('./LegalModal').then(m => ({ default: m.LegalModal })));
+import { PuraRulesGuide } from './PuraRulesGuide';
+import { LiveSandbox } from './LiveSandbox';
+import { DuplicateModal } from './DuplicateModal';
+import { EditContactModal } from './EditContactModal';
+import { AddContactModal } from './AddContactModal';
+import { MergeContactsModal } from './MergeContactsModal';
+import { ExactDuplicateWizardModal } from './ExactDuplicateWizardModal';
+import { RepeatedNumbersWizardModal } from './RepeatedNumbersWizardModal';
+import { MissingPhoneWizardModal } from './MissingPhoneWizardModal';
+import { ExportPreviewModal } from './ExportPreviewModal';
+import { ActionSummaryModal } from './ActionSummaryModal';
+import { CleanSharedModal } from './CleanSharedModal';
+import { OperatorDistributionChart } from './OperatorDistributionChart';
+import { SecurityModal } from './SecurityModal';
+import { DonateModal } from './DonateModal';
+import { LegalModal } from './LegalModal';
 
 import { 
   ContactRecord, 
@@ -1861,9 +1859,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({
           {totalCount > 0 && (
             <div className="mt-6 mb-6">
               <ScrollReveal>
-                <React.Suspense fallback={<div className="h-48 rounded-xl bg-white dark:bg-slate-800 p-6 flex items-center justify-center text-xs text-slate-400">Loading chart analytics...</div>}>
-                  <OperatorDistributionChart data={operatorData} />
-                </React.Suspense>
+                <OperatorDistributionChart data={operatorData} />
               </ScrollReveal>
             </div>
           )}
@@ -2242,9 +2238,6 @@ export const Workspace: React.FC<WorkspaceProps> = ({
           />
         )}
       </React.Suspense>
-
-      {/* PWA Install Prompt & Offline Notification */}
-      <PwaInstallPrompt />
     </div>
   );
 };
